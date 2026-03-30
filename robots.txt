@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://friendlyshootersite.workers.dev/sitemap.xml
