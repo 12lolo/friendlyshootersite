@@ -1,0 +1,17 @@
+{
+  "name": "friendlyshooter-leaderboard-proxy",
+  "version": "1.0.0",
+  "description": "Express proxy to fetch Unity Gaming Services leaderboards and serve JSON for website widget",
+  "main": "leaderboard-express.js",
+  "scripts": {
+    "start": "node leaderboard-express.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-fetch": "^3.4.1"
+  }
+}
