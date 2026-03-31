@@ -26,6 +26,12 @@
   }
   function escapeHtml(s){ return String(s).replace(/[&<>\"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
   function fetchAndRender(container, opts){
+    // prefer preloaded data if provided (useful when file:// blocks fetch)
+    if(opts.data && Array.isArray(opts.data)){
+      render(container, opts.data, opts);
+      return;
+    }
+    // attempt to fetch; on failure, fall back to opts.data or example embedded data
     fetch(opts.apiUrl, {cache:'no-store'}).then(function(res){
       if(!res.ok) throw new Error('HTTP '+res.status);
       return res.json();
@@ -33,7 +39,20 @@
       var data = Array.isArray(json) ? json : (json.entries||[]);
       render(container, data, opts);
     }).catch(function(err){
-      container.innerHTML = '<div class="lb-error">Error loading leaderboard: '+escapeHtml(err.message)+'</div>';
+      if(opts.data && Array.isArray(opts.data)){
+        render(container, opts.data, opts);
+        return;
+      }
+      // final fallback: try to render bundled example data if available
+      try{
+        var example = [
+          {playerId:'p1',playerName:'Alice',score:1200,timestamp:1712000000},
+          {playerId:'p2',playerName:'Bob',score:1100,timestamp:1711990000}
+        ];
+        render(container, example, opts);
+      }catch(e){
+        container.innerHTML = '<div class="lb-error">Error loading leaderboard: '+escapeHtml(err.message)+'</div>';
+      }
     });
   }
   window.initLeaderboard = function(containerId, options){
