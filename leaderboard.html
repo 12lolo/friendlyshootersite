@@ -19,9 +19,9 @@
 
     <script src="webleaderboard/leaderboard.js"></script>
     <script>
-      // initialize with example data inline to avoid fetch/CORS issues on some hosts
+      // initialize: prefer server API (if your host supports PHP), fallback to inline data
       initLeaderboard('leaderboard-root', {
-        apiUrl: 'webleaderboard/example-data.json',
+        apiUrl: '/api/leaderboard.php',
         data: [
           { "playerId": "p1", "playerName": "Alice", "score": 1200, "timestamp": 1712000000 },
           { "playerId": "p2", "playerName": "Bob", "score": 1100, "timestamp": 1711990000 },
