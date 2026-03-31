@@ -1,36 +1,44 @@
-<!doctype html>
+<!DOCTYPE HTML>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>FriendlyShooter Leaderboard</title>
-    <link href="https://static.itch.io/game.css?1773778275" rel="stylesheet"/>
-    <link rel="stylesheet" href="webleaderboard/leaderboard.css">
-    <style>body{padding:20px;background:#09160b;color:#02ff77;font-family:Arial,Helvetica,sans-serif}</style>
-  </head>
-  <body>
-    <h1 style="text-align:center">FriendlyShooter — Leaderboard</h1>
-    <div style="text-align:center;margin:12px 0">
-      <a href="/" class="button">Back to Home</a>
-      <a href="webleaderboard/index.html" class="button" style="margin-left:8px">Standalone Widget</a>
-    </div>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <title>FriendlyShooter - Leaderboard</title>
+        <link href="https://static.itch.io/game.css?1773778275" rel="stylesheet"/>
+        <link rel="stylesheet" href="webleaderboard/leaderboard.css">
+        <style type="text/css">
+            /* small tweaks to match homepage layout */
+            body { background-color: #09280f; color: #02ff77; }
+            .leaderboard-root { margin-top: 18px; }
+            .button-row { text-align: center; margin: 12px 0; }
+        </style>
+    </head>
+    <body class=" locale_en game_layout_widget layout_widget no_theme_toggle responsive" data-host="itch.io">
+        <div id="wrapper" class="main wrapper">
+            <div class="inner_column size_large family_pixel" id="inner_column">
+                <div class="header align_center has_image" id="header">
+                    <img alt="FriendlyShooter-V0.84" src="https://img.itch.zone/aW1nLzI1ODYyMTU3LnBuZw==/original/rI73DE.png"/>
+                    <h1 itemprop="name" class="game_title">FriendlyShooter</h1>
+                </div>
 
-    <div id="leaderboard-root" class="leaderboard-root"></div>
+                <div class="button-row">
+                    <a href="/" class="button">Back to Home</a>
+                    <a href="webleaderboard/index.html" class="button" style="margin-left:8px">Standalone Widget</a>
+                </div>
 
-    <script src="webleaderboard/leaderboard.js"></script>
-    <script>
-      // initialize: prefer server API (if your host supports PHP), fallback to inline data
-      initLeaderboard('leaderboard-root', {
-        apiUrl: '/api/leaderboard.php',
-        data: [
-          { "playerId": "p1", "playerName": "Alice", "score": 1200, "timestamp": 1712000000 },
-          { "playerId": "p2", "playerName": "Bob", "score": 1100, "timestamp": 1711990000 },
-          { "playerId": "p3", "playerName": "Carol", "score": 900, "timestamp": 1711980000 }
-        ],
-        title: 'Top Players',
-        maxEntries: 25,
-        refreshSeconds: 30
-      });
-    </script>
-  </body>
+                <div id="leaderboard-root" class="leaderboard-root"></div>
+
+                <script src="webleaderboard/leaderboard.js"></script>
+                <script>
+                    // Initialize leaderboard; replace apiUrl with your production endpoint when ready.
+                    initLeaderboard('leaderboard-root', {
+                        apiUrl: 'webleaderboard/example-data.json',
+                        title: 'Top Players',
+                        maxEntries: 25,
+                        refreshSeconds: 30
+                    });
+                </script>
+            </div>
+        </div>
+    </body>
 </html>
