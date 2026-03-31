@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FriendlyShooter Leaderboard</title>
+    <link href="https://static.itch.io/game.css?1773778275" rel="stylesheet"/>
+    <link rel="stylesheet" href="webleaderboard/leaderboard.css">
+    <style>body{padding:20px;background:#09160b;color:#02ff77;font-family:Arial,Helvetica,sans-serif}</style>
+  </head>
+  <body>
+    <h1 style="text-align:center">FriendlyShooter — Leaderboard</h1>
+    <div style="text-align:center;margin:12px 0">
+      <a href="/" class="button">Back to Home</a>
+      <a href="webleaderboard/index.html" class="button" style="margin-left:8px">Standalone Widget</a>
+    </div>
+
+    <div id="leaderboard-root" class="leaderboard-root"></div>
+
+    <script src="webleaderboard/leaderboard.js"></script>
+    <script>
+      // initialize with example data; change apiUrl to your real endpoint
+      initLeaderboard('leaderboard-root', { apiUrl: 'webleaderboard/example-data.json', title: 'Top Players', maxEntries: 25, refreshSeconds: 30 });
+    </script>
+  </body>
+</html>
