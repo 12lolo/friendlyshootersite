@@ -59,7 +59,7 @@
     var container = typeof containerId==='string' ? document.getElementById(containerId) : containerId;
     if(!container) throw new Error('Container not found');
     var opts = Object.assign({apiUrl:'example-data.json',maxEntries:10,refreshSeconds:30,title:'Leaderboard'}, options||{});
-      // resolve player name (from options, url param, fetch endpoint, or localStorage)
+      // resolve player name (from options, url param, or localStorage)
       resolvePlayerName(opts).then(function(name){
         var badge = container.querySelector('.lb-player');
         if(!badge){ badge = document.createElement('div'); badge.className='lb-player'; container.insertBefore(badge, container.firstChild); }
@@ -71,4 +71,20 @@
       setInterval(function(){ fetchAndRender(container, opts); }, opts.refreshSeconds*1000);
     }
   };
+  // Helper: simple player name resolver to avoid missing-reference errors
+  function resolvePlayerName(opts){
+    return new Promise(function(resolve){
+      try{
+        if(opts.playerName) return resolve(opts.playerName);
+        // check ?name= in URL
+        try{
+          var q = (location.search||'').slice(1).split('&').map(function(p){ return p.split('='); }).filter(Boolean);
+          for(var i=0;i<q.length;i++){ if(q[i][0]==='name' && q[i][1]) return resolve(decodeURIComponent(q[i][1])); }
+        }catch(e){}
+        // fallback to localStorage key
+        try{ var s = localStorage.getItem('UGS_LastName'); if(s) return resolve(s); }catch(e){}
+      }catch(e){}
+      resolve(null);
+    });
+  }
 })();
