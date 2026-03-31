@@ -396,7 +396,7 @@
                     <a href="webleaderboard/index.html" class="button">View Leaderboard</a>
                     <a href="leaderboard.html" class="button" style="margin-left:8px">Leaderboard Page</a>
                 </div>
-                <div id="leaderboard-root" class="leaderboard-root" style="max-width:720px;margin:12px auto;"></div>
+                <div id="leaderboard-root" class="leaderboard-root" style="max-width:720px;margin:12px auto;display:none;" aria-hidden="true"></div>
                 <div class="view_game_page page_widget base_widget buy_on_top" id="view_game_4653440">
                     <div class="header_buy_row">
                         <p>A downloadable indie shooter with support via Proton</p>
@@ -639,12 +639,14 @@
                                         </div>
                                     </div>
                                 </div>
+                                                                <!-- Leaderboard temporarily hidden until fixes are applied
                                                                 <script src="webleaderboard/leaderboard.js"></script>
                                                                 <script>
                                                                     try {
                                                                         initLeaderboard('leaderboard-root', { apiUrl: 'webleaderboard/example-data.json', title: 'Top Players', maxEntries: 10, refreshSeconds: 0 });
                                                                     } catch (e) { /* ignore if init fails */ }
                                                                 </script>
+                                                                -->
                             </div>
                             <div class="game_comments_widget base_widget" id="game_comments_2666890">
                                 <h2 id="comments">Comments</h2>

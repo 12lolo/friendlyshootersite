@@ -26,18 +26,20 @@
                     <a href="webleaderboard/index.html" class="button" style="margin-left:8px">Standalone Widget</a>
                 </div>
 
-                <div id="leaderboard-root" class="leaderboard-root"></div>
+                    <div id="leaderboard-root" class="leaderboard-root" style="display:none;" aria-hidden="true"></div>
 
-                <script src="webleaderboard/leaderboard.js"></script>
-                <script>
-                    // Initialize leaderboard; replace apiUrl with your production endpoint when ready.
-                    initLeaderboard('leaderboard-root', {
+                    <!-- Leaderboard temporarily hidden until fixes are applied
+                    <script src="webleaderboard/leaderboard.js"></script>
+                    <script>
+                        // Initialize leaderboard; replace apiUrl with your production endpoint when ready.
+                        initLeaderboard('leaderboard-root', {
                             apiUrl: '/api/leaderboard',
-                        title: 'Top Players',
-                        maxEntries: 25,
-                        refreshSeconds: 30
-                    });
-                </script>
+                            title: 'Top Players',
+                            maxEntries: 25,
+                            refreshSeconds: 30
+                        });
+                    </script>
+                    -->
             </div>
         </div>
     </body>
