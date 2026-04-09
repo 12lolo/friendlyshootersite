@@ -18,8 +18,13 @@
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <h1>Admin — FriendlyShooter</h1>
+    <div id="wrapper" class="main wrapper">
+      <div class="inner_column size_large family_pixel" id="inner_column">
+        <div class="header align_center has_image" id="header">
+          <img alt="FriendlyShooter" src="https://img.itch.zone/aW1nLzI2NTc5NTczLmpwZw==/original/dvtKIR.jpg"/>
+          <h1 class="game_title">Admin — FriendlyShooter</h1>
+        </div>
+        <div class="card">
       <div id="loginCard" class="card">
         <h3>Login</h3>
         <p class="small">Enter admin password (sent to server for verification). Default pass: <em>8008</em> unless set in environment variable `ADMIN_PASS`.</p>
@@ -29,6 +34,8 @@
         </div>
         <div id="loginMsg" class="small"></div>
       </div>
+      </div>
+    </div>
 
       <div id="app" style="display:none">
         <div class="card">
@@ -76,7 +83,7 @@
               <input id="newImageFile" type="file" accept="image/*" />
               <div style="margin-top:6px"><input id="newImageUrl" placeholder="Or paste image URL" style="width:100%"/></div>
               <div id="newImagePreview" style="margin-top:6px"></div>
-              <div style="margin-top:8px"><a id="createBtn" href="#" class="btn">Create</a></div>
+              <div style="margin-top:8px"><a id="createBtn" href="#" class="button">Create</a></div>
             </div>
             <div class="col">
               <h4>Instructions</h4>
@@ -101,7 +108,7 @@
         </div>
 
         <div style="text-align:center;margin-top:12px">
-          <a href="/" class="btn">Back to Home</a>
+          <a href="/" class="button">Back to Home</a>
         </div>
       </div>
     </div>
