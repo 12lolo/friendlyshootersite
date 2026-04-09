@@ -114,7 +114,8 @@
                         const sizeText = (typeof size === 'object') ? (size.width + ' x ' + size.height) : size;
                         dataCol.appendChild(el('div','item-meta','Size: ' + safe(sizeText)));
                     } else {
-                        dataCol.appendChild(el('div','item-meta','Health: ' + safe(item.health || 0) + ' • Damage: ' + safe(item.damage || 0) + ' • Movement: ' + safe(item.movement || '')));
+                        const statLabel = type === 'enemy' ? 'Fire Speed' : 'Movement';
+                        dataCol.appendChild(el('div','item-meta','Health: ' + safe(item.health || 0) + ' • Damage: ' + safe(item.damage || 0) + ' • ' + statLabel + ': ' + safe(item.movement || '')));
                     }
                     wrapper.appendChild(dataCol);
                     // open modal on click

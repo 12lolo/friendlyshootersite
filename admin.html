@@ -57,7 +57,7 @@
               <input id="newHealth" type="number" value="100" />
               <label class="field-label">Damage</label>
               <input id="newDamage" type="number" value="10" />
-              <label class="field-label">Movement</label>
+              <label class="field-label" id="movementLabel">Movement</label>
               <select id="newMovement">
                 <option value="super_fast">Super Fast</option>
                 <option value="fast">Fast</option>
@@ -153,6 +153,9 @@
       const t = newType.value;
       if (t === 'map') { charControls.style.display='none'; mapControls.style.display='block'; }
       else { charControls.style.display='block'; mapControls.style.display='none'; }
+      // change label for movement/fire speed depending on type
+      const ml = document.getElementById('movementLabel');
+      if (t === 'enemy') ml.textContent = 'Fire Speed'; else ml.textContent = 'Movement';
     }
     newType.addEventListener('change', updateFormForType);
     newMapSize.addEventListener('change', (e)=>{ newMapCustom.style.display = e.target.value === 'custom' ? 'block' : 'none'; });
@@ -184,7 +187,8 @@
           const size = (item.extra && item.extra.size) ? item.extra.size : (item.size || 'unknown');
           details += `<div class="small">Size: ${escapeHtml(typeof size === 'object' ? (size.width+ 'x' + size.height) : size)}</div>`;
         } else {
-          details += `<div class="small">Health: ${item.health || 0} • Damage: ${item.damage || 0} • Movement: ${escapeHtml(item.movement || '')}</div>`;
+          const statLabel = type === 'enemy' ? 'Fire Speed' : 'Movement';
+          details += `<div class="small">Health: ${item.health || 0} • Damage: ${item.damage || 0} • ${statLabel}: ${escapeHtml(item.movement || '')}</div>`;
         }
         const actions = `<div style="text-align:right"><a href="#" data-id="${escapeHtml(item.id)}" data-type="${escapeHtml(type)}" class="button editBtn" style="margin-right:8px">Edit</a><a href="#" data-id="${escapeHtml(item.id)}" data-type="${escapeHtml(type)}" class="button delBtn">Delete</a></div>`;
         div.innerHTML = `<div>${thumb}</div><div>${"<strong>"+escapeHtml(item.name||item.title||'Untitled')+"</strong> <div class=\"small\">id: " + escapeHtml(item.id) + "</div>" + details}</div>${actions}`;
@@ -215,7 +219,7 @@
       const name = prompt('Name', item.name||''); if (name===null) return; const bio = prompt('Bio', item.bio||''); if (bio===null) return;
       let extraObj = Object.assign({}, item.extra || {});
       if (type === 'map'){
-        let size = prompt('Map size (small|medium|large|custom or widthxheight)', (extraObj.size ? (typeof extraObj.size==='object' ? (extraObj.size.width+'x'+extraObj.size.height) : extraObj.size) : 'medium'));
+      let size = prompt('Map size (small|medium|large|custom or widthxheight)', (extraObj.size ? (typeof extraObj.size==='object' ? (extraObj.size.width+'x'+extraObj.size.height) : extraObj.size) : 'medium'));
         if (size===null) return;
         if (size.indexOf('x')>-1){ const parts = size.split('x'); extraObj.size = { width: parseInt(parts[0]||0,10), height: parseInt(parts[1]||0,10) }; }
         else extraObj.size = size;
@@ -228,7 +232,8 @@
       } else {
         let health = prompt('Health', item.health||0); if (health===null) return; health = parseInt(health||0,10);
         let damage = prompt('Damage', item.damage||0); if (damage===null) return; damage = parseInt(damage||0,10);
-        let movement = prompt('Movement (super_fast|fast|medium|slow)', item.movement||'medium'); if (movement===null) return;
+        const movementPrompt = type === 'enemy' ? 'Fire Speed (super_fast|fast|medium|slow)' : 'Movement (super_fast|fast|medium|slow)';
+        let movement = prompt(movementPrompt, item.movement||'medium'); if (movement===null) return;
         const extra = prompt('Extra JSON (optional)', JSON.stringify(Object.assign({}, item.extra||{}))); if (extra===null) return;
         try{ extraObj = extra ? JSON.parse(extra) : extraObj; } catch(err){ alert('Invalid JSON'); return; }
         const body = { type: type, item: { name: name, bio: bio, extra: extraObj, health: health, damage: damage, movement: movement } };
@@ -248,7 +253,8 @@
       const bio = document.getElementById('newBio').value.trim();
       const extraText = document.getElementById('newExtra').value.trim(); let extra = {};
       if (extraText) { try{ extra = JSON.parse(extraText); } catch(err){ setStatus('Invalid extra JSON', false); return; } }
-      if (type === 'map'){ const sizeOpt = newMapSize.value; if (sizeOpt === 'custom') extra.size = { width: parseInt(document.getElementById('newMapWidth').value||0,10), height: parseInt(document.getElementById('newMapHeight').value||0,10) }; else extra.size = sizeOpt; }
+        if (type === 'map'){ const sizeOpt = newMapSize.value; if (sizeOpt === 'custom') extra.size = { width: parseInt(document.getElementById('newMapWidth').value||0,10), height: parseInt(document.getElementById('newMapHeight').value||0,10) }; else extra.size = sizeOpt; }
+      // if enemy, movement field represents fire speed; label already updated in form
       const imageVal = newImageUrl.value.trim(); if (imageVal) extra.image = imageVal;
       const body = { type: type, item: { name: name, bio: bio, extra: extra, health: parseInt(document.getElementById('newHealth').value||0,10), damage: parseInt(document.getElementById('newDamage').value||0,10), movement: document.getElementById('newMovement').value } };
       const r = await fetch('/api/admin.php?action=item', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'same-origin' });
