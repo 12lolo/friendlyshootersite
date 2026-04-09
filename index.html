@@ -327,6 +327,18 @@
                 fill: #02ff77 !important
             }
         </style>
+        <style>
+            /* Hero improvements */
+            .hero { margin: 18px 0; border-radius: 10px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,0.5); }
+            .hero-inner { display:flex; gap:20px; align-items:center; justify-content:space-between; padding:28px; background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.25)); }
+            .hero-art img{ max-width:420px; width:38%; border-radius:6px; display:block; box-shadow:0 8px 20px rgba(0,0,0,0.35); }
+            .hero-content{ width:60%; color:var(--itchio_text_color); }
+            .hero-content .game_title{ font-size:44px; margin:0 0 6px; }
+            .tagline{ color:#c7ffc9; margin:0 0 14px; font-size:1.05rem; max-width:720px; }
+            .hero-buttons .button{ margin-right:10px; padding:10px 16px; font-size:15px; }
+            .button.primary{ background: linear-gradient(90deg,#ff6ecf,#d400b1); box-shadow:0 8px 20px rgba(212,0,177,0.18); }
+            @media (max-width:900px){ .hero-inner{ flex-direction:column; align-items:center } .hero-art img{ width:80%; margin-top:12px } .hero-content{ width:100%; text-align:center } }
+        </style>
     </head>
     <body class=" locale_en game_layout_widget layout_widget no_theme_toggle responsive" data-host="itch.io" data-page_name="view_game">
         <ul id="user_tools" class="user_tools hidden">
@@ -389,14 +401,21 @@
         </script>
         <div id="wrapper" class="main wrapper">
             <div class="inner_column size_large family_pixel" id="inner_column">
-                <div class="header align_center has_image" id="header">
-                    <img alt="FriendlyShooter-V0.84" src="https://img.itch.zone/aW1nLzI2NTc5NTczLmpwZw==/original/dvtKIR.jpg"/>
-                    <h1 itemprop="name" class="game_title">FriendlyShooter-V0.84</h1>
-                </div>
-                <div style="text-align:center;margin:12px 0">
-                    <a href="bio.html" class="button">Characters &amp; Enemies</a>
-                    <a href="bio.html" class="button" style="margin-left:8px">Bio Page</a>
-                    <a href="admin.html" class="button" style="margin-left:8px">Admin Login</a>
+                <div class="hero" aria-hidden="false">
+                    <div class="hero-inner">
+                        <div class="hero-content">
+                            <h1 itemprop="name" class="game_title">FriendlyShooter</h1>
+                            <p class="tagline">A free indie shooter — pick a class, face off against tough enemies and huge bosses.</p>
+                            <div class="hero-buttons">
+                                <a href="bio.html" class="button primary">Characters &amp; Enemies</a>
+                                <a href="bio.html" class="button">Bio Page</a>
+                                <a href="admin-login.html" class="button">Admin</a>
+                            </div>
+                        </div>
+                        <div class="hero-art">
+                            <img alt="FriendlyShooter" src="https://img.itch.zone/aW1nLzI2NTc5NTczLmpwZw==/original/dvtKIR.jpg"/>
+                        </div>
+                    </div>
                 </div>
                 <div id="leaderboard-root" class="leaderboard-root" style="max-width:720px;margin:12px auto;display:none;" aria-hidden="true"></div>
                 <div class="view_game_page page_widget base_widget buy_on_top" id="view_game_4653440">
