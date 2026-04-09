@@ -74,7 +74,9 @@
     </div>
 
     <script>
-      const api = (path, opts={}) => fetch(path, opts).then(r=>r.json().catch(()=>({}))).catch(()=>({error:'network'}));
+      // API base: empty for same-origin, or set to http://localhost:3000 for local API testing
+      const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://localhost:3000' : '';
+      const api = (path, opts={}) => fetch(API_BASE + path, opts).then(r=>r.json().catch(()=>({}))).catch(()=>({error:'network'}));
       let ADMIN_PASS = null;
 
       const loginBtn = document.getElementById('loginBtn');
@@ -110,7 +112,7 @@
 
       async function loadList(type, elId){
         const hdr = { 'x-admin-pass': ADMIN_PASS };
-        const res = await fetch('/api/admin/items?type='+type, { headers: hdr });
+        const res = await fetch(API_BASE + '/api/admin/items?type='+type, { headers: hdr });
         if (!res.ok) { document.getElementById(elId).innerHTML = '<div class="small">Error loading</div>'; return; }
         const data = await res.json();
         const key = type === 'character' ? 'characters' : type === 'enemy' ? 'enemies' : 'maps';
@@ -139,7 +141,7 @@
       async function onEdit(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; const hdr = { 'x-admin-pass': ADMIN_PASS }; const res = await fetch('/api/admin/items?type='+type, { headers: hdr }); const data = await res.json(); const key = type === 'character' ? 'characters' : type === 'enemy' ? 'enemies' : 'maps'; const item = (data[key]||[]).find(x=>x.id===id); if (!item) return alert('Item not found'); const name = prompt('Name', item.name||item.title||''); if (name===null) return; const bio = prompt('Bio', item.bio||item.description||''); if (bio===null) return; const extra = prompt('Extra JSON (optional)', JSON.stringify(Object.assign({}, item.extra||{}))); if (extra===null) return; let extraObj = {};
       try { extraObj = extra ? JSON.parse(extra) : {}; } catch(err){ alert('Invalid JSON'); return; }
       const body = { type: type, item: { name: name, bio: bio, extra: extraObj } };
-      const put = await fetch('/api/admin/item/'+id, { method:'PUT', headers: Object.assign({'Content-Type':'application/json'}, {'x-admin-pass': ADMIN_PASS}), body: JSON.stringify(body) });
+      const put = await fetch(API_BASE + '/api/admin/item/'+id, { method:'PUT', headers: Object.assign({'Content-Type':'application/json'}, {'x-admin-pass': ADMIN_PASS}), body: JSON.stringify(body) });
       await put.json();
       loadAll();
     }
@@ -155,7 +157,7 @@
           try { extra = JSON.parse(extraText); } catch (err){ alert('Invalid extra JSON'); return; }
         }
         const body = { type: type, item: { name: name, bio: bio, extra: extra } };
-        const res = await fetch('/api/admin/item', { method:'POST', headers: Object.assign({'Content-Type':'application/json'}, {'x-admin-pass': ADMIN_PASS}), body: JSON.stringify(body) });
+        const res = await fetch(API_BASE + '/api/admin/item', { method:'POST', headers: Object.assign({'Content-Type':'application/json'}, {'x-admin-pass': ADMIN_PASS}), body: JSON.stringify(body) });
         const j = await res.json();
         if (j.error) return alert('Error: '+j.error);
         document.getElementById('newName').value=''; document.getElementById('newBio').value=''; document.getElementById('newExtra').value='';
