@@ -22,8 +22,14 @@ function prompt($msg){
     return $line;
 }
 
-$pw1 = prompt('Enter password: ');
-$pw2 = prompt('Confirm password: ');
+if ($argc >= 3) {
+    // password provided as argument (non-interactive)
+    $pw1 = $argv[2];
+    $pw2 = isset($argv[3]) ? $argv[3] : $pw1;
+} else {
+    $pw1 = prompt('Enter password: ');
+    $pw2 = prompt('Confirm password: ');
+}
 if ($pw1 !== $pw2) { echo "Passwords do not match. Aborting.\n"; exit(1); }
 
 $hash = password_hash($pw1, PASSWORD_DEFAULT);
