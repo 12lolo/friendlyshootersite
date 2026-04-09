@@ -15,6 +15,12 @@ $username = $argv[1];
 $dbPath = __DIR__ . '/admin_php.db';
 $pdo = new PDO('sqlite:' . $dbPath);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+// Ensure users table exists (in case admin.php hasn't been invoked)
+$pdo->exec("CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    username TEXT UNIQUE,
+    password_hash TEXT
+);");
 
 function prompt($msg){
     echo $msg;
