@@ -89,7 +89,10 @@
             <input id="newImageUrl" placeholder="Image URL (uploads disabled)" style="margin-top:6px" />
             <div id="newImagePreview" style="margin-top:8px"></div>
 
-            <div style="margin-top:12px"><a id="createBtn" href="#" class="button">Create</a></div>
+            <div style="margin-top:12px">
+              <a id="createBtn" href="#" class="button">Create</a>
+              <a id="cancelBtn" href="#" class="button" style="background:#444;display:none;margin-left:8px">Cancel</a>
+            </div>
             <div id="actionStatus" class="small" style="margin-top:8px"></div>
           </div>
 
@@ -146,6 +149,10 @@
     const newImageUrl = document.getElementById('newImageUrl');
     const newImagePreview = document.getElementById('newImagePreview');
     const actionStatus = document.getElementById('actionStatus');
+    const createBtn = document.getElementById('createBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    let editingId = null;
+    let editingType = null;
 
     function setStatus(msg, ok=true) { actionStatus.textContent = msg; actionStatus.style.color = ok ? '#9feab0' : '#f66'; }
 
@@ -214,39 +221,47 @@
       const j = await r.json(); setStatus('Deleted'); loadAll();
     }
 
-    // edit (simple prompts)
-    async function onEdit(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; const list = await fetchItems(type); const item = (list||[]).find(x=>x.id===id); if (!item) return alert('Item not found');
-      const name = prompt('Name', item.name||''); if (name===null) return; const bio = prompt('Bio', item.bio||''); if (bio===null) return;
-      let extraObj = Object.assign({}, item.extra || {});
+    // populate create form to edit an existing item
+    async function onEdit(e){
+      e.preventDefault();
+      const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type;
+      const list = await fetchItems(type); const item = (list||[]).find(x=>x.id===id);
+      if (!item) return alert('Item not found');
+      // set form values
+      editingId = id; editingType = type;
+      newType.value = type; updateFormForType();
+      document.getElementById('newName').value = item.name || '';
+      document.getElementById('newBio').value = item.bio || '';
+      document.getElementById('newExtra').value = item.extra && Object.keys(item.extra).length ? JSON.stringify(item.extra) : '';
+      document.getElementById('newImageUrl').value = (item.extra && item.extra.image) ? item.extra.image : (item.image || '');
+      document.getElementById('newImagePreview').innerHTML = (document.getElementById('newImageUrl').value) ? `<img src="${escapeHtml(document.getElementById('newImageUrl').value)}" style="max-width:220px;border:1px solid #265424"/>` : '';
       if (type === 'map'){
-      let size = prompt('Map size (small|medium|large|custom or widthxheight)', (extraObj.size ? (typeof extraObj.size==='object' ? (extraObj.size.width+'x'+extraObj.size.height) : extraObj.size) : 'medium'));
-        if (size===null) return;
-        if (size.indexOf('x')>-1){ const parts = size.split('x'); extraObj.size = { width: parseInt(parts[0]||0,10), height: parseInt(parts[1]||0,10) }; }
-        else extraObj.size = size;
-        const body = { type: type, item: { name: name, bio: bio, extra: extraObj } };
-        {
-          const r = await fetch('/api/admin.php?action=item&id='+encodeURIComponent(id), { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'same-origin' });
-          if (r.status === 401) { setStatus('Unauthorized — please login', false); window.location.href = '/admin-login.html'; return; }
-          const j = await r.json(); setStatus('Updated'); loadAll(); return;
-        }
+        // map size
+        const size = (item.extra && item.extra.size) ? item.extra.size : (item.size || 'medium');
+        if (typeof size === 'object'){
+          newMapSize.value = 'custom'; newMapCustom.style.display='block'; document.getElementById('newMapWidth').value = size.width || 800; document.getElementById('newMapHeight').value = size.height || 600;
+        } else { newMapSize.value = size; newMapCustom.style.display = (size === 'custom') ? 'block' : 'none'; }
+        // hide character controls
       } else {
-        let health = prompt('Health', item.health||0); if (health===null) return; health = parseInt(health||0,10);
-        let damage = prompt('Damage', item.damage||0); if (damage===null) return; damage = parseInt(damage||0,10);
-        const movementPrompt = type === 'enemy' ? 'Fire Speed (super_fast|fast|medium|slow)' : 'Movement (super_fast|fast|medium|slow)';
-        let movement = prompt(movementPrompt, item.movement||'medium'); if (movement===null) return;
-        const extra = prompt('Extra JSON (optional)', JSON.stringify(Object.assign({}, item.extra||{}))); if (extra===null) return;
-        try{ extraObj = extra ? JSON.parse(extra) : extraObj; } catch(err){ alert('Invalid JSON'); return; }
-        const body = { type: type, item: { name: name, bio: bio, extra: extraObj, health: health, damage: damage, movement: movement } };
-        {
-          const r = await fetch('/api/admin.php?action=item&id='+encodeURIComponent(id), { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'same-origin' });
-          if (r.status === 401) { setStatus('Unauthorized — please login', false); window.location.href = '/admin-login.html'; return; }
-          const j = await r.json(); setStatus('Updated'); loadAll(); return;
-        }
+        document.getElementById('newHealth').value = item.health || 0;
+        document.getElementById('newDamage').value = item.damage || 0;
+        document.getElementById('newMovement').value = item.movement || 'medium';
       }
+      // switch create button to update mode
+      createBtn.textContent = 'Update'; cancelBtn.style.display = '';
+      setStatus('Editing item — make changes and click Update');
+      // scroll to form
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // cancel edit
+    cancelBtn.addEventListener('click', (e)=>{ e.preventDefault(); resetForm(); });
+
+    function resetForm(){
+      editingId = null; editingType = null; document.getElementById('newName').value=''; document.getElementById('newBio').value=''; document.getElementById('newExtra').value=''; document.getElementById('newImageUrl').value=''; document.getElementById('newImagePreview').innerHTML=''; document.getElementById('newHealth').value='100'; document.getElementById('newDamage').value='10'; document.getElementById('newMovement').value='medium'; newMapSize.value='medium'; newMapCustom.style.display='none'; createBtn.textContent='Create'; cancelBtn.style.display='none'; setStatus(''); }
+
     // create
-    document.getElementById('createBtn').addEventListener('click', async (e)=>{
+    createBtn.addEventListener('click', async (e)=>{
       e.preventDefault();
       const type = document.getElementById('newType').value; const name = document.getElementById('newName').value.trim();
       if (!name) { setStatus('Name required', false); return; }
@@ -257,9 +272,16 @@
       // if enemy, movement field represents fire speed; label already updated in form
       const imageVal = newImageUrl.value.trim(); if (imageVal) extra.image = imageVal;
       const body = { type: type, item: { name: name, bio: bio, extra: extra, health: parseInt(document.getElementById('newHealth').value||0,10), damage: parseInt(document.getElementById('newDamage').value||0,10), movement: document.getElementById('newMovement').value } };
-      const r = await fetch('/api/admin.php?action=item', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'same-origin' });
-      if (r.status === 401) { setStatus('Unauthorized — please login', false); window.location.href = '/admin-login.html'; return; }
-      const j = await r.json(); if (j.error){ setStatus('Create failed: '+j.error, false); } else { setStatus('Created'); document.getElementById('newName').value=''; document.getElementById('newBio').value=''; document.getElementById('newExtra').value=''; newImageUrl.value=''; newImagePreview.innerHTML=''; loadAll(); }
+      if (editingId){
+        // update existing
+        const r = await fetch('/api/admin.php?action=item&id='+encodeURIComponent(editingId), { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'same-origin' });
+        if (r.status === 401) { setStatus('Unauthorized — please login', false); window.location.href = '/admin-login.html'; return; }
+        const j = await r.json(); if (j.error){ setStatus('Update failed: '+j.error, false); } else { setStatus('Updated'); resetForm(); loadAll(); }
+      } else {
+        const r = await fetch('/api/admin.php?action=item', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'same-origin' });
+        if (r.status === 401) { setStatus('Unauthorized — please login', false); window.location.href = '/admin-login.html'; return; }
+        const j = await r.json(); if (j.error){ setStatus('Create failed: '+j.error, false); } else { setStatus('Created'); resetForm(); loadAll(); }
+      }
     });
 
     // search bindings
