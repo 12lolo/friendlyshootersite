@@ -72,6 +72,10 @@
               </div>
               <label>Extra JSON (optional)</label>
               <textarea id="newExtra" rows="3" placeholder='{"notes":"example"}'></textarea>
+              <label>Image</label>
+              <input id="newImageFile" type="file" accept="image/*" />
+              <div style="margin-top:6px"><input id="newImageUrl" placeholder="Or paste image URL" style="width:100%"/></div>
+              <div id="newImagePreview" style="margin-top:6px"></div>
               <div style="margin-top:8px"><a id="createBtn" href="#" class="btn">Create</a></div>
             </div>
             <div class="col">
@@ -128,6 +132,30 @@
       // initialize
       updateFormForType();
 
+      // image upload handling
+      let uploadedImageUrl = '';
+      const fileInput = document.getElementById('newImageFile');
+      const imageUrlInput = document.getElementById('newImageUrl');
+      const imagePreview = document.getElementById('newImagePreview');
+      fileInput.addEventListener('change', async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const fd = new FormData(); fd.append('image', f);
+        const res = await fetch(API_BASE + '/api/admin.php?action=upload', { method: 'POST', body: fd });
+        const j = await res.json();
+        if (j.url) {
+          uploadedImageUrl = j.url;
+          imageUrlInput.value = uploadedImageUrl;
+          imagePreview.innerHTML = `<img src="${uploadedImageUrl}" style="max-width:160px;max-height:90px;border:1px solid #265424"/>`;
+        } else {
+          alert('Upload failed');
+        }
+      });
+      imageUrlInput.addEventListener('input', ()=>{
+        uploadedImageUrl = imageUrlInput.value.trim();
+        if (uploadedImageUrl) imagePreview.innerHTML = `<img src="${uploadedImageUrl}" style="max-width:160px;max-height:90px;border:1px solid #265424"/>`; else imagePreview.innerHTML = '';
+      });
+
       async function loadAll(){
         await loadList('character', 'charactersList');
         await loadList('enemy', 'enemiesList');
@@ -146,6 +174,9 @@
           const div = document.createElement('div');
           div.className = 'list-item';
           let details = `<div style="margin-top:6px">${escapeHtml(item.bio||item.description||'')}</div>`;
+          // show thumbnail if available
+          const imgUrl = (item.extra && item.extra.image) ? item.extra.image : (item.image || '');
+          if (imgUrl) details += `<div style="margin-top:6px"><img src="${escapeHtml(imgUrl)}" style="max-width:160px;max-height:90px;border:1px solid #265424"/></div>`;
           if (type === 'map') {
             const size = (item.extra && item.extra.size) ? item.extra.size : (item.size || 'unknown');
             details += `<div class="small">Size: ${escapeHtml(typeof size === 'object' ? (size.width+ 'x' + size.height) : size)}</div>`;

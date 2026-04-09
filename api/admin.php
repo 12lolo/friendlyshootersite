@@ -63,6 +63,30 @@ try {
         exit;
     }
 
+    if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        // handle multipart file upload (field name: image)
+        if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+            http_response_code(400);
+            echo json_encode(['error' => 'no_file']);
+            exit;
+        }
+        $uploadsDir = __DIR__ . '/uploads';
+        if (!is_dir($uploadsDir)) mkdir($uploadsDir, 0755, true);
+        $f = $_FILES['image'];
+        $ext = pathinfo($f['name'], PATHINFO_EXTENSION);
+        $name = generateId() . ($ext ? '.' . preg_replace('/[^a-zA-Z0-9]/', '', $ext) : '');
+        $dest = $uploadsDir . '/' . $name;
+        if (!move_uploaded_file($f['tmp_name'], $dest)) {
+            http_response_code(500);
+            echo json_encode(['error' => 'move_failed']);
+            exit;
+        }
+        // return URL relative to site root (served by PHP built-in or webserver)
+        $url = dirname($_SERVER['SCRIPT_NAME']) . '/uploads/' . $name;
+        echo json_encode(['url' => $url]);
+        exit;
+    }
+
     if ($action === 'items') {
         $type = isset($_GET['type']) ? $_GET['type'] : '';
         if (!$type) { http_response_code(400); echo json_encode(['error'=>'missing type']); exit; }
