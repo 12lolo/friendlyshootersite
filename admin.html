@@ -71,6 +71,14 @@
             <label class="field-label">Short Bio</label>
             <textarea id="newBio" rows="4" placeholder="Short description for public bio page"></textarea>
 
+            <label class="field-label">Gadgets (1-2)</label>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+              <input id="newGadgetInput" placeholder="Add gadget name" style="flex:1" />
+              <a id="addGadgetBtn" href="#" class="button" style="padding:6px 8px">Add</a>
+            </div>
+            <div id="gadgetsList" style="margin-top:8px;padding:8px;border:1px solid #265424;border-radius:6px;min-height:42px"></div>
+            <input id="newGadgetsField" placeholder="Gadget1, Gadget2" style="margin-top:8px;background:transparent;color:inherit;border:1px solid #265424;padding:8px;border-radius:6px;" />
+
             <div id="charControls">
               <label class="field-label">Health</label>
               <input id="newHealth" type="number" value="100" />
@@ -107,14 +115,7 @@
             <label class="field-label">Image URL</label>
             <input id="newImageUrl" placeholder="Image URL (uploads disabled)" style="margin-top:6px" />
             <div id="newImagePreview" style="margin-top:8px"></div>
-
-            <label class="field-label">Gadgets (1-2)</label>
-            <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
-              <input id="newGadgetInput" placeholder="Add gadget name" style="flex:1" />
-              <a id="addGadgetBtn" href="#" class="button" style="padding:6px 8px">Add</a>
-            </div>
-            <div id="gadgetsList" style="margin-top:8px;padding:8px;border:1px solid #265424;border-radius:6px;min-height:42px"></div>
-            <input id="newGadgetsField" placeholder="Gadget1, Gadget2" style="margin-top:8px;background:transparent;color:inherit;border:1px solid #265424;padding:8px;border-radius:6px;" />
+            
 
             <div style="margin-top:12px">
               <a id="createBtn" href="#" class="button">Create</a>
