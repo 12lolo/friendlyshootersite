@@ -46,6 +46,13 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS maps (
   extra TEXT
 );");
 
+// users table for admin accounts
+$pdo->exec("CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    username TEXT UNIQUE,
+    password_hash TEXT
+);");
+
 function jsonIn() {
     $raw = file_get_contents('php://input');
     $d = json_decode($raw, true);
@@ -64,22 +71,36 @@ $action = isset($_GET['action']) ? $_GET['action'] : null;
 // POST / GET / PUT / DELETE handlers
 try {
     if ($action === 'login') {
-        // attempt to read password from form, JSON body, or query
+        // attempt to read password/username from form, JSON body, or query
         $body = jsonIn();
-        $pass = null;
+        $user = null; $pass = null;
+        if (isset($_POST['username'])) $user = $_POST['username'];
+        elseif (isset($body['username'])) $user = $body['username'];
+        elseif (isset($_GET['username'])) $user = $_GET['username'];
         if (isset($_POST['password'])) $pass = $_POST['password'];
         elseif (isset($body['password'])) $pass = $body['password'];
         elseif (isset($_GET['password'])) $pass = $_GET['password'];
-        // if admin password not set, refuse login
-        if (!$ADMIN_PASSWORD) { http_response_code(503); echo json_encode(['error'=>'login_disabled']); exit; }
+
+        // if username provided, try DB users table first
+        if ($user && $pass) {
+            $stmt = $pdo->prepare('SELECT password_hash FROM users WHERE username = ?');
+            $stmt->execute([$user]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row && isset($row['password_hash']) && password_verify($pass, $row['password_hash'])){
+                $_SESSION['admin'] = true;
+                echo json_encode(['ok'=>true, 'user'=>$user]); exit;
+            }
+            http_response_code(401); echo json_encode(['error'=>'invalid_credentials']); exit;
+        }
+
+        // fallback: if ADMIN_PASSWORD env var is set, allow single-password login (POST with password only)
         if ($pass && $ADMIN_PASSWORD && $pass === $ADMIN_PASSWORD) {
             $_SESSION['admin'] = true;
-            echo json_encode(['ok' => true]);
-            exit;
+            echo json_encode(['ok' => true]); exit;
         }
-        http_response_code(401);
-        echo json_encode(['error' => 'invalid_password']);
-        exit;
+
+        // if no auth method available
+        http_response_code(401); echo json_encode(['error'=>'invalid_password_or_user']); exit;
     }
 
     if ($action === 'whoami') {
