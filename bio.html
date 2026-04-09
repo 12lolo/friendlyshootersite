@@ -16,10 +16,11 @@
             .card{ padding:14px; margin:18px 0; border-radius:8px; border:1px solid rgba(37,84,36,0.12); background:linear-gradient(180deg, rgba(0,0,0,0.02), transparent); }
 
             /* grid of items */
-            .items-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-top:12px; }
-            .item-card{ background: rgba(0,0,0,0.04); border:1px solid var(--border); border-radius:8px; overflow:hidden; display:flex; flex-direction:column; }
-            .item-img{ width:100%; height:160px; object-fit:cover; background:var(--panel); display:block; }
-            .item-content{ padding:12px; }
+            .items-grid{ display:grid; grid-template-columns: repeat(1, 1fr); gap:14px; margin-top:12px; }
+            @media (min-width:760px){ .items-grid{ grid-template-columns: repeat(3, 1fr); } }
+            .item-card{ background: rgba(0,0,0,0.04); border:1px solid var(--border); border-radius:6px; overflow:hidden; display:flex; flex-direction:column; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+            .item-img{ width:100%; height:140px; object-fit:cover; background:var(--panel); display:block; }
+            .item-content{ padding:10px; }
             .item-title{ font-weight:700; margin:0 0 6px 0; color:var(--accent); }
             .item-bio{ color:var(--muted); font-size:0.95rem; margin-bottom:8px; }
             .item-meta{ color:#c6f7d0; font-size:0.9rem; }
@@ -41,17 +42,17 @@
                 <div class="content">
                     <section class="card" id="charactersSection">
                         <h3>Player Characters</h3>
-                        <div id="charactersGrid">Loading characters…</div>
+                        <div id="charactersGrid" class="items-grid">Loading characters…</div>
                     </section>
 
                     <section class="card" id="enemiesSection">
                         <h3>Enemies</h3>
-                        <div id="enemiesGrid">Loading enemies…</div>
+                        <div id="enemiesGrid" class="items-grid">Loading enemies…</div>
                     </section>
 
                     <section class="card" id="mapsSection">
                         <h3>Maps</h3>
-                        <div id="mapsGrid">Loading maps…</div>
+                        <div id="mapsGrid" class="items-grid">Loading maps…</div>
                     </section>
 
                     <div style="text-align:center;margin-top:12px">
