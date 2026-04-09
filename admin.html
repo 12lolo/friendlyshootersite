@@ -77,32 +77,9 @@
       // API base: empty for same-origin, or set to http://localhost:3000 for local API testing
       const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://localhost:3000' : '';
       const api = (path, opts={}) => fetch(API_BASE + path, opts).then(r=>r.json().catch(()=>({}))).catch(()=>({error:'network'}));
-      let ADMIN_PASS = null;
-
-      const loginBtn = document.getElementById('loginBtn');
-      const passInput = document.getElementById('pass');
-      const loginMsg = document.getElementById('loginMsg');
-      const appDiv = document.getElementById('app');
-
-      loginBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const pass = passInput.value || '';
-        const res = await api('/api/admin/login', {
-          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: pass})
-        });
-        if (res.ok) {
-          ADMIN_PASS = pass;
-          document.getElementById('loginCard').style.display = 'none';
-          appDiv.style.display = '';
-          sessionStorage.setItem('admin_pass', pass);
-          loadAll();
-        } else {
-          loginMsg.textContent = 'Login failed';
-        }
-      });
-
-      // restore from session if present
-      (function(){ const p = sessionStorage.getItem('admin_pass'); if (p) { passInput.value = p; loginBtn.click(); } })();
+      // No password required — show admin UI immediately
+      document.getElementById('loginCard').style.display = 'none';
+      document.getElementById('app').style.display = '';
 
       async function loadAll(){
         await loadList('character', 'charactersList');
@@ -111,8 +88,7 @@
       }
 
       async function loadList(type, elId){
-        const hdr = { 'x-admin-pass': ADMIN_PASS };
-        const res = await fetch(API_BASE + '/api/admin/items?type='+type, { headers: hdr });
+        const res = await fetch(API_BASE + '/api/admin/items?type='+type);
         if (!res.ok) { document.getElementById(elId).innerHTML = '<div class="small">Error loading</div>'; return; }
         const data = await res.json();
         const key = type === 'character' ? 'characters' : type === 'enemy' ? 'enemies' : 'maps';
@@ -136,12 +112,12 @@
 
       function escapeHtml(s){ return (s||'').toString().replace(/[&<>\"]+/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-      async function onDelete(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; if (!confirm('Delete this item?')) return; const res = await fetch('/api/admin/item/'+id+'?type='+type, { method:'DELETE', headers: { 'x-admin-pass': ADMIN_PASS }}); const j = await res.json(); loadAll(); }
+      async function onDelete(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; if (!confirm('Delete this item?')) return; const res = await fetch(API_BASE + '/api/admin/item/'+id+'?type='+type, { method:'DELETE' }); const j = await res.json(); loadAll(); }
 
-      async function onEdit(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; const hdr = { 'x-admin-pass': ADMIN_PASS }; const res = await fetch('/api/admin/items?type='+type, { headers: hdr }); const data = await res.json(); const key = type === 'character' ? 'characters' : type === 'enemy' ? 'enemies' : 'maps'; const item = (data[key]||[]).find(x=>x.id===id); if (!item) return alert('Item not found'); const name = prompt('Name', item.name||item.title||''); if (name===null) return; const bio = prompt('Bio', item.bio||item.description||''); if (bio===null) return; const extra = prompt('Extra JSON (optional)', JSON.stringify(Object.assign({}, item.extra||{}))); if (extra===null) return; let extraObj = {};
+      async function onEdit(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; const res = await fetch(API_BASE + '/api/admin/items?type='+type); const data = await res.json(); const key = type === 'character' ? 'characters' : type === 'enemy' ? 'enemies' : 'maps'; const item = (data[key]||[]).find(x=>x.id===id); if (!item) return alert('Item not found'); const name = prompt('Name', item.name||item.title||''); if (name===null) return; const bio = prompt('Bio', item.bio||item.description||''); if (bio===null) return; const extra = prompt('Extra JSON (optional)', JSON.stringify(Object.assign({}, item.extra||{}))); if (extra===null) return; let extraObj = {};
       try { extraObj = extra ? JSON.parse(extra) : {}; } catch(err){ alert('Invalid JSON'); return; }
       const body = { type: type, item: { name: name, bio: bio, extra: extraObj } };
-      const put = await fetch(API_BASE + '/api/admin/item/'+id, { method:'PUT', headers: Object.assign({'Content-Type':'application/json'}, {'x-admin-pass': ADMIN_PASS}), body: JSON.stringify(body) });
+      const put = await fetch(API_BASE + '/api/admin/item/'+id, { method:'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
       await put.json();
       loadAll();
     }
@@ -157,7 +133,7 @@
           try { extra = JSON.parse(extraText); } catch (err){ alert('Invalid extra JSON'); return; }
         }
         const body = { type: type, item: { name: name, bio: bio, extra: extra } };
-        const res = await fetch(API_BASE + '/api/admin/item', { method:'POST', headers: Object.assign({'Content-Type':'application/json'}, {'x-admin-pass': ADMIN_PASS}), body: JSON.stringify(body) });
+        const res = await fetch(API_BASE + '/api/admin/item', { method:'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
         const j = await res.json();
         if (j.error) return alert('Error: '+j.error);
         document.getElementById('newName').value=''; document.getElementById('newBio').value=''; document.getElementById('newExtra').value='';

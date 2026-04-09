@@ -92,10 +92,8 @@ app.get('/api/health', (req,res) => res.json({ status: 'ok', time: Date.now() })
 const ADMIN_DATA_PATH = new URL('./admin-data.json', import.meta.url).pathname;
 
 function checkAdminAuth(req, res, next) {
-  const ADMIN_PASS = process.env.ADMIN_PASS || '8008';
-  const provided = (req.headers['x-admin-pass'] || req.body?.password || req.query.pass || '').toString();
-  if (provided !== ADMIN_PASS) return res.status(401).json({ error: 'unauthorized' });
-  next();
+  // Authentication removed: allow all admin requests. For production, re-enable proper auth.
+  return next();
 }
 
 async function readAdminData() {
@@ -116,10 +114,8 @@ async function writeAdminData(data) {
 }
 
 app.post('/api/admin/login', (req, res) => {
-  const ADMIN_PASS = process.env.ADMIN_PASS || '8008';
-  const provided = (req.body?.password || req.query.pass || '').toString();
-  if (provided === ADMIN_PASS) return res.json({ ok: true });
-  return res.status(401).json({ ok: false });
+  // Password removed: always succeed so the admin UI can load without credentials.
+  return res.json({ ok: true });
 });
 
 app.get('/api/admin/data', checkAdminAuth, async (req, res) => {
