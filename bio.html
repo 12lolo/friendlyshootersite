@@ -22,30 +22,19 @@
                 </div>
 
                 <div class="content">
-                    <section class="card">
+                    <section class="card" id="charactersSection">
                         <h3>Player Characters</h3>
-                        <p>List each playable character, their class, strengths, weaknesses, and a short backstory. Example entries:</p>
-                        <ul>
-                            <li><strong>Soldier</strong> — Balanced class, reliable weapons, medium speed.</li>
-                            <li><strong>Engineer</strong> — Builds turrets, high defense, lower mobility.</li>
-                            <li><strong>Scout</strong> — Fast and fragile, excels at reconnaissance and hit-and-run.</li>
-                        </ul>
+                        <div id="charactersGrid">Loading characters…</div>
                     </section>
 
-                    <section class="card">
+                    <section class="card" id="enemiesSection">
                         <h3>Enemies</h3>
-                        <p>Describe enemy types, behavior, and notable bosses.</p>
-                        <ul>
-                            <li><strong>Grunt</strong> — Weak, swarms in groups.</li>
-                            <li><strong>Rolling Bomb</strong> — Rushes player and explodes on contact.</li>
-                            <li><strong>Spawner</strong> — Produces smaller enemies over time.</li>
-                            <li><strong>Boss: The Overseer</strong> — Multi-phase boss with environmental hazards.</li>
-                        </ul>
+                        <div id="enemiesGrid">Loading enemies…</div>
                     </section>
 
-                    <section class="card">
-                        <h3>Notes</h3>
-                        <p>Add any flavor text, tips, and links to gameplay videos or the itch page for updates.</p>
+                    <section class="card" id="mapsSection">
+                        <h3>Maps</h3>
+                        <div id="mapsGrid">Loading maps…</div>
                     </section>
 
                     <div style="text-align:center;margin-top:12px">
@@ -54,5 +43,80 @@
                 </div>
             </div>
         </div>
+
+        <script>
+        (function(){
+            const API = '/api/admin.php';
+            const fallback = 'webleaderboard/example-data.json';
+
+            function el(tag, cls, html){ const d = document.createElement(tag); if(cls) d.className = cls; if(html!==undefined) d.innerHTML = html; return d; }
+            function safe(v){ return v===undefined || v===null ? '' : v; }
+
+            async function fetchItems(type){
+                try{
+                    const r = await fetch(API + '?action=items&type=' + encodeURIComponent(type));
+                    if (!r.ok) throw new Error('api');
+                    const j = await r.json();
+                    if (type === 'character') return j.characters || [];
+                    if (type === 'enemy') return j.enemies || [];
+                    if (type === 'map') return j.maps || [];
+                    return [];
+                }catch(err){
+                    // fallback to example data
+                    try{
+                        const rf = await fetch(fallback); if (!rf.ok) throw new Error('fallback');
+                        const jf = await rf.json();
+                        return jf[type + (type==='map' ? 's' : (type==='enemy' ? 's' : 's'))] || [];
+                    }catch(e){ return []; }
+                }
+            }
+
+            function makeCard(item, type){
+                const wrapper = el('div','card');
+                const row = el('div','row');
+                const imgCol = el('div');
+                const dataCol = el('div');
+
+                const image = (item.extra && item.extra.image) ? item.extra.image : (item.image || '');
+                if (image){ const i = el('img'); i.src = image; i.style.maxWidth='220px'; i.style.border='1px solid #265424'; imgCol.appendChild(i); }
+                else imgCol.innerHTML = '<div style="width:220px;height:140px;background:#09280f;border:1px solid #1f3a22;display:flex;align-items:center;justify-content:center;color:#9feab0">No image</div>';
+
+                const title = el('h4',null, safe(item.name || item.title || 'Untitled'));
+                const bio = el('div', 'small', safe(item.bio || item.description || ''));
+                dataCol.appendChild(title); dataCol.appendChild(bio);
+
+                if (type === 'map'){
+                    const size = (item.extra && item.extra.size) ? item.extra.size : (item.size || 'unknown');
+                    const sizeText = (typeof size === 'object') ? (size.width + ' x ' + size.height) : size;
+                    dataCol.appendChild(el('div','small','Size: ' + safe(sizeText)));
+                } else {
+                    dataCol.appendChild(el('div','small','Health: ' + safe(item.health || 0) + ' • Damage: ' + safe(item.damage || 0) + ' • Movement: ' + safe(item.movement || '')));
+                }
+
+                row.appendChild(imgCol); row.appendChild(dataCol); wrapper.appendChild(row);
+                return wrapper;
+            }
+
+            async function render(){
+                const chars = await fetchItems('character');
+                const enemies = await fetchItems('enemy');
+                const maps = await fetchItems('map');
+
+                const cg = document.getElementById('charactersGrid'); cg.innerHTML = '';
+                if (chars.length===0) cg.innerHTML = '<p class="small">No characters found.</p>';
+                chars.forEach(c => cg.appendChild(makeCard(c,'character')));
+
+                const eg = document.getElementById('enemiesGrid'); eg.innerHTML = '';
+                if (enemies.length===0) eg.innerHTML = '<p class="small">No enemies found.</p>';
+                enemies.forEach(e => eg.appendChild(makeCard(e,'enemy')));
+
+                const mg = document.getElementById('mapsGrid'); mg.innerHTML = '';
+                if (maps.length===0) mg.innerHTML = '<p class="small">No maps found.</p>';
+                maps.forEach(m => mg.appendChild(makeCard(m,'map')));
+            }
+
+            render();
+        })();
+        </script>
     </body>
 </html>

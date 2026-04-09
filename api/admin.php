@@ -3,6 +3,10 @@
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json; charset=utf-8');
 
+// simple session-based admin auth
+session_start();
+$ADMIN_PASSWORD = '8008';
+
 $dbPath = __DIR__ . '/admin_php.db';
 try {
     $pdo = new PDO('sqlite:' . $dbPath);
@@ -58,12 +62,30 @@ $action = isset($_GET['action']) ? $_GET['action'] : null;
 // POST / GET / PUT / DELETE handlers
 try {
     if ($action === 'login') {
-        // always succeed (no auth)
-        echo json_encode(['ok' => true]);
+        // attempt to read password from form, JSON body, or query
+        $body = jsonIn();
+        $pass = null;
+        if (isset($_POST['password'])) $pass = $_POST['password'];
+        elseif (isset($body['password'])) $pass = $body['password'];
+        elseif (isset($_GET['password'])) $pass = $_GET['password'];
+        if ($pass && $pass === $ADMIN_PASSWORD) {
+            $_SESSION['admin'] = true;
+            echo json_encode(['ok' => true]);
+            exit;
+        }
+        http_response_code(401);
+        echo json_encode(['error' => 'invalid_password']);
+        exit;
+    }
+
+    if ($action === 'whoami') {
+        $is = !empty($_SESSION['admin']);
+        echo json_encode(['admin' => $is]);
         exit;
     }
 
     if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (empty($_SESSION['admin'])) { http_response_code(401); echo json_encode(['error'=>'unauthorized']); exit; }
         // handle multipart file upload (field name: image)
         if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
             http_response_code(400);
@@ -113,6 +135,7 @@ try {
     }
 
     if ($action === 'item' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (empty($_SESSION['admin'])) { http_response_code(401); echo json_encode(['error'=>'unauthorized']); exit; }
         $body = jsonIn();
         $type = isset($body['type']) ? $body['type'] : null;
         $item = isset($body['item']) ? $body['item'] : null;
@@ -135,6 +158,7 @@ try {
     }
 
     if ($action === 'item' && $_SERVER['REQUEST_METHOD'] === 'PUT') {
+        if (empty($_SESSION['admin'])) { http_response_code(401); echo json_encode(['error'=>'unauthorized']); exit; }
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         $body = jsonIn();
         $type = isset($body['type']) ? $body['type'] : null;
@@ -157,6 +181,7 @@ try {
     }
 
     if ($action === 'item' && $_SERVER['REQUEST_METHOD'] === 'DELETE') {
+        if (empty($_SESSION['admin'])) { http_response_code(401); echo json_encode(['error'=>'unauthorized']); exit; }
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         $type = isset($_GET['type']) ? $_GET['type'] : null;
         if (!$id || !$type) { http_response_code(400); echo json_encode(['error'=>'missing id or type']); exit; }

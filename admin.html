@@ -124,6 +124,15 @@
   document.addEventListener('DOMContentLoaded', () => {
     const API_BASE = '';// same-origin; when testing with PHP built-in server use root URL
 
+    // require login — redirect to login page if not authenticated
+    (async function(){
+      try{
+        const r = await fetch('/api/admin.php?action=whoami', { credentials: 'same-origin' });
+        if (r.ok){ const j = await r.json(); if (!j.admin) { window.location.href = '/admin-login.html'; } }
+        else { window.location.href = '/admin-login.html'; }
+      }catch(e){ window.location.href = '/admin-login.html'; }
+    })();
+
     const newType = document.getElementById('newType');
     const charControls = document.getElementById('charControls');
     const mapControls = document.getElementById('mapControls');
@@ -151,7 +160,7 @@
       const fd = new FormData(); fd.append('image', f);
       setStatus('Uploading...');
       try{
-        const r = await fetch(API_BASE + '/api/admin.php?action=upload', { method:'POST', body: fd });
+        const r = await fetch(API_BASE + '/api/admin.php?action=upload', { method:'POST', body: fd, credentials: 'same-origin' });
         const j = await r.json();
         if (j.url) { newImageUrl.value = j.url; newImagePreview.innerHTML = `<img src="${j.url}" style="max-width:220px;border:1px solid #265424"/>`; setStatus('Upload OK'); }
         else { setStatus('Upload failed', false); }
@@ -201,7 +210,14 @@
     async function loadAll(){ await loadList('character','charactersList'); await loadList('enemy','enemiesList'); await loadList('map','mapsList'); }
 
     // delete
-    async function onDelete(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; if (!confirm('Delete this item?')) return; const r = await fetch('/api/admin.php?action=item&id='+encodeURIComponent(id)+'&type='+encodeURIComponent(type), { method:'DELETE' }); const j = await r.json(); setStatus('Deleted'); loadAll(); }
+    async function onDelete(e){
+      e.preventDefault();
+      const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type;
+      if (!confirm('Delete this item?')) return;
+      const r = await fetch('/api/admin.php?action=item&id='+encodeURIComponent(id)+'&type='+encodeURIComponent(type), { method:'DELETE', credentials: 'same-origin' });
+      if (r.status === 401) { setStatus('Unauthorized — please login', false); window.location.href = '/admin-login.html'; return; }
+      const j = await r.json(); setStatus('Deleted'); loadAll();
+    }
 
     // edit (simple prompts)
     async function onEdit(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; const list = await fetchItems(type); const item = (list||[]).find(x=>x.id===id); if (!item) return alert('Item not found');
@@ -213,7 +229,11 @@
         if (size.indexOf('x')>-1){ const parts = size.split('x'); extraObj.size = { width: parseInt(parts[0]||0,10), height: parseInt(parts[1]||0,10) }; }
         else extraObj.size = size;
         const body = { type: type, item: { name: name, bio: bio, extra: extraObj } };
-        await fetch('/api/admin.php?action=item&id='+encodeURIComponent(id), { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }); setStatus('Updated'); loadAll(); return;
+        {
+          const r = await fetch('/api/admin.php?action=item&id='+encodeURIComponent(id), { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'same-origin' });
+          if (r.status === 401) { setStatus('Unauthorized — please login', false); window.location.href = '/admin-login.html'; return; }
+          const j = await r.json(); setStatus('Updated'); loadAll(); return;
+        }
       } else {
         let health = prompt('Health', item.health||0); if (health===null) return; health = parseInt(health||0,10);
         let damage = prompt('Damage', item.damage||0); if (damage===null) return; damage = parseInt(damage||0,10);
@@ -221,7 +241,11 @@
         const extra = prompt('Extra JSON (optional)', JSON.stringify(Object.assign({}, item.extra||{}))); if (extra===null) return;
         try{ extraObj = extra ? JSON.parse(extra) : extraObj; } catch(err){ alert('Invalid JSON'); return; }
         const body = { type: type, item: { name: name, bio: bio, extra: extraObj, health: health, damage: damage, movement: movement } };
-        await fetch('/api/admin.php?action=item&id='+encodeURIComponent(id), { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }); setStatus('Updated'); loadAll(); return;
+        {
+          const r = await fetch('/api/admin.php?action=item&id='+encodeURIComponent(id), { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'same-origin' });
+          if (r.status === 401) { setStatus('Unauthorized — please login', false); window.location.href = '/admin-login.html'; return; }
+          const j = await r.json(); setStatus('Updated'); loadAll(); return;
+        }
       }
     }
 
@@ -236,7 +260,8 @@
       if (type === 'map'){ const sizeOpt = newMapSize.value; if (sizeOpt === 'custom') extra.size = { width: parseInt(document.getElementById('newMapWidth').value||0,10), height: parseInt(document.getElementById('newMapHeight').value||0,10) }; else extra.size = sizeOpt; }
       const imageVal = newImageUrl.value.trim(); if (imageVal) extra.image = imageVal;
       const body = { type: type, item: { name: name, bio: bio, extra: extra, health: parseInt(document.getElementById('newHealth').value||0,10), damage: parseInt(document.getElementById('newDamage').value||0,10), movement: document.getElementById('newMovement').value } };
-      const r = await fetch('/api/admin.php?action=item', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      const r = await fetch('/api/admin.php?action=item', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body), credentials: 'same-origin' });
+      if (r.status === 401) { setStatus('Unauthorized — please login', false); window.location.href = '/admin-login.html'; return; }
       const j = await r.json(); if (j.error){ setStatus('Create failed: '+j.error, false); } else { setStatus('Created'); document.getElementById('newName').value=''; document.getElementById('newBio').value=''; document.getElementById('newExtra').value=''; newImageUrl.value=''; newImagePreview.innerHTML=''; loadAll(); }
     });
 

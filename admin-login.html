@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Login — FriendlyShooter</title>
+  <link href="https://static.itch.io/game.css?1773778275" rel="stylesheet" />
+  <style>
+    body{ background:#09280f; color:#02ff77; font-family: '04b_03',Lato, sans-serif }
+    .box{ max-width:420px;margin:60px auto;padding:18px;background:rgba(12,33,11,0.9);border:1px solid #233822;border-radius:8px }
+    input{ width:100%;padding:10px;margin-top:8px;background:transparent;color:inherit;border:1px solid #265424 }
+    .button{ display:inline-block;padding:8px 12px;background:#d400b1;color:#fff;border-radius:4px;text-decoration:none }
+    .small{ color:#9feab0;font-size:0.95rem }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Admin Login</h2>
+    <p class="small">Enter the admin password to continue.</p>
+    <input id="pw" type="password" placeholder="Password" />
+    <div style="margin-top:12px"><a id="loginBtn" href="#" class="button">Login</a></div>
+    <div id="msg" class="small" style="margin-top:8px"></div>
+  </div>
+
+  <script>
+  document.getElementById('loginBtn').addEventListener('click', async (e)=>{
+    e.preventDefault();
+    const pw = document.getElementById('pw').value;
+    if (!pw) { document.getElementById('msg').textContent = 'Password required'; return; }
+    try{
+      const r = await fetch('/api/admin.php?action=login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: pw }), credentials: 'same-origin' });
+      if (r.ok){ const j = await r.json(); if (j.ok){ window.location.href = '/admin.html'; return; } }
+      if (r.status === 401) { document.getElementById('msg').textContent = 'Incorrect password'; return; }
+      document.getElementById('msg').textContent = 'Login failed';
+    }catch(err){ document.getElementById('msg').textContent = 'Network error'; }
+  });
+  </script>
+</body>
+</html>
