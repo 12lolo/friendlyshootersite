@@ -30,6 +30,8 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS characters (
   damage INTEGER,
   movement TEXT
 );");
+$pdo->exec("-- ensure gadgets column exists (best-effort)");
+try { $pdo->exec("ALTER TABLE characters ADD COLUMN gadgets TEXT"); } catch (Exception $e) { /* ignore if column exists */ }
 $pdo->exec("CREATE TABLE IF NOT EXISTS enemies (
   id TEXT PRIMARY KEY,
   name TEXT,
@@ -119,13 +121,17 @@ try {
     if ($action === 'items') {
         $type = isset($_GET['type']) ? $_GET['type'] : '';
         if (!$type) { http_response_code(400); echo json_encode(['error'=>'missing type']); exit; }
-        if ($type === 'character' || $type === 'enemy') {
+            if ($type === 'character' || $type === 'enemy') {
             $table = $type === 'character' ? 'characters' : 'enemies';
             $stmt = $pdo->query("SELECT * FROM $table ORDER BY name COLLATE NOCASE");
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            // decode extras
+            // decode extras and gadgets
             foreach ($rows as &$r) {
                 $r['extra'] = $r['extra'] ? json_decode($r['extra'], true) : new stdClass();
+                if ($type === 'character' && isset($r['gadgets']) && $r['gadgets']) {
+                    $gad = json_decode($r['gadgets'], true);
+                    if ($gad !== null) $r['extra']['gadgets'] = $gad;
+                }
             }
             $key = $type === 'character' ? 'characters' : 'enemies';
             echo json_encode([$key => $rows]);
@@ -149,17 +155,32 @@ try {
         if (!$type || !$item) { http_response_code(400); echo json_encode(['error'=>'missing type or item']); exit; }
         $id = generateId();
         if ($type === 'map') {
-            $stmt = $pdo->prepare('INSERT INTO maps (id,name,bio,extra) VALUES (?,?,?,?)');
-            $stmt->execute([$id, $item['name'] ?? '', $item['bio'] ?? '', json_encode($item['extra'] ?? new stdClass())]);
+            $stmt = $pdo->prepare('INSERT INTO maps (name,bio,extra) VALUES (?,?,?)');
+            $stmt->execute([$item['name'] ?? '', $item['bio'] ?? '', json_encode($item['extra'] ?? new stdClass())]);
+            $id = $pdo->lastInsertId();
             $stmt = $pdo->prepare('SELECT * FROM maps WHERE id = ?'); $stmt->execute([$id]); $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $row['extra'] = $row['extra'] ? json_decode($row['extra'], true) : new stdClass();
             echo json_encode($row); exit;
         } elseif ($type === 'character' || $type === 'enemy') {
             $table = $type === 'character' ? 'characters' : 'enemies';
-            $stmt = $pdo->prepare("INSERT INTO $table (id,name,bio,extra,health,damage,movement) VALUES (?,?,?,?,?,?,?)");
-            $stmt->execute([$id, $item['name'] ?? '', $item['bio'] ?? '', json_encode($item['extra'] ?? new stdClass()), intval($item['health'] ?? 0), intval($item['damage'] ?? 0), $item['movement'] ?? 'medium']);
+            if ($type === 'character') {
+                $gad_json = isset($item['extra']['gadgets']) ? json_encode($item['extra']['gadgets']) : null;
+                $stmt = $pdo->prepare("INSERT INTO $table (name,bio,extra,health,damage,movement,gadgets) VALUES (?,?,?,?,?,?,?)");
+                $stmt->execute([$item['name'] ?? '', $item['bio'] ?? '', json_encode($item['extra'] ?? new stdClass()), intval($item['health'] ?? 0), intval($item['damage'] ?? 0), $item['movement'] ?? 'medium', $gad_json]);
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO $table (name,bio,extra,health,damage,movement) VALUES (?,?,?,?,?,?)");
+                $stmt->execute([$item['name'] ?? '', $item['bio'] ?? '', json_encode($item['extra'] ?? new stdClass()), intval($item['health'] ?? 0), intval($item['damage'] ?? 0), $item['movement'] ?? 'medium']);
+            }
+            $id = $pdo->lastInsertId();
             $stmt = $pdo->prepare("SELECT * FROM $table WHERE id = ?"); $stmt->execute([$id]); $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $row['extra'] = $row['extra'] ? json_decode($row['extra'], true) : new stdClass();
+            if ($type === 'character' && isset($row['gadgets']) && $row['gadgets']) { $row['extra']['gadgets'] = json_decode($row['gadgets'], true); }
+            echo json_encode($row); exit;
+                $stmt->execute([$id, $item['name'] ?? '', $item['bio'] ?? '', json_encode($item['extra'] ?? new stdClass()), intval($item['health'] ?? 0), intval($item['damage'] ?? 0), $item['movement'] ?? 'medium']);
+            }
+            $stmt = $pdo->prepare("SELECT * FROM $table WHERE id = ?"); $stmt->execute([$id]); $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $row['extra'] = $row['extra'] ? json_decode($row['extra'], true) : new stdClass();
+            if ($type === 'character' && isset($row['gadgets']) && $row['gadgets']) { $row['extra']['gadgets'] = json_decode($row['gadgets'], true); }
             echo json_encode($row); exit;
         } else { http_response_code(400); echo json_encode(['error'=>'invalid type']); exit; }
     }
@@ -179,10 +200,17 @@ try {
             echo json_encode($row); exit;
         } elseif ($type === 'character' || $type === 'enemy') {
             $table = $type === 'character' ? 'characters' : 'enemies';
-            $stmt = $pdo->prepare("UPDATE $table SET name = ?, bio = ?, extra = ?, health = ?, damage = ?, movement = ? WHERE id = ?");
-            $stmt->execute([$item['name'] ?? '', $item['bio'] ?? '', json_encode($item['extra'] ?? new stdClass()), intval($item['health'] ?? 0), intval($item['damage'] ?? 0), $item['movement'] ?? 'medium', $id]);
+            if ($type === 'character') {
+                $gad_json = isset($item['extra']['gadgets']) ? json_encode($item['extra']['gadgets']) : null;
+                $stmt = $pdo->prepare("UPDATE $table SET name = ?, bio = ?, extra = ?, health = ?, damage = ?, movement = ?, gadgets = ? WHERE id = ?");
+                $stmt->execute([$item['name'] ?? '', $item['bio'] ?? '', json_encode($item['extra'] ?? new stdClass()), intval($item['health'] ?? 0), intval($item['damage'] ?? 0), $item['movement'] ?? 'medium', $gad_json, $id]);
+            } else {
+                $stmt = $pdo->prepare("UPDATE $table SET name = ?, bio = ?, extra = ?, health = ?, damage = ?, movement = ? WHERE id = ?");
+                $stmt->execute([$item['name'] ?? '', $item['bio'] ?? '', json_encode($item['extra'] ?? new stdClass()), intval($item['health'] ?? 0), intval($item['damage'] ?? 0), $item['movement'] ?? 'medium', $id]);
+            }
             $stmt = $pdo->prepare("SELECT * FROM $table WHERE id = ?"); $stmt->execute([$id]); $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $row['extra'] = $row['extra'] ? json_decode($row['extra'], true) : new stdClass();
+            if ($type === 'character' && isset($row['gadgets']) && $row['gadgets']) { $row['extra']['gadgets'] = json_decode($row['gadgets'], true); }
             echo json_encode($row); exit;
         } else { http_response_code(400); echo json_encode(['error'=>'invalid type']); exit; }
     }
