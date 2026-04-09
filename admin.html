@@ -113,7 +113,8 @@
               <input id="newGadgetInput" placeholder="Add gadget name" style="flex:1" />
               <a id="addGadgetBtn" href="#" class="button" style="padding:6px 8px">Add</a>
             </div>
-            <div id="gadgetsList" style="margin-top:8px"></div>
+            <div id="gadgetsList" style="margin-top:8px;padding:8px;border:1px solid #265424;border-radius:6px;min-height:42px"></div>
+            <input type="hidden" id="newGadgets" name="gadgets">
 
             <div style="margin-top:12px">
               <a id="createBtn" href="#" class="button">Create</a>
@@ -191,6 +192,8 @@
         const rem = document.createElement('a'); rem.href='#'; rem.textContent='×'; rem.style.marginLeft='6px'; rem.style.color='#ff9fbf'; rem.style.textDecoration='none'; rem.addEventListener('click', (e)=>{ e.preventDefault(); currentGadgets.splice(i,1); renderGadgets(); });
         chip.appendChild(rem); gadgetsList.appendChild(chip);
       });
+      // expose as hidden input for form-like behavior
+      const hidden = document.getElementById('newGadgets'); if (hidden) hidden.value = JSON.stringify(currentGadgets);
     }
 
     addGadgetBtn.addEventListener('click', (e)=>{ e.preventDefault(); const v = newGadgetInput.value.trim(); if (!v) return; if (currentGadgets.length>=2) { setStatus('Max 2 gadgets', false); return; } currentGadgets.push(v); newGadgetInput.value=''; renderGadgets(); });
