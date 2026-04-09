@@ -41,8 +41,19 @@
               <input id="newName" />
               <label>Short Bio</label>
               <textarea id="newBio" rows="4"></textarea>
+              <label>Health</label>
+              <input id="newHealth" type="number" value="100" />
+              <label>Damage</label>
+              <input id="newDamage" type="number" value="10" />
+              <label>Movement</label>
+              <select id="newMovement">
+                <option value="super_fast">Super Fast</option>
+                <option value="fast">Fast</option>
+                <option value="medium" selected>Medium</option>
+                <option value="slow">Slow</option>
+              </select>
               <label>Extra JSON (optional)</label>
-              <textarea id="newExtra" rows="3" placeholder='{"health":100}'></textarea>
+              <textarea id="newExtra" rows="3" placeholder='{"notes":"example"}'></textarea>
               <div style="margin-top:8px"><a id="createBtn" href="#" class="btn">Create</a></div>
             </div>
             <div class="col">
@@ -100,6 +111,7 @@
           div.className = 'list-item';
           div.innerHTML = `<strong>${escapeHtml(item.name||item.title||'Untitled')}</strong> <div class="small">id: ${item.id}</div>
             <div style="margin-top:6px">${escapeHtml(item.bio||item.description||'')}</div>
+            <div class="small">Health: ${item.health || 0} • Damage: ${item.damage || 0} • Movement: ${escapeHtml(item.movement || '')}</div>
             <div style="margin-top:8px">
               <a href="#" data-id="${item.id}" data-type="${type}" class="editBtn btn" style="margin-right:8px">Edit</a>
               <a href="#" data-id="${item.id}" data-type="${type}" class="delBtn btn">Delete</a>
@@ -114,13 +126,25 @@
 
       async function onDelete(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; if (!confirm('Delete this item?')) return; const res = await fetch(API_BASE + '/api/admin/item/'+id+'?type='+type, { method:'DELETE' }); const j = await res.json(); loadAll(); }
 
-      async function onEdit(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; const res = await fetch(API_BASE + '/api/admin/items?type='+type); const data = await res.json(); const key = type === 'character' ? 'characters' : type === 'enemy' ? 'enemies' : 'maps'; const item = (data[key]||[]).find(x=>x.id===id); if (!item) return alert('Item not found'); const name = prompt('Name', item.name||item.title||''); if (name===null) return; const bio = prompt('Bio', item.bio||item.description||''); if (bio===null) return; const extra = prompt('Extra JSON (optional)', JSON.stringify(Object.assign({}, item.extra||{}))); if (extra===null) return; let extraObj = {};
-      try { extraObj = extra ? JSON.parse(extra) : {}; } catch(err){ alert('Invalid JSON'); return; }
-      const body = { type: type, item: { name: name, bio: bio, extra: extraObj } };
-      const put = await fetch(API_BASE + '/api/admin/item/'+id, { method:'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
-      await put.json();
-      loadAll();
-    }
+      async function onEdit(e){
+        e.preventDefault();
+        const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type;
+        const res = await fetch(API_BASE + '/api/admin/items?type='+type); const data = await res.json();
+        const key = type === 'character' ? 'characters' : type === 'enemy' ? 'enemies' : 'maps';
+        const item = (data[key]||[]).find(x=>x.id===id); if (!item) return alert('Item not found');
+        const name = prompt('Name', item.name||item.title||''); if (name===null) return;
+        const bio = prompt('Bio', item.bio||item.description||''); if (bio===null) return;
+        let health = prompt('Health', item.health || 0); if (health===null) return; health = parseInt(health||0,10);
+        let damage = prompt('Damage', item.damage || 0); if (damage===null) return; damage = parseInt(damage||0,10);
+        let movement = item.movement || 'medium';
+        if (type !== 'map') { movement = prompt('Movement (super_fast|fast|medium|slow)', item.movement || 'medium'); if (movement===null) return; }
+        const extra = prompt('Extra JSON (optional)', JSON.stringify(Object.assign({}, item.extra||{}))); if (extra===null) return; let extraObj = {};
+        try { extraObj = extra ? JSON.parse(extra) : {}; } catch(err){ alert('Invalid JSON'); return; }
+        const body = { type: type, item: { name: name, bio: bio, extra: extraObj, health: health, damage: damage, movement: movement } };
+        const put = await fetch(API_BASE + '/api/admin/item/'+id, { method:'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        await put.json();
+        loadAll();
+      }
 
       document.getElementById('createBtn').addEventListener('click', async (e)=>{
         e.preventDefault();
@@ -132,7 +156,7 @@
         if (extraText) {
           try { extra = JSON.parse(extraText); } catch (err){ alert('Invalid extra JSON'); return; }
         }
-        const body = { type: type, item: { name: name, bio: bio, extra: extra } };
+        const body = { type: type, item: { name: name, bio: bio, extra: extra, health: parseInt(document.getElementById('newHealth').value||0,10), damage: parseInt(document.getElementById('newDamage').value||0,10), movement: document.getElementById('newMovement').value } };
         const res = await fetch(API_BASE + '/api/admin/item', { method:'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
         const j = await res.json();
         if (j.error) return alert('Error: '+j.error);
