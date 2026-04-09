@@ -16,7 +16,10 @@
 <body>
   <div class="box">
     <h2>Admin Login</h2>
-    <p class="small">Enter the admin password to continue.</p>
+    <p class="small">Enter your admin username and password to continue.</p>
+    <label class="small" style="display:block;margin-top:8px">Username</label>
+    <input id="user" type="text" placeholder="Username" />
+    <label class="small" style="display:block;margin-top:8px">Password</label>
     <input id="pw" type="password" placeholder="Password" />
     <div style="margin-top:12px"><a id="loginBtn" href="#" class="button">Login</a></div>
     <div id="msg" class="small" style="margin-top:8px"></div>
@@ -25,13 +28,18 @@
   <script>
   document.getElementById('loginBtn').addEventListener('click', async (e)=>{
     e.preventDefault();
+    const user = document.getElementById('user').value.trim();
     const pw = document.getElementById('pw').value;
+    if (!user) { document.getElementById('msg').textContent = 'Username required'; return; }
     if (!pw) { document.getElementById('msg').textContent = 'Password required'; return; }
+    document.getElementById('msg').textContent = '';
     try{
-      const r = await fetch('/api/admin.php?action=login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: pw }), credentials: 'same-origin' });
+      const r = await fetch('/api/admin.php?action=login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username: user, password: pw }), credentials: 'same-origin' });
       if (r.ok){ const j = await r.json(); if (j.ok){ window.location.href = '/admin.html'; return; } }
-      if (r.status === 401) { document.getElementById('msg').textContent = 'Incorrect password'; return; }
-      document.getElementById('msg').textContent = 'Login failed';
+      if (r.status === 401) { const j = await r.json().catch(()=>null); document.getElementById('msg').textContent = (j && j.error==='invalid_credentials') ? 'Incorrect username or password' : 'Unauthorized'; return; }
+      if (r.status === 503) { document.getElementById('msg').textContent = 'Login is temporarily disabled. Contact the site owner.'; return; }
+      const txt = await r.text().catch(()=>null);
+      document.getElementById('msg').textContent = txt ? txt : 'Login failed';
     }catch(err){ document.getElementById('msg').textContent = 'Network error'; }
   });
   </script>
