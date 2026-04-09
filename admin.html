@@ -291,7 +291,6 @@
       // populate gadgets
       currentGadgets = (item.extra && Array.isArray(item.extra.gadgets)) ? item.extra.gadgets.slice(0,2) : [];
       renderGadgets();
-      }
       // switch create button to update mode
       createBtn.textContent = 'Update'; cancelBtn.style.display = '';
       setStatus('Editing item — make changes and click Update');
@@ -336,8 +335,7 @@
       }
     });
 
-    // search bindings
-    document.getElementById('searchCharacters').addEventListener('input', ()=>{ const q=this.value; });
+    // search bindings (listeners later also filter lists in-place)
 
     // attach basic filtering (re-run loadList to rebind)
     document.getElementById('searchCharacters').addEventListener('input', ()=>{ const q = document.getElementById('searchCharacters').value.trim().toLowerCase(); document.getElementById('charactersList').querySelectorAll('[data-search]').forEach(n=> n.style.display = (!q || n.dataset.search.indexOf(q)!==-1) ? '' : 'none'); });
