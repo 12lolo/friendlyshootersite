@@ -1,0 +1,166 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin — FriendlyShooter</title>
+    <link href="https://static.itch.io/game.css?1773778275" rel="stylesheet" />
+    <style>
+      body { background:#09280f; color:#02ff77; font-family: Arial, sans-serif; }
+      .wrap{ max-width:1000px; margin:18px auto; padding:18px; background:rgba(12,33,11,0.85); }
+      .row{ display:flex; gap:12px; }
+      .col{ flex:1; }
+      .card{ border:1px solid #265424; padding:12px; margin-bottom:12px }
+      input,textarea,select { width:100%; padding:8px; margin-top:6px; box-sizing:border-box; background:transparent; color:inherit; border:1px solid #265424 }
+      .btn{ display:inline-block; padding:8px 12px; background:#d400b1; color:#fff; text-decoration:none; border-radius:4px }
+      .list-item{ border:1px solid #265424; padding:8px; margin-bottom:8px }
+      .small{ font-size:0.9rem; color:#9feab0 }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Admin — FriendlyShooter</h1>
+      <div id="loginCard" class="card">
+        <h3>Login</h3>
+        <p class="small">Enter admin password (sent to server for verification). Default pass: <em>8008</em> unless set in environment variable `ADMIN_PASS`.</p>
+        <input id="pass" type="password" placeholder="Admin password" />
+        <div style="margin-top:8px">
+          <a id="loginBtn" href="#" class="btn">Login</a>
+        </div>
+        <div id="loginMsg" class="small"></div>
+      </div>
+
+      <div id="app" style="display:none">
+        <div class="card">
+          <h3>Create New</h3>
+          <div class="row">
+            <div class="col">
+              <label>Type</label>
+              <select id="newType"><option value="character">Character</option><option value="enemy">Enemy</option><option value="map">Map</option></select>
+              <label>Name</label>
+              <input id="newName" />
+              <label>Short Bio</label>
+              <textarea id="newBio" rows="4"></textarea>
+              <label>Extra JSON (optional)</label>
+              <textarea id="newExtra" rows="3" placeholder='{"health":100}'></textarea>
+              <div style="margin-top:8px"><a id="createBtn" href="#" class="btn">Create</a></div>
+            </div>
+            <div class="col">
+              <h4>Instructions</h4>
+              <p class="small">Use <strong>Create</strong> to add entries. After creating, use the lists below to edit or delete items. The admin password is required for all operations; it is sent in the `x-admin-pass` header.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Characters</h3>
+          <div id="charactersList"></div>
+        </div>
+
+        <div class="card">
+          <h3>Enemies</h3>
+          <div id="enemiesList"></div>
+        </div>
+
+        <div class="card">
+          <h3>Maps</h3>
+          <div id="mapsList"></div>
+        </div>
+
+        <div style="text-align:center;margin-top:12px">
+          <a href="/" class="btn">Back to Home</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const api = (path, opts={}) => fetch(path, opts).then(r=>r.json().catch(()=>({}))).catch(()=>({error:'network'}));
+      let ADMIN_PASS = null;
+
+      const loginBtn = document.getElementById('loginBtn');
+      const passInput = document.getElementById('pass');
+      const loginMsg = document.getElementById('loginMsg');
+      const appDiv = document.getElementById('app');
+
+      loginBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const pass = passInput.value || '';
+        const res = await api('/api/admin/login', {
+          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: pass})
+        });
+        if (res.ok) {
+          ADMIN_PASS = pass;
+          document.getElementById('loginCard').style.display = 'none';
+          appDiv.style.display = '';
+          sessionStorage.setItem('admin_pass', pass);
+          loadAll();
+        } else {
+          loginMsg.textContent = 'Login failed';
+        }
+      });
+
+      // restore from session if present
+      (function(){ const p = sessionStorage.getItem('admin_pass'); if (p) { passInput.value = p; loginBtn.click(); } })();
+
+      async function loadAll(){
+        await loadList('character', 'charactersList');
+        await loadList('enemy', 'enemiesList');
+        await loadList('map', 'mapsList');
+      }
+
+      async function loadList(type, elId){
+        const hdr = { 'x-admin-pass': ADMIN_PASS };
+        const res = await fetch('/api/admin/items?type='+type, { headers: hdr });
+        if (!res.ok) { document.getElementById(elId).innerHTML = '<div class="small">Error loading</div>'; return; }
+        const data = await res.json();
+        const key = type === 'character' ? 'characters' : type === 'enemy' ? 'enemies' : 'maps';
+        const list = data[key] || [];
+        const container = document.getElementById(elId);
+        container.innerHTML = '';
+        list.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'list-item';
+          div.innerHTML = `<strong>${escapeHtml(item.name||item.title||'Untitled')}</strong> <div class="small">id: ${item.id}</div>
+            <div style="margin-top:6px">${escapeHtml(item.bio||item.description||'')}</div>
+            <div style="margin-top:8px">
+              <a href="#" data-id="${item.id}" data-type="${type}" class="editBtn btn" style="margin-right:8px">Edit</a>
+              <a href="#" data-id="${item.id}" data-type="${type}" class="delBtn btn">Delete</a>
+            </div>`;
+          container.appendChild(div);
+        });
+        container.querySelectorAll('.delBtn').forEach(b=>b.addEventListener('click', onDelete));
+        container.querySelectorAll('.editBtn').forEach(b=>b.addEventListener('click', onEdit));
+      }
+
+      function escapeHtml(s){ return (s||'').toString().replace(/[&<>\"]+/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+      async function onDelete(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; if (!confirm('Delete this item?')) return; const res = await fetch('/api/admin/item/'+id+'?type='+type, { method:'DELETE', headers: { 'x-admin-pass': ADMIN_PASS }}); const j = await res.json(); loadAll(); }
+
+      async function onEdit(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; const hdr = { 'x-admin-pass': ADMIN_PASS }; const res = await fetch('/api/admin/items?type='+type, { headers: hdr }); const data = await res.json(); const key = type === 'character' ? 'characters' : type === 'enemy' ? 'enemies' : 'maps'; const item = (data[key]||[]).find(x=>x.id===id); if (!item) return alert('Item not found'); const name = prompt('Name', item.name||item.title||''); if (name===null) return; const bio = prompt('Bio', item.bio||item.description||''); if (bio===null) return; const extra = prompt('Extra JSON (optional)', JSON.stringify(Object.assign({}, item.extra||{}))); if (extra===null) return; let extraObj = {};
+      try { extraObj = extra ? JSON.parse(extra) : {}; } catch(err){ alert('Invalid JSON'); return; }
+      const body = { type: type, item: { name: name, bio: bio, extra: extraObj } };
+      const put = await fetch('/api/admin/item/'+id, { method:'PUT', headers: Object.assign({'Content-Type':'application/json'}, {'x-admin-pass': ADMIN_PASS}), body: JSON.stringify(body) });
+      await put.json();
+      loadAll();
+    }
+
+      document.getElementById('createBtn').addEventListener('click', async (e)=>{
+        e.preventDefault();
+        const type = document.getElementById('newType').value;
+        const name = document.getElementById('newName').value.trim();
+        const bio = document.getElementById('newBio').value.trim();
+        const extraText = document.getElementById('newExtra').value.trim();
+        let extra = {};
+        if (extraText) {
+          try { extra = JSON.parse(extraText); } catch (err){ alert('Invalid extra JSON'); return; }
+        }
+        const body = { type: type, item: { name: name, bio: bio, extra: extra } };
+        const res = await fetch('/api/admin/item', { method:'POST', headers: Object.assign({'Content-Type':'application/json'}, {'x-admin-pass': ADMIN_PASS}), body: JSON.stringify(body) });
+        const j = await res.json();
+        if (j.error) return alert('Error: '+j.error);
+        document.getElementById('newName').value=''; document.getElementById('newBio').value=''; document.getElementById('newExtra').value='';
+        loadAll();
+      });
+    </script>
+  </body>
+</html>
