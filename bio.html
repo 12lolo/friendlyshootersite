@@ -116,6 +116,20 @@
                     } else {
                         const statLabel = type === 'enemy' ? 'Fire Speed' : 'Movement';
                         dataCol.appendChild(el('div','item-meta','Health: ' + safe(item.health || 0) + ' • Damage: ' + safe(item.damage || 0) + ' • ' + statLabel + ': ' + safe(item.movement || '')));
+                        // gadgets (characters may have 1-2 gadgets stored in extra.gadgets)
+                        if (type === 'character'){
+                            const gadgets = (item.extra && item.extra.gadgets) ? item.extra.gadgets : [];
+                            if (Array.isArray(gadgets) && gadgets.length){
+                                const chips = el('div', 'item-gadgets');
+                                gadgets.slice(0,2).forEach(g => {
+                                    const text = (typeof g === 'string') ? g : (g.name || JSON.stringify(g));
+                                    const chip = el('span','small','🔧 ' + safe(text));
+                                    chip.style.marginRight = '8px'; chip.style.display='inline-block'; chip.style.padding='4px 6px'; chip.style.background='rgba(0,0,0,0.06)'; chip.style.border='1px solid rgba(37,84,36,0.08)'; chip.style.borderRadius='6px';
+                                    chips.appendChild(chip);
+                                });
+                                dataCol.appendChild(chips);
+                            }
+                        }
                     }
                     wrapper.appendChild(dataCol);
                     // open modal on click
@@ -148,7 +162,21 @@
                         const sizeText = (typeof size === 'object') ? (size.width + ' x ' + size.height) : size;
                         const meta = document.createElement('div'); meta.className='item-meta'; meta.textContent = 'Size: ' + sizeText; info.appendChild(meta);
                     } else {
-                        const meta = document.createElement('div'); meta.className='item-meta'; meta.textContent = 'Health: ' + (item.health||0) + ' • Damage: ' + (item.damage||0) + ' • Movement: ' + (item.movement||''); info.appendChild(meta);
+                        const statLabel = type === 'enemy' ? 'Fire Speed' : 'Movement';
+                        const meta = document.createElement('div'); meta.className='item-meta'; meta.textContent = 'Health: ' + (item.health||0) + ' • Damage: ' + (item.damage||0) + ' • ' + statLabel + ': ' + (item.movement||''); info.appendChild(meta);
+                        // show gadgets in modal for characters
+                        if (type === 'character'){
+                            const gadgets = (item.extra && item.extra.gadgets) ? item.extra.gadgets : [];
+                            if (Array.isArray(gadgets) && gadgets.length){
+                                const gwrap = document.createElement('div'); gwrap.style.marginTop='10px';
+                                const gh = document.createElement('h3'); gh.textContent = 'Gadgets'; gh.style.margin='8px 0 6px 0'; gh.style.color='var(--accent)'; gwrap.appendChild(gh);
+                                gadgets.forEach(g=>{
+                                    const text = (typeof g === 'string') ? g : (g.name || JSON.stringify(g));
+                                    const p = document.createElement('div'); p.className='small'; p.textContent = '• ' + text; gwrap.appendChild(p);
+                                });
+                                info.appendChild(gwrap);
+                            }
+                        }
                     }
                     body.appendChild(imgWrap); body.appendChild(info); card.appendChild(body); overlay.appendChild(card);
                     overlay.addEventListener('click', (e)=>{ if (e.target === overlay) document.body.removeChild(overlay); });
