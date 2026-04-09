@@ -42,16 +42,34 @@
               <label>Short Bio</label>
               <textarea id="newBio" rows="4"></textarea>
               <label>Health</label>
-              <input id="newHealth" type="number" value="100" />
-              <label>Damage</label>
-              <input id="newDamage" type="number" value="10" />
-              <label>Movement</label>
-              <select id="newMovement">
-                <option value="super_fast">Super Fast</option>
-                <option value="fast">Fast</option>
-                <option value="medium" selected>Medium</option>
-                <option value="slow">Slow</option>
-              </select>
+              <div id="charControls">
+                <label>Health</label>
+                <input id="newHealth" type="number" value="100" />
+                <label>Damage</label>
+                <input id="newDamage" type="number" value="10" />
+                <label>Movement</label>
+                <select id="newMovement">
+                  <option value="super_fast">Super Fast</option>
+                  <option value="fast">Fast</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="slow">Slow</option>
+                </select>
+              </div>
+              <div id="mapControls" style="display:none;">
+                <label>Map Size</label>
+                <select id="newMapSize">
+                  <option value="small">Small</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="large">Large</option>
+                  <option value="custom">Custom</option>
+                </select>
+                <div id="newMapCustom" style="display:none;margin-top:6px">
+                  <label>Width (px)</label>
+                  <input id="newMapWidth" type="number" value="800" />
+                  <label>Height (px)</label>
+                  <input id="newMapHeight" type="number" value="600" />
+                </div>
+              </div>
               <label>Extra JSON (optional)</label>
               <textarea id="newExtra" rows="3" placeholder='{"notes":"example"}'></textarea>
               <div style="margin-top:8px"><a id="createBtn" href="#" class="btn">Create</a></div>
@@ -92,6 +110,24 @@
       document.getElementById('loginCard').style.display = 'none';
       document.getElementById('app').style.display = '';
 
+      // show/hide form controls depending on selected type
+      function updateFormForType() {
+        const t = document.getElementById('newType').value;
+        if (t === 'map') {
+          document.getElementById('charControls').style.display = 'none';
+          document.getElementById('mapControls').style.display = '';
+        } else {
+          document.getElementById('charControls').style.display = '';
+          document.getElementById('mapControls').style.display = 'none';
+        }
+      }
+      document.getElementById('newType').addEventListener('change', updateFormForType);
+      document.getElementById('newMapSize').addEventListener('change', (e)=>{
+        document.getElementById('newMapCustom').style.display = e.target.value === 'custom' ? '' : 'none';
+      });
+      // initialize
+      updateFormForType();
+
       async function loadAll(){
         await loadList('character', 'charactersList');
         await loadList('enemy', 'enemiesList');
@@ -99,7 +135,7 @@
       }
 
       async function loadList(type, elId){
-        const res = await fetch(API_BASE + '/api/admin/items?type='+type);
+        const res = await fetch(API_BASE + '/api/admin.php?action=items&type='+type);
         if (!res.ok) { document.getElementById(elId).innerHTML = '<div class="small">Error loading</div>'; return; }
         const data = await res.json();
         const key = type === 'character' ? 'characters' : type === 'enemy' ? 'enemies' : 'maps';
@@ -109,9 +145,14 @@
         list.forEach(item => {
           const div = document.createElement('div');
           div.className = 'list-item';
-          div.innerHTML = `<strong>${escapeHtml(item.name||item.title||'Untitled')}</strong> <div class="small">id: ${item.id}</div>
-            <div style="margin-top:6px">${escapeHtml(item.bio||item.description||'')}</div>
-            <div class="small">Health: ${item.health || 0} • Damage: ${item.damage || 0} • Movement: ${escapeHtml(item.movement || '')}</div>
+          let details = `<div style="margin-top:6px">${escapeHtml(item.bio||item.description||'')}</div>`;
+          if (type === 'map') {
+            const size = (item.extra && item.extra.size) ? item.extra.size : (item.size || 'unknown');
+            details += `<div class="small">Size: ${escapeHtml(typeof size === 'object' ? (size.width+ 'x' + size.height) : size)}</div>`;
+          } else {
+            details += `<div class="small">Health: ${item.health || 0} • Damage: ${item.damage || 0} • Movement: ${escapeHtml(item.movement || '')}</div>`;
+          }
+          div.innerHTML = `<strong>${escapeHtml(item.name||item.title||'Untitled')}</strong> <div class="small">id: ${item.id}</div>` + details + `
             <div style="margin-top:8px">
               <a href="#" data-id="${item.id}" data-type="${type}" class="editBtn btn" style="margin-right:8px">Edit</a>
               <a href="#" data-id="${item.id}" data-type="${type}" class="delBtn btn">Delete</a>
@@ -124,26 +165,42 @@
 
       function escapeHtml(s){ return (s||'').toString().replace(/[&<>\"]+/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-      async function onDelete(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; if (!confirm('Delete this item?')) return; const res = await fetch(API_BASE + '/api/admin/item/'+id+'?type='+type, { method:'DELETE' }); const j = await res.json(); loadAll(); }
+      async function onDelete(e){ e.preventDefault(); const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type; if (!confirm('Delete this item?')) return; const res = await fetch(API_BASE + '/api/admin.php?action=item&id='+encodeURIComponent(id)+'&type='+encodeURIComponent(type), { method:'DELETE' }); const j = await res.json(); loadAll(); }
 
       async function onEdit(e){
         e.preventDefault();
         const id = e.currentTarget.dataset.id; const type = e.currentTarget.dataset.type;
-        const res = await fetch(API_BASE + '/api/admin/items?type='+type); const data = await res.json();
+        const res = await fetch(API_BASE + '/api/admin.php?action=items&type='+type); const data = await res.json();
         const key = type === 'character' ? 'characters' : type === 'enemy' ? 'enemies' : 'maps';
         const item = (data[key]||[]).find(x=>x.id===id); if (!item) return alert('Item not found');
         const name = prompt('Name', item.name||item.title||''); if (name===null) return;
         const bio = prompt('Bio', item.bio||item.description||''); if (bio===null) return;
-        let health = prompt('Health', item.health || 0); if (health===null) return; health = parseInt(health||0,10);
-        let damage = prompt('Damage', item.damage || 0); if (damage===null) return; damage = parseInt(damage||0,10);
-        let movement = item.movement || 'medium';
-        if (type !== 'map') { movement = prompt('Movement (super_fast|fast|medium|slow)', item.movement || 'medium'); if (movement===null) return; }
-        const extra = prompt('Extra JSON (optional)', JSON.stringify(Object.assign({}, item.extra||{}))); if (extra===null) return; let extraObj = {};
-        try { extraObj = extra ? JSON.parse(extra) : {}; } catch(err){ alert('Invalid JSON'); return; }
-        const body = { type: type, item: { name: name, bio: bio, extra: extraObj, health: health, damage: damage, movement: movement } };
-        const put = await fetch(API_BASE + '/api/admin/item/'+id, { method:'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
-        await put.json();
-        loadAll();
+        let extraObj = Object.assign({}, item.extra || {});
+        if (type === 'map') {
+          let size = prompt('Map size (small|medium|large|custom or widthxheight)', (extraObj.size ? (typeof extraObj.size === 'object' ? (extraObj.size.width+'x'+extraObj.size.height) : extraObj.size) : 'medium'));
+          if (size===null) return;
+          if (size.indexOf('x')>-1) {
+            const parts = size.split('x'); extraObj.size = { width: parseInt(parts[0]||0,10), height: parseInt(parts[1]||0,10) };
+          } else {
+            extraObj.size = size;
+          }
+          const body = { type: type, item: { name: name, bio: bio, extra: extraObj } };
+          const put = await fetch(API_BASE + '/api/admin.php?action=item&id='+encodeURIComponent(id), { method:'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+          await put.json();
+          loadAll();
+          return;
+        } else {
+          let health = prompt('Health', item.health || 0); if (health===null) return; health = parseInt(health||0,10);
+          let damage = prompt('Damage', item.damage || 0); if (damage===null) return; damage = parseInt(damage||0,10);
+          let movement = prompt('Movement (super_fast|fast|medium|slow)', item.movement || 'medium'); if (movement===null) return;
+          const extra = prompt('Extra JSON (optional)', JSON.stringify(Object.assign({}, item.extra||{}))); if (extra===null) return; 
+          try { extraObj = extra ? JSON.parse(extra) : extraObj; } catch(err){ alert('Invalid JSON'); return; }
+          const body = { type: type, item: { name: name, bio: bio, extra: extraObj, health: health, damage: damage, movement: movement } };
+          const put = await fetch(API_BASE + '/api/admin/item/'+id, { method:'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+          await put.json();
+          loadAll();
+          return;
+        }
       }
 
       document.getElementById('createBtn').addEventListener('click', async (e)=>{
@@ -156,11 +213,21 @@
         if (extraText) {
           try { extra = JSON.parse(extraText); } catch (err){ alert('Invalid extra JSON'); return; }
         }
+        if (type === 'map') {
+          const sizeOpt = document.getElementById('newMapSize').value;
+          if (sizeOpt === 'custom') {
+            extra.size = { width: parseInt(document.getElementById('newMapWidth').value||0,10), height: parseInt(document.getElementById('newMapHeight').value||0,10) };
+          } else {
+            extra.size = sizeOpt;
+          }
+        }
         const body = { type: type, item: { name: name, bio: bio, extra: extra, health: parseInt(document.getElementById('newHealth').value||0,10), damage: parseInt(document.getElementById('newDamage').value||0,10), movement: document.getElementById('newMovement').value } };
-        const res = await fetch(API_BASE + '/api/admin/item', { method:'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        const res = await fetch(API_BASE + '/api/admin.php?action=item', { method:'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
         const j = await res.json();
         if (j.error) return alert('Error: '+j.error);
         document.getElementById('newName').value=''; document.getElementById('newBio').value=''; document.getElementById('newExtra').value='';
+        // reset map custom inputs
+        document.getElementById('newMapSize').value='medium'; document.getElementById('newMapCustom').style.display='none';
         loadAll();
       });
     </script>
