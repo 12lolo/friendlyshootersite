@@ -30,6 +30,16 @@
 
             @media (max-width:520px){ .item-img{ height:120px } .content{ padding:12px } }
         </style>
+        <style>
+            /* modal / lightbox */
+            .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:9999 }
+            .modal-card{ background:linear-gradient(180deg, #07130a, #081b0d); color:var(--accent); border:1px solid rgba(37,84,36,0.16); border-radius:10px; max-width:1000px; width:92%; max-height:90vh; overflow:auto; box-shadow:0 12px 40px rgba(0,0,0,0.8); }
+            .modal-body{ display:flex; gap:12px; padding:14px; }
+            .modal-img{ width:48%; max-width:480px; height:auto; object-fit:contain; background:var(--panel); border-radius:6px; }
+            .modal-info{ flex:1; padding:6px 2px; }
+            .modal-close{ position:absolute; right:18px; top:12px; background:#d400b1; color:white; padding:6px 8px; border-radius:6px; text-decoration:none }
+            @media (max-width:720px){ .modal-body{ flex-direction:column } .modal-img{ width:100%; } }
+        </style>
     </head>
     <body>
         <div id="wrapper" class="main wrapper">
@@ -107,8 +117,43 @@
                         dataCol.appendChild(el('div','item-meta','Health: ' + safe(item.health || 0) + ' • Damage: ' + safe(item.damage || 0) + ' • Movement: ' + safe(item.movement || '')));
                     }
                     wrapper.appendChild(dataCol);
+                    // open modal on click
+                    wrapper.addEventListener('click', (ev)=>{
+                        // don't trigger when clicking links
+                        if (ev.target && (ev.target.tagName === 'A' || ev.target.closest && ev.target.closest('a'))) return;
+                        openModal(item, type);
+                    });
                     return wrapper;
             }
+
+                // modal
+                function openModal(item, type){
+                    const overlay = document.createElement('div'); overlay.className = 'modal-overlay';
+                    const card = document.createElement('div'); card.className = 'modal-card';
+                    const close = document.createElement('a'); close.href='#'; close.className='modal-close'; close.textContent='Close';
+                    close.addEventListener('click', (e)=>{ e.preventDefault(); document.body.removeChild(overlay); });
+                    card.appendChild(close);
+                    const body = document.createElement('div'); body.className='modal-body';
+                    const imgWrap = document.createElement('div');
+                    const img = document.createElement('img'); img.className='modal-img'; img.src = (item.extra && item.extra.image) ? item.extra.image : (item.image || '');
+                    img.alt = item.name || item.title || '';
+                    imgWrap.appendChild(img);
+                    const info = document.createElement('div'); info.className='modal-info';
+                    const title = document.createElement('h2'); title.textContent = item.name || item.title || 'Untitled'; title.style.marginTop='0';
+                    const bio = document.createElement('div'); bio.className='item-bio'; bio.textContent = item.bio || item.description || '';
+                    info.appendChild(title); info.appendChild(bio);
+                    if (type === 'map'){
+                        const size = (item.extra && item.extra.size) ? item.extra.size : (item.size || 'unknown');
+                        const sizeText = (typeof size === 'object') ? (size.width + ' x ' + size.height) : size;
+                        const meta = document.createElement('div'); meta.className='item-meta'; meta.textContent = 'Size: ' + sizeText; info.appendChild(meta);
+                    } else {
+                        const meta = document.createElement('div'); meta.className='item-meta'; meta.textContent = 'Health: ' + (item.health||0) + ' • Damage: ' + (item.damage||0) + ' • Movement: ' + (item.movement||''); info.appendChild(meta);
+                    }
+                    body.appendChild(imgWrap); body.appendChild(info); card.appendChild(body); overlay.appendChild(card);
+                    overlay.addEventListener('click', (e)=>{ if (e.target === overlay) document.body.removeChild(overlay); });
+                    document.addEventListener('keydown', function escHandler(e){ if (e.key === 'Escape'){ if (document.body.contains(overlay)) document.body.removeChild(overlay); document.removeEventListener('keydown', escHandler); } });
+                    document.body.appendChild(overlay);
+                }
 
             async function render(){
                 const chars = await fetchItems('character');
