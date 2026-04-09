@@ -7,10 +7,27 @@
         <link href="https://static.itch.io/game.css?1773778275" rel="stylesheet"/>
         <link rel="stylesheet" href="webleaderboard/leaderboard.css">
         <style>
-            body { background-color: #09280f; color: #02ff77; }
-            .content { max-width: 900px; margin: 18px auto; padding: 18px; background: rgba(12,33,11,0.85); }
-            .card { border: 1px solid #265424; padding: 12px; margin: 12px 0; }
-            .card h3 { margin: 0 0 6px 0; }
+            :root{ --bg:#09280f; --accent:#02ff77; --muted:#9feab0; --panel:#0c210b; --border:#265424; }
+            html,body{ height:100%; margin:0; }
+            body { background-color: var(--bg); color: var(--accent); font-family: '04b_03', Lato, system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+            .content { max-width: 1100px; margin: 20px auto; padding: 20px; background: rgba(12,33,11,0.88); border-radius:10px; box-shadow: 0 6px 20px rgba(0,0,0,0.5); border:1px solid rgba(37,84,36,0.08); }
+            .section-title{ display:flex; align-items:center; gap:12px; }
+            .section-title h3{ margin:0; font-size:1.25rem; }
+            .card{ padding:14px; margin:18px 0; border-radius:8px; border:1px solid rgba(37,84,36,0.12); background:linear-gradient(180deg, rgba(0,0,0,0.02), transparent); }
+
+            /* grid of items */
+            .items-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-top:12px; }
+            .item-card{ background: rgba(0,0,0,0.04); border:1px solid var(--border); border-radius:8px; overflow:hidden; display:flex; flex-direction:column; }
+            .item-img{ width:100%; height:160px; object-fit:cover; background:var(--panel); display:block; }
+            .item-content{ padding:12px; }
+            .item-title{ font-weight:700; margin:0 0 6px 0; color:var(--accent); }
+            .item-bio{ color:var(--muted); font-size:0.95rem; margin-bottom:8px; }
+            .item-meta{ color:#c6f7d0; font-size:0.9rem; }
+
+            .small{ font-size:0.9rem; color:var(--muted); }
+            a.button{ background:#d400b1;color:white;padding:8px 12px;border-radius:6px;text-decoration:none }
+
+            @media (max-width:520px){ .item-img{ height:120px } .content{ padding:12px } }
         </style>
     </head>
     <body>
@@ -72,29 +89,24 @@
             }
 
             function makeCard(item, type){
-                const wrapper = el('div','card');
-                const row = el('div','row');
-                const imgCol = el('div');
-                const dataCol = el('div');
+                    const wrapper = el('div','item-card');
+                    const image = (item.extra && item.extra.image) ? item.extra.image : (item.image || '');
+                    if (image){ const i = el('img','item-img'); i.src = image; wrapper.appendChild(i); }
+                    else { const ph = el('div','item-img'); ph.style.display='flex'; ph.style.alignItems='center'; ph.style.justifyContent='center'; ph.innerHTML = '<span class="small">No image</span>'; wrapper.appendChild(ph); }
 
-                const image = (item.extra && item.extra.image) ? item.extra.image : (item.image || '');
-                if (image){ const i = el('img'); i.src = image; i.style.maxWidth='220px'; i.style.border='1px solid #265424'; imgCol.appendChild(i); }
-                else imgCol.innerHTML = '<div style="width:220px;height:140px;background:#09280f;border:1px solid #1f3a22;display:flex;align-items:center;justify-content:center;color:#9feab0">No image</div>';
-
-                const title = el('h4',null, safe(item.name || item.title || 'Untitled'));
-                const bio = el('div', 'small', safe(item.bio || item.description || ''));
-                dataCol.appendChild(title); dataCol.appendChild(bio);
-
-                if (type === 'map'){
-                    const size = (item.extra && item.extra.size) ? item.extra.size : (item.size || 'unknown');
-                    const sizeText = (typeof size === 'object') ? (size.width + ' x ' + size.height) : size;
-                    dataCol.appendChild(el('div','small','Size: ' + safe(sizeText)));
-                } else {
-                    dataCol.appendChild(el('div','small','Health: ' + safe(item.health || 0) + ' • Damage: ' + safe(item.damage || 0) + ' • Movement: ' + safe(item.movement || '')));
-                }
-
-                row.appendChild(imgCol); row.appendChild(dataCol); wrapper.appendChild(row);
-                return wrapper;
+                    const dataCol = el('div','item-content');
+                    const title = el('div','item-title', safe(item.name || item.title || 'Untitled'));
+                    const bio = el('div','item-bio', safe(item.bio || item.description || ''));
+                    dataCol.appendChild(title); dataCol.appendChild(bio);
+                    if (type === 'map'){
+                        const size = (item.extra && item.extra.size) ? item.extra.size : (item.size || 'unknown');
+                        const sizeText = (typeof size === 'object') ? (size.width + ' x ' + size.height) : size;
+                        dataCol.appendChild(el('div','item-meta','Size: ' + safe(sizeText)));
+                    } else {
+                        dataCol.appendChild(el('div','item-meta','Health: ' + safe(item.health || 0) + ' • Damage: ' + safe(item.damage || 0) + ' • Movement: ' + safe(item.movement || '')));
+                    }
+                    wrapper.appendChild(dataCol);
+                    return wrapper;
             }
 
             async function render(){
