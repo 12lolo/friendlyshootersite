@@ -114,7 +114,7 @@
               <a id="addGadgetBtn" href="#" class="button" style="padding:6px 8px">Add</a>
             </div>
             <div id="gadgetsList" style="margin-top:8px;padding:8px;border:1px solid #265424;border-radius:6px;min-height:42px"></div>
-            <input type="hidden" id="newGadgets" name="gadgets">
+            <input id="newGadgetsField" placeholder="Gadget1, Gadget2" style="margin-top:8px;background:transparent;color:inherit;border:1px solid #265424;padding:8px;border-radius:6px;" />
 
             <div style="margin-top:12px">
               <a id="createBtn" href="#" class="button">Create</a>
@@ -183,6 +183,7 @@
     const newGadgetInput = document.getElementById('newGadgetInput');
     const addGadgetBtn = document.getElementById('addGadgetBtn');
     const gadgetsList = document.getElementById('gadgetsList');
+    const newGadgetsField = document.getElementById('newGadgetsField');
     let currentGadgets = [];
 
     function renderGadgets(){
@@ -192,8 +193,18 @@
         const rem = document.createElement('a'); rem.href='#'; rem.textContent='×'; rem.style.marginLeft='6px'; rem.style.color='#ff9fbf'; rem.style.textDecoration='none'; rem.addEventListener('click', (e)=>{ e.preventDefault(); currentGadgets.splice(i,1); renderGadgets(); });
         chip.appendChild(rem); gadgetsList.appendChild(chip);
       });
-      // expose as hidden input for form-like behavior
-      const hidden = document.getElementById('newGadgets'); if (hidden) hidden.value = JSON.stringify(currentGadgets);
+      // expose as visible text field (comma-separated)
+      if (newGadgetsField) newGadgetsField.value = currentGadgets.join(', ');
+    }
+
+    // allow editing gadgets directly in the text field (comma-separated)
+    if (newGadgetsField) {
+      newGadgetsField.addEventListener('input', ()=>{
+        const parts = newGadgetsField.value.split(',').map(s=>s.trim()).filter(Boolean).slice(0,2);
+        // update chips UI without creating duplicates
+        currentGadgets = parts;
+        renderGadgets();
+      });
     }
 
     addGadgetBtn.addEventListener('click', (e)=>{ e.preventDefault(); const v = newGadgetInput.value.trim(); if (!v) return; if (currentGadgets.length>=2) { setStatus('Max 2 gadgets', false); return; } currentGadgets.push(v); newGadgetInput.value=''; renderGadgets(); });
