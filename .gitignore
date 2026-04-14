@@ -1,3 +1,10 @@
+# Ignore SQLite admin database and local environment files
+/api/admin_php.db
+/api/.env
+/api/credentials.json
+.env
+# OS files
+.DS_Store
 # wrangler files
 .wrangler
 .dev.vars*

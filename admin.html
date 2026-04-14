@@ -113,7 +113,11 @@
             <textarea id="newExtra" rows="3" placeholder='{"notes":"example"}'></textarea>
 
             <label class="field-label">Image URL</label>
-            <input id="newImageUrl" placeholder="Image URL (uploads disabled)" style="margin-top:6px" />
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input id="newImageUrl" placeholder="Image URL (uploads disabled)" style="margin-top:6px;flex:1" />
+              <a id="chooseFromWorkspace" href="#" class="button" style="margin-top:6px;white-space:nowrap">Choose from workspace</a>
+            </div>
+            <div id="workspacePicker" style="display:none;margin-top:8px;border:1px solid #20381f;padding:8px;border-radius:6px;background:rgba(0,0,0,0.03)"></div>
             <div id="newImagePreview" style="margin-top:8px"></div>
             
 
@@ -226,6 +230,41 @@
 
     newImageUrl.addEventListener('input', ()=>{
       const v = newImageUrl.value.trim(); if (v) newImagePreview.innerHTML = `<img src="${v}" style="max-width:220px;border:1px solid #265424"/>`; else newImagePreview.innerHTML = '';
+    });
+
+    // Workspace picker: fetch images from server-side folders and allow choosing
+    const chooseBtn = document.getElementById('chooseFromWorkspace');
+    const workspacePicker = document.getElementById('workspacePicker');
+    chooseBtn.addEventListener('click', async (ev)=>{
+      ev.preventDefault();
+      if (workspacePicker.style.display === 'none' || !workspacePicker.innerHTML) {
+        workspacePicker.innerHTML = '<div class="small">Loading images…</div>';
+        workspacePicker.style.display = 'block';
+        try{
+          const r = await fetch('/api/admin.php?action=list_images');
+          const j = await r.json();
+          workspacePicker.innerHTML = '';
+          for (const fld of Object.keys(j.folders || {})){
+            const imgs = j.folders[fld] || [];
+            const section = document.createElement('div');
+            section.style.marginBottom = '8px';
+            const h = document.createElement('div'); h.className='small'; h.textContent = fld + ' (' + imgs.length + ')'; h.style.marginBottom='6px'; section.appendChild(h);
+            const row = document.createElement('div'); row.style.display='flex'; row.style.flexWrap='wrap'; row.style.gap='8px';
+            imgs.forEach(p => {
+              const t = document.createElement('div'); t.style.width='120px'; t.style.cursor='pointer'; t.style.textAlign='center';
+              const img = document.createElement('img'); img.src = p; img.style.maxWidth='120px'; img.style.maxHeight='80px'; img.style.border='1px solid #265424'; img.style.display='block'; img.style.margin='0 auto';
+              const lab = document.createElement('div'); lab.className='small'; lab.textContent = p.split('/').pop(); lab.style.marginTop='4px';
+              t.appendChild(img); t.appendChild(lab);
+              t.addEventListener('click', (e)=>{ newImageUrl.value = p; newImagePreview.innerHTML = `<img src="${p}" style="max-width:220px;border:1px solid #265424"/>`; workspacePicker.style.display='none'; });
+              row.appendChild(t);
+            });
+            section.appendChild(row);
+            workspacePicker.appendChild(section);
+          }
+        }catch(err){ workspacePicker.innerHTML = '<div class="small" style="color:#f66">Failed to load images</div>'; }
+      } else {
+        workspacePicker.style.display = 'none';
+      }
     });
 
     // helper to fetch list

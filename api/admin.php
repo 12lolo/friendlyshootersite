@@ -147,6 +147,32 @@ try {
         }
     }
 
+    // List images from workspace folders (maps, Enemy, Charachters)
+    if ($action === 'list_images') {
+        $allowed = ['maps','Enemy','Charachters'];
+        $out = [];
+        foreach ($allowed as $fld) {
+            $dir = realpath(__DIR__ . '/..') . DIRECTORY_SEPARATOR . $fld;
+            $out[$fld] = [];
+            if (is_dir($dir)) {
+                $files = scandir($dir);
+                sort($files, SORT_NATURAL | SORT_FLAG_CASE);
+                foreach ($files as $f) {
+                    if ($f === '.' || $f === '..') continue;
+                    $full = $dir . DIRECTORY_SEPARATOR . $f;
+                    if (!is_file($full)) continue;
+                    $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
+                    if (in_array($ext, ['png','jpg','jpeg','gif','webp','svg'])) {
+                        // return web-accessible path (relative to web root)
+                        $out[$fld][] = '/' . $fld . '/' . $f;
+                    }
+                }
+            }
+        }
+        echo json_encode(['folders' => $out]);
+        exit;
+    }
+
     if ($action === 'item' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($_SESSION['admin'])) { http_response_code(401); echo json_encode(['error'=>'unauthorized']); exit; }
         $body = jsonIn();
@@ -172,12 +198,6 @@ try {
                 $stmt->execute([$item['name'] ?? '', $item['bio'] ?? '', json_encode($item['extra'] ?? new stdClass()), intval($item['health'] ?? 0), intval($item['damage'] ?? 0), $item['movement'] ?? 'medium']);
             }
             $id = $pdo->lastInsertId();
-            $stmt = $pdo->prepare("SELECT * FROM $table WHERE id = ?"); $stmt->execute([$id]); $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            $row['extra'] = $row['extra'] ? json_decode($row['extra'], true) : new stdClass();
-            if ($type === 'character' && isset($row['gadgets']) && $row['gadgets']) { $row['extra']['gadgets'] = json_decode($row['gadgets'], true); }
-            echo json_encode($row); exit;
-                $stmt->execute([$id, $item['name'] ?? '', $item['bio'] ?? '', json_encode($item['extra'] ?? new stdClass()), intval($item['health'] ?? 0), intval($item['damage'] ?? 0), $item['movement'] ?? 'medium']);
-            }
             $stmt = $pdo->prepare("SELECT * FROM $table WHERE id = ?"); $stmt->execute([$id]); $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $row['extra'] = $row['extra'] ? json_decode($row['extra'], true) : new stdClass();
             if ($type === 'character' && isset($row['gadgets']) && $row['gadgets']) { $row['extra']['gadgets'] = json_decode($row['gadgets'], true); }
