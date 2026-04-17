@@ -57,3 +57,23 @@ body{
     .mod-image{ width:100%; flex:0 0 auto }
     .mod-image .frame{ padding:6px }
 }
+
+/* Back to Home fixed button */
+.back-home-btn{
+    position:fixed;
+    top:18px;
+    left:18px;
+    z-index:1200;
+    display:inline-block;
+    background-color:#d400b1;
+    color:#ffffff;
+    padding:8px 12px;
+    border-radius:8px;
+    text-decoration:none;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+    border:1px solid rgba(0,0,0,0.08);
+}
+
+@media (max-width:480px){
+    .back-home-btn{ top:12px; left:12px; padding:6px 10px; }
+}
