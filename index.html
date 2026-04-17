@@ -399,21 +399,17 @@
                 </div>
                 <div id="leaderboard-root" class="leaderboard-root" style="max-width:720px;margin:12px auto;display:none;" aria-hidden="true"></div>
                 <div class="view_game_page page_widget base_widget buy_on_top" id="view_game_embed">
-                    <div id="embed_wrapper" style="max-width:900px;margin:12px auto;display:block;">
-                        <iframe id="itch_iframe" src="http://localhost:3000/itch/embed" title="FriendlyShooter on itch.io (proxied)" frameborder="0" allowfullscreen width="100%" height="800" style="display:block;"></iframe>
-                        <div id="embed_fallback" style="display:none;padding:24px;background:#07120a;color:#fff;text-align:center;">
-                            Itch.io refused to embed this page. <a href="https://tjeerdoweirdo06.itch.io/friendlyshooter" target="_blank" rel="noopener" style="color:#9ff">Open on itch.io</a>
+                    <div id="itch_card" style="max-width:900px;margin:12px auto;display:block;padding:18px;background:#233822;border:1px solid #265424;color:inherit;">
+                        <div style="display:flex;gap:12px;align-items:flex-start;">
+                            <img id="itch_card_img" src="https://img.itch.zone/aW1nLzI2NTc5NTczLmpwZw==/original/dvtKIR.jpg" alt="FriendlyShooter" style="width:240px;height:auto;border:1px solid #265424;"/>
+                            <div style="flex:1;">
+                                <h2 id="itch_card_title" style="margin-top:0">FriendlyShooter-V0.9</h2>
+                                <p id="itch_card_desc">Play FriendlyShooter, a free indie shooter with bosses, worlds, classes, challenges, leaderboard features, and horror themes.</p>
+                                <p style="margin-top:12px"><a class="button" href="https://tjeerdoweirdo06.itch.io/friendlyshooter" target="_blank" rel="noopener">Open on itch.io</a></p>
+                            </div>
                         </div>
+                        <div id="itch_card_screenshots" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"></div>
                     </div>
-                    <script type="text/javascript">
-                        (function(){
-                            var iframe = document.getElementById('itch_iframe');
-                            var fallback = document.getElementById('embed_fallback');
-                            var loaded = false;
-                            var t = setTimeout(function(){ if(!loaded){ iframe.style.display='none'; fallback.style.display='block'; } }, 1500);
-                            iframe.onload = function(){ loaded = true; clearTimeout(t); };
-                        })();
-                    </script>
                 </div>
                 <div id="view_game_footer" class="footer">
                     <a href="https://itch.io/" class="icon_logo">
@@ -476,21 +472,25 @@
                         if (data.image) {
                             const headerImg = document.querySelector('#header img');
                             if (headerImg) headerImg.src = data.image;
+                            const cardImg = document.getElementById('itch_card_img');
+                            if (cardImg) cardImg.src = data.image;
                         }
                         if (data.title) {
                             const titleEl = document.querySelector('.game_title');
                             if (titleEl) titleEl.textContent = data.title;
                             const docTitle = document.querySelector('title');
                             if (docTitle) docTitle.textContent = data.title + ' - Free Indie Shooter Game';
+                            const cardTitle = document.getElementById('itch_card_title');
+                            if (cardTitle) cardTitle.textContent = data.title;
                         }
                         if (data.description) {
-                            const descEl = document.querySelector('.formatted_description.user_formatted');
-                            if (descEl) descEl.innerHTML = data.description;
+                            const descEl = document.getElementById('itch_card_desc');
+                            if (descEl) descEl.textContent = data.description;
                         }
                         if (Array.isArray(data.screenshots) && data.screenshots.length>0) {
-                            const screenshotList = document.querySelector('.screenshot_list');
+                            const screenshotList = document.getElementById('itch_card_screenshots');
                             if (screenshotList) {
-                                screenshotList.innerHTML = data.screenshots.map(u => `\n                                    <a target="_blank" href="${u}" data-image_lightbox="true">\n                                        <img src="${u}" class="screenshot" alt="FriendlyShooter screenshot"/>\n                                    </a>`).join('\n');
+                                screenshotList.innerHTML = data.screenshots.map(u => `\n                                    <a target="_blank" href="${u}" style="display:inline-block">\n                                        <img src="${u}" style="width:120px;height:auto;border:1px solid #265424" alt="FriendlyShooter screenshot"/>\n                                    </a>`).join('\n');
                             }
                         }
                     }catch(e){/* fail silently */}
