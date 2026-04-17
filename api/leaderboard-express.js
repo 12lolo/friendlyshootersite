@@ -203,6 +203,35 @@ app.get('/itch/embed', async (req, res) => {
   }
 });
 
+// Metadata endpoint: fetches itch.io page and returns parsed JSON (title, description, images)
+app.get('/itch/meta', async (req, res) => {
+  try {
+    const target = 'https://tjeerdoweirdo06.itch.io/friendlyshooter';
+    const r = await fetch(target, { headers: { 'User-Agent': 'friendlyshooter-meta-proxy/1.0' }, timeout: 10000 });
+    const html = await r.text();
+
+    const titleMatch = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i) || html.match(/<title>([^<]+)<\/title>/i);
+    const descMatch = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i) || html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i);
+    const imageMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) || html.match(/<img[^>]+class=["']?header[^"']*["']?[^>]+src=["']([^"']+)["']/i);
+
+    // collect screenshot image URLs (images with class "screenshot")
+    const screenshots = [];
+    const re = /<img[^>]+class=["'][^"']*screenshot[^"']*["'][^>]*src=["']([^"']+)["'][^>]*>/ig;
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      screenshots.push(m[1]);
+    }
+
+    const title = titleMatch ? titleMatch[1] : '';
+    const description = descMatch ? descMatch[1] : '';
+    const image = imageMatch ? imageMatch[1] : '';
+
+    return res.json({ title, description, image, screenshots });
+  } catch (err) {
+    return res.status(502).json({ error: 'failed', message: String(err) });
+  }
+});
+
 // --- Simple admin API (password via header `x-admin-pass` or body/query `pass`) ---
 // (DB-backed helpers above replace JSON file storage)
 

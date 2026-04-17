@@ -465,5 +465,38 @@
             });
             I.setup_page();
         </script>
+        <script type="text/javascript">
+            // Fetch metadata from local proxy endpoint and update DOM
+            (function(){
+                async function applyMeta(){
+                    try{
+                        const r = await fetch('/itch/meta');
+                        if (!r.ok) return;
+                        const data = await r.json();
+                        if (data.image) {
+                            const headerImg = document.querySelector('#header img');
+                            if (headerImg) headerImg.src = data.image;
+                        }
+                        if (data.title) {
+                            const titleEl = document.querySelector('.game_title');
+                            if (titleEl) titleEl.textContent = data.title;
+                            const docTitle = document.querySelector('title');
+                            if (docTitle) docTitle.textContent = data.title + ' - Free Indie Shooter Game';
+                        }
+                        if (data.description) {
+                            const descEl = document.querySelector('.formatted_description.user_formatted');
+                            if (descEl) descEl.innerHTML = data.description;
+                        }
+                        if (Array.isArray(data.screenshots) && data.screenshots.length>0) {
+                            const screenshotList = document.querySelector('.screenshot_list');
+                            if (screenshotList) {
+                                screenshotList.innerHTML = data.screenshots.map(u => `\n                                    <a target="_blank" href="${u}" data-image_lightbox="true">\n                                        <img src="${u}" class="screenshot" alt="FriendlyShooter screenshot"/>\n                                    </a>`).join('\n');
+                            }
+                        }
+                    }catch(e){/* fail silently */}
+                }
+                if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyMeta); else applyMeta();
+            })();
+        </script>
     </body>
 </html>
