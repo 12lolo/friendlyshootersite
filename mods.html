@@ -7,64 +7,7 @@
         <link rel="stylesheet" href="webleaderboard/leaderboard.css">
         <link href="https://static.itch.io/game.css?1773778275" rel="stylesheet" />
         <link type="image/png" href="https://img.itch.zone/aW1nLzI1ODYyMDI3LnBuZw==/32x32%23/D5oY%2By.png" rel="icon" />
-        <style>
-            body{
-                background-color:#09280f;
-                color:#02ff77;
-                font-family: '04b_03', Lato, '04b_03', sans-serif;
-                background-image: url(https://img.itch.zone/aW1nLzI1ODUwMjE5LnBuZw==/original/Gbn3z7.png);
-                background-repeat: repeat-x;
-                background-position: 50% 0;
-                background-attachment: fixed;
-            }
-            .wrapper{
-                background-color: #09280f;
-                background-image: url(https://img.itch.zone/aW1nLzI1ODUwMjE5LnBuZw==/original/Gbn3z7.png);
-                background-repeat: repeat-x;
-                background-position: 50% 0;
-                background-attachment: fixed;
-            }
-            .inner_column{
-                color: #02ff77;
-                font-family: '04b_03', Lato, sans-serif;
-                background-color: transparent;
-                padding: 0;
-                border-radius: 0;
-            }
-            .center{
-                max-width:980px;
-                margin:18px auto;
-                background-color: rgba(12,33,11,1);
-                padding:22px;
-                border-radius:8px;
-                box-shadow: 0 1px 0 rgba(0,0,0,0.4) inset;
-            }
-            /* .center now styled above to include panel background */
-            .mods{ margin-top:12px }
-            .mod-entry{ display:flex; gap:18px; align-items:flex-start; border:1px solid rgba(2,255,119,0.06); padding:14px; border-radius:10px; margin-bottom:18px; background:darkgreen; transition: transform 160ms ease, box-shadow 160ms ease }
-            .mod-info{ flex:1; min-width:0 }
-            .mod-info h3{ margin:0 0 8px 0; font-size:1.25rem; color: #7af78f }
-            .mod-version{ color: #c8ffdd; font-weight:600; margin-left:8px; font-size:0.9rem }
-            .mod-author{ display:flex; align-items:center; gap:8px; margin-bottom:8px; color: rgba(2,255,119,0.95) }
-            .mod-author img{ width:36px; height:36px; border-radius:50%; border:1px solid #265424 }
-            .mod-info p{ margin:8px 0; line-height:1.45; color: #b6ffd8 }
-            .mod-image{ width:220px; flex:0 0 220px }
-            .mod-image img{ width:100%; height:auto; display:block; border-radius:8px }
-            .mod-image .frame{ background:#fff; padding:8px; border-radius:8px; box-shadow: 0 6px 18px rgba(0,0,0,0.35); border:1px solid rgba(0,0,0,0.05) }
-            /* ensure buttons match index appearance */
-            .inner_column .button,
-            .inner_column .button:hover,
-            .inner_column .button:active{
-                color: #ffffff;
-            }
-            .button:focus{ outline:3px solid rgba(212,0,177,0.18); outline-offset:3px }
-
-            @media (max-width:800px){
-                .mod-entry{ flex-direction:column-reverse; align-items:stretch }
-                .mod-image{ width:100%; flex:0 0 auto }
-                .mod-image .frame{ padding:6px }
-            }
-        </style>
+        <link rel="stylesheet" href="css/mods.css">
     </head>
     <body>
         <div id="wrapper" class="main wrapper">
@@ -79,6 +22,34 @@
 
             <h2>Available Mods</h2>
             <div class="mods">
+                <div class="mod-entry">
+                    <div class="mod-info">
+                        <h3>MelonWiki <span class="mod-version"></span></h3>
+                        <div class="mod-author">
+                            <img src="https://melonwiki.xyz/favicon.png" alt="MelonWiki avatar" onerror="this.style.display='none'">
+                            <a href="https://melonwiki.xyz/#/" target="_blank" rel="noopener">MelonWiki</a>
+                        </div>
+                        <p>Community wiki and resources for FriendlyShooter — guides, maps, and modding documentation.</p>
+                        <p><a class="button" href="https://melonwiki.xyz/#/" target="_blank" rel="noopener">Visit MelonWiki</a></p>
+                        <div class="install">
+                            <h4>Download &amp; Installation</h4>
+                            <ol>
+                                <li>Download MelonLoader from: <a href="https://melonwiki.xyz/#/" target="_blank" rel="noopener">melonwiki.xyz</a></li>
+                                <li>Open the installer and click "Add Game Manually" in the lower-right corner.</li>
+                                <li>Browse to and select <strong>FriendlyShooter.exe</strong> in your game folder.</li>
+                                <li>Select the FriendlyShooter entry that was added in the installer, then click <strong>Install</strong>.</li>
+                                <li>Move the mod file into the game's <em>Mods</em> folder. If the folder does not exist, create it or run the game once to generate it.</li>
+                            </ol>
+                            <p>For Linux users (Steam Proton / Wine), add this to the game's launch options:</p>
+                            <pre>WINEDLLOVERRIDES="version=n,b"</pre>
+                        </div>
+                    </div>
+                    <div class="mod-image">
+                        <a href="https://melonwiki.xyz/#/" target="_blank" rel="noopener">
+                            <div class="frame"><img id="mod-melon-image" src="https://melonwiki.xyz/" alt="MelonWiki preview" onerror="this.src='https://img.itch.zone/aW1nLzI1ODUwMjE5LnBuZw==/original/Gbn3z7.png'"></div>
+                        </a>
+                    </div>
+                </div>
                 <div class="mod-entry">
                     <div class="mod-info">
                         <h3>FS QoL Mod <span class="mod-version">v2.0.0</span></h3>
