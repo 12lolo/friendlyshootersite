@@ -51,7 +51,12 @@
             .mod-image{ width:220px; flex:0 0 220px }
             .mod-image img{ width:100%; height:auto; display:block; border-radius:8px }
             .mod-image .frame{ background:#fff; padding:8px; border-radius:8px; box-shadow: 0 6px 18px rgba(0,0,0,0.35); border:1px solid rgba(0,0,0,0.05) }
-            /* use site's .inner_column .button rules from game.css for button appearance */
+            /* ensure buttons match index appearance */
+            .inner_column .button,
+            .inner_column .button:hover,
+            .inner_column .button:active{
+                color: #ffffff;
+            }
             .button:focus{ outline:3px solid rgba(212,0,177,0.18); outline-offset:3px }
 
             @media (max-width:800px){
