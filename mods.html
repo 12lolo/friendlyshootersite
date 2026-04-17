@@ -15,6 +15,20 @@
                 background-position: 50% 0;
                 background-attachment: fixed;
             }
+            .wrapper{
+                background-color: #09280f;
+                background-image: url(https://img.itch.zone/aW1nLzI1ODUwMjE5LnBuZw==/original/Gbn3z7.png);
+                background-repeat: repeat-x;
+                background-position: 50% 0;
+                background-attachment: fixed;
+            }
+            .inner_column{
+                color: #02ff77;
+                font-family: '04b_03', Lato, sans-serif;
+                background-color: rgba(12,33,11,1);
+                padding: 18px;
+                border-radius: 8px;
+            }
             .center{ max-width:900px; margin:18px auto; }
             .button{ background:#d400b1; color:#fff; padding:8px 12px; border-radius:6px; text-decoration:none }
             .mods{ margin-top:12px }
@@ -27,7 +41,9 @@
         </style>
     </head>
     <body>
-        <div class="center">
+        <div id="wrapper" class="main wrapper">
+            <div class="inner_column size_large family_pixel" id="inner_column">
+                <div class="center">
             <h1>Mods &amp; Tools — FriendlyShooter</h1>
             <p>This page hosts community mods, modding tools, and installation instructions for FriendlyShooter. Download official builds and update the game from the itch.io page:</p>
             <p><a class="button" href="https://tjwgames.itch.io/friendlyshooter/purchase">Download from itch.io</a></p>
@@ -62,6 +78,8 @@
             <!-- Screenshots removed per request -->
 
             <p style="margin-top:18px"><a href="index.html" class="button">Back to Home</a></p>
+                </div>
+            </div>
         </div>
         <script>
             (function(){
