@@ -399,7 +399,21 @@
                 </div>
                 <div id="leaderboard-root" class="leaderboard-root" style="max-width:720px;margin:12px auto;display:none;" aria-hidden="true"></div>
                 <div class="view_game_page page_widget base_widget buy_on_top" id="view_game_embed">
-                    <iframe src="https://tjeerdoweirdo06.itch.io/friendlyshooter/embed" title="FriendlyShooter on itch.io" frameborder="0" allowfullscreen width="100%" height="800" style="max-width:900px;margin:12px auto;display:block;"></iframe>
+                    <div id="embed_wrapper" style="max-width:900px;margin:12px auto;display:block;">
+                        <iframe id="itch_iframe" src="https://tjeerdoweirdo06.itch.io/friendlyshooter/embed" title="FriendlyShooter on itch.io" frameborder="0" allowfullscreen width="100%" height="800" style="display:block;"></iframe>
+                        <div id="embed_fallback" style="display:none;padding:24px;background:#07120a;color:#fff;text-align:center;">
+                            Itch.io refused to embed this page. <a href="https://tjeerdoweirdo06.itch.io/friendlyshooter" target="_blank" rel="noopener" style="color:#9ff">Open on itch.io</a>
+                        </div>
+                    </div>
+                    <script type="text/javascript">
+                        (function(){
+                            var iframe = document.getElementById('itch_iframe');
+                            var fallback = document.getElementById('embed_fallback');
+                            var loaded = false;
+                            var t = setTimeout(function(){ if(!loaded){ iframe.style.display='none'; fallback.style.display='block'; } }, 1500);
+                            iframe.onload = function(){ loaded = true; clearTimeout(t); };
+                        })();
+                    </script>
                 </div>
                 <div id="view_game_footer" class="footer">
                     <a href="https://itch.io/" class="icon_logo">
