@@ -186,6 +186,23 @@ app.get('/api/leaderboard', async (req, res) => {
 
 app.get('/api/health', (req,res) => res.json({ status: 'ok', time: Date.now() }));
 
+// Proxy endpoint to fetch itch.io embed HTML and serve it without X-Frame-Options.
+app.get('/itch/embed', async (req, res) => {
+  try {
+    const target = 'https://tjeerdoweirdo06.itch.io/friendlyshooter/embed';
+    const r = await fetch(target, { headers: { 'User-Agent': 'friendlyshooter-proxy/1.0' }, timeout: 10000 });
+    const text = await r.text();
+    // Inject a <base> tag so relative URLs resolve against itch.io
+    const baseTag = '<base href="https://tjeerdoweirdo06.itch.io/friendlyshooter/">';
+    const out = text.replace(/<head([^>]*)>/i, function(m){ return m + baseTag; });
+    // Serve as HTML and do NOT set X-Frame-Options so it can be framed by this origin
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.send(out);
+  } catch (err) {
+    res.status(502).send('<html><body style="background:#07120a;color:#fff;padding:24px;">Unable to fetch embed from itch.io. <a href="https://tjeerdoweirdo06.itch.io/friendlyshooter" target="_blank" rel="noopener" style="color:#9ff">Open on itch.io</a></body></html>');
+  }
+});
+
 // --- Simple admin API (password via header `x-admin-pass` or body/query `pass`) ---
 // (DB-backed helpers above replace JSON file storage)
 
