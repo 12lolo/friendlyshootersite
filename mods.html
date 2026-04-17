@@ -10,6 +10,13 @@
             .center{ max-width:900px; margin:18px auto; }
             .button{ background:#d400b1; color:#fff; padding:8px 12px; border-radius:6px; text-decoration:none }
             .mods-list img{ max-width:100%; height:auto; border:1px solid #265424 }
+            .mods{ margin-top:12px }
+            .mod-entry{ display:flex; gap:18px; align-items:center; border:1px solid rgba(2,255,119,0.08); padding:12px; border-radius:8px; margin-bottom:14px }
+            .mod-info{ flex:1 }
+            .mod-info h3{ margin:0 0 8px 0; font-size:1.15rem }
+            .mod-info p{ margin:6px 0 }
+            .mod-image{ width:220px; flex:0 0 220px }
+            .mod-image img{ width:100%; height:auto; display:block; border:1px solid #265424; border-radius:6px }
         </style>
     </head>
     <body>
@@ -28,6 +35,22 @@
 
             <h2>Submit a Mod</h2>
             <p>To submit a mod for listing here, create a ZIP containing the mod and a short README, then email the creator or open an issue on the repo with a link. Include compatibility notes and installation steps.</p>
+
+            <h2>Available Mods</h2>
+            <div class="mods">
+                <div class="mod-entry">
+                    <div class="mod-info">
+                        <h3>FS QoL Mod <small>v2.0.0</small></h3>
+                        <p>Quality-of-life improvements for FriendlyShooter — balance tweaks, UI enhancements, and bug fixes from the community release.</p>
+                        <p><a class="button" href="https://github.com/IamN4m3l3ss/FS-QoL-Mod/releases/tag/v2.0.0" target="_blank" rel="noopener">Download / Release Page</a></p>
+                    </div>
+                    <div class="mod-image">
+                        <a href="https://github.com/IamN4m3l3ss/FS-QoL-Mod/releases/tag/v2.0.0" target="_blank" rel="noopener">
+                            <img src="https://opengraph.githubassets.com/1/IamN4m3l3ss/FS-QoL-Mod/releases/tag/v2.0.0" alt="FS QoL Mod screenshot or cover">
+                        </a>
+                    </div>
+                </div>
+            </div>
 
             <h2>Screenshots</h2>
             <div class="mods-list">
