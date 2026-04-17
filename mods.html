@@ -40,7 +40,20 @@
                 box-shadow: 0 1px 0 rgba(0,0,0,0.4) inset;
             }
             /* .center now styled above to include panel background */
-            .button{ background:#d400b1; color:#fff; padding:8px 12px; border-radius:6px; text-decoration:none }
+            .button{
+                display:inline-block;
+                background: linear-gradient(180deg,#ff39d1,#d400b1);
+                color:#ffffff;
+                padding:10px 16px;
+                border-radius:10px;
+                text-decoration:none;
+                text-shadow:0 1px 0 #ed19ca;
+                box-shadow: inset 0 -2px rgba(0,0,0,0.12);
+                border:1px solid rgba(0,0,0,0.15);
+                font-weight:700;
+                transition: transform 140ms ease, filter 140ms ease;
+            }
+            .button:focus{ outline:3px solid rgba(212,0,177,0.18); outline-offset:3px }
             .mods{ margin-top:12px }
             .mod-entry{ display:flex; gap:18px; align-items:flex-start; border:1px solid rgba(2,255,119,0.06); padding:14px; border-radius:10px; margin-bottom:18px; background:darkgreen; transition: transform 160ms ease, box-shadow 160ms ease }
             .mod-info{ flex:1; min-width:0 }
@@ -52,8 +65,8 @@
             .mod-image{ width:220px; flex:0 0 220px }
             .mod-image img{ width:100%; height:auto; display:block; border-radius:8px }
             .mod-image .frame{ background:#fff; padding:8px; border-radius:8px; box-shadow: 0 6px 18px rgba(0,0,0,0.35); border:1px solid rgba(0,0,0,0.05) }
-            .button{ background:#d400b1; color:#fff; padding:10px 16px; border-radius:8px; text-decoration:none; display:inline-block }
-            .button:hover{ filter:brightness(1.05); transform:translateY(-1px) }
+            .button:hover{ filter:brightness(1.06); transform:translateY(-3px) }
+            .button:active{ transform:translateY(-1px); filter:brightness(.96) }
 
             @media (max-width:800px){
                 .mod-entry{ flex-direction:column-reverse; align-items:stretch }
