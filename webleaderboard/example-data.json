@@ -1,5 +1,0 @@
-[
-  { "playerId": "p1", "playerName": "Alice", "score": 1200, "timestamp": 1712000000 },
-  { "playerId": "p2", "playerName": "Bob", "score": 1100, "timestamp": 1711990000 },
-  { "playerId": "p3", "playerName": "Carol", "score": 900, "timestamp": 1711980000 }
-]

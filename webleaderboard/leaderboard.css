@@ -1,7 +1,0 @@
-.leaderboard-root{font-family:Arial,Helvetica,sans-serif;max-width:720px;margin:16px auto;padding:12px;border:1px solid #ddd;background:#fff;border-radius:6px}
-.lb-header{font-size:1.2rem;font-weight:700;margin-bottom:8px}
-.lb-table{width:100%;border-collapse:collapse}
-.lb-table th,.lb-table td{padding:8px;border-bottom:1px solid #eee;text-align:left}
-.lb-table tr:nth-child(odd){background:#fbfbfb}
-.lb-footer{margin-top:8px;font-size:0.85rem;color:#666}
-.lb-error{color:#900;background:#fee;padding:8px;border-radius:4px}
