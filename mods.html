@@ -53,7 +53,7 @@
                     </div>
                     <div class="mod-image">
                         <a href="https://github.com/IamN4m3l3ss/FS-QoL-Mod/releases/tag/v2.0.0" target="_blank" rel="noopener">
-                            <img src="https://opengraph.githubassets.com/1/IamN4m3l3ss/FS-QoL-Mod/releases/tag/v2.0.0" alt="FS QoL Mod screenshot or cover">
+                            <img id="mod-fsqol-image" src="https://opengraph.githubassets.com/1/IamN4m3l3ss/FS-QoL-Mod/releases/tag/v2.0.0" alt="FS QoL Mod screenshot or cover">
                         </a>
                     </div>
                 </div>
@@ -63,5 +63,35 @@
 
             <p style="margin-top:18px"><a href="index.html" class="button">Back to Home</a></p>
         </div>
+        <script>
+            (function(){
+                var img = document.getElementById('mod-fsqol-image');
+                if (!img) return;
+                var cacheKey = 'mod_fsqol_img_v2';
+                var remote = img.getAttribute('src');
+                try {
+                    var cached = localStorage.getItem(cacheKey);
+                    if (cached) {
+                        img.src = cached;
+                        return;
+                    }
+                } catch(e){}
+
+                // Fetch the remote image and cache as data URL
+                fetch(remote, { mode: 'cors' }).then(function(resp){
+                    if (!resp.ok) throw new Error('network');
+                    return resp.blob();
+                }).then(function(blob){
+                    var reader = new FileReader();
+                    reader.onloadend = function(){
+                        try { localStorage.setItem(cacheKey, reader.result); } catch(e){}
+                        img.src = reader.result;
+                    };
+                    reader.readAsDataURL(blob);
+                }).catch(function(){
+                    // Leave the remote URL as fallback
+                });
+            })();
+        </script>
     </body>
 </html>
