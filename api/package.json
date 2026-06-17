@@ -4,8 +4,7 @@
   "description": "Express proxy to fetch Unity Gaming Services leaderboards and serve JSON for website widget",
   "main": "leaderboard-express.js",
   "scripts": {
-    "start": "node leaderboard-express.js",
-    "start:donations": "node donations-express.js"
+    "start": "node leaderboard-express.js"
   },
   "engines": {
     "node": ">=18"
