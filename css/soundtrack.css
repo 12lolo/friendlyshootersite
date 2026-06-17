@@ -49,8 +49,10 @@
 
 .cover-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
+    max-width: 700px;
+    margin: 0 auto;
 }
 
 .cover-card {
@@ -68,7 +70,7 @@
 
 .cover-art {
     position: relative;
-    width: min(100%, 320px);
+    width: min(100%, 220px);
     aspect-ratio: 1 / 1;
     margin: 0 auto;
     border-radius: 8px;
@@ -137,8 +139,12 @@
     padding-bottom: 0;
 }
 
-.tracklist li span {
+.track-title {
     flex: 1;
+}
+
+.track-status-wrap {
+    flex-shrink: 0;
 }
 
 .tracklist li .button {
@@ -162,6 +168,10 @@
     .soundtrack-wrap {
         width: calc(100% - 24px);
         padding: 12px;
+    }
+
+    .cover-grid {
+        grid-template-columns: 1fr;
     }
 
     .soundtrack-actions .button {
