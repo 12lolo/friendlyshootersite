@@ -60,7 +60,7 @@ body.layout_widget {
     justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 16px;
+    margin: 14px 0 18px;
 }
 
 .donate-actions .button {

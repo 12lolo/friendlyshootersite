@@ -77,6 +77,9 @@ body{
     display: inline-block;
     padding: 9px 14px;
     line-height: 1.2;
+    font-size: 0.95rem;
+    font-family: inherit;
+    font-weight: 700;
     text-decoration: none;
 }
 .inner_column .button:hover {
@@ -89,9 +92,10 @@ body{
 
 .page-actions {
     display: flex;
+    justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 12px;
+    margin: 14px 0 18px;
 }
 
 @media (max-width:800px){
