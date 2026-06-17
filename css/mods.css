@@ -47,6 +47,19 @@ body{
     margin-top: 0;
 }
 
+.mods-head {
+    text-align: center;
+    margin-bottom: 14px;
+}
+
+.mods-head h1 {
+    margin: 0 0 8px;
+}
+
+.mods-head p {
+    margin: 0;
+}
+
 .center p,
 .center li {
     color: var(--mods-text);
@@ -95,7 +108,7 @@ body{
     justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin: 14px 0 18px;
+    margin: 14px 0 20px;
 }
 
 @media (max-width:800px){
