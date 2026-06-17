@@ -1,0 +1,114 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta name="theme-color" content="#09280f"/>
+        <meta name="description" content="Support FriendlyShooter and view live donation updates."/>
+        <title>Donate - FriendlyShooter</title>
+        <link href="https://static.itch.io/game.css?1773778275" rel="stylesheet"/>
+        <link type="image/png" href="https://img.itch.zone/aW1nLzI1ODYyMDI3LnBuZw==/32x32%23/D5oY%2By.png" rel="icon"/>
+        <link rel="stylesheet" href="css/site.css"/>
+        <link rel="stylesheet" href="css/donate.css"/>
+    </head>
+    <body class="locale_en game_layout_widget layout_widget no_theme_toggle responsive" data-host="itch.io" data-page_name="view_game">
+        <div id="wrapper" class="main wrapper">
+            <div class="inner_column size_large family_pixel" id="inner_column">
+                <section class="donate-wrap" aria-labelledby="donate-title">
+                    <header class="donate-head">
+                        <h1 id="donate-title">Support FriendlyShooter</h1>
+                        <p>Donations help fund game updates and future releases.</p>
+                    </header>
+
+                    <div class="donate-actions">
+                        <a href="index.html" class="button">Back to Home</a>
+                        <a href="https://paypal.me/TjeerdGroenhof" class="button" target="_blank" rel="noopener noreferrer">Donate via PayPal</a>
+                    </div>
+
+                    <div class="donation-panel" aria-live="polite">
+                        <div class="donation-meta">
+                            <p><strong>Live Donor Feed</strong></p>
+                            <p id="donation-updated">Waiting for updates...</p>
+                        </div>
+                        <ul id="donation-list" class="donation-list"></ul>
+                        <p id="donation-empty" class="donation-empty">No donations recorded yet.</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <script>
+            (function(){
+                var listEl = document.getElementById('donation-list');
+                var emptyEl = document.getElementById('donation-empty');
+                var updatedEl = document.getElementById('donation-updated');
+
+                function money(amount, currency) {
+                    try {
+                        return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }).format(amount || 0);
+                    } catch (e) {
+                        return (currency || 'USD') + ' ' + (amount || 0);
+                    }
+                }
+
+                function formatDate(value) {
+                    if (!value) return 'just now';
+                    var d = new Date(value);
+                    if (isNaN(d.getTime())) return 'just now';
+                    return d.toLocaleString();
+                }
+
+                function render(donations) {
+                    listEl.innerHTML = '';
+                    if (!donations || !donations.length) {
+                        emptyEl.style.display = 'block';
+                        return;
+                    }
+                    emptyEl.style.display = 'none';
+
+                    donations.forEach(function(item) {
+                        var li = document.createElement('li');
+
+                        var left = document.createElement('div');
+                        var name = document.createElement('div');
+                        name.className = 'donation-name';
+                        name.textContent = item.name || 'Anonymous';
+                        left.appendChild(name);
+
+                        if (item.note) {
+                            var note = document.createElement('div');
+                            note.className = 'donation-note';
+                            note.textContent = item.note;
+                            left.appendChild(note);
+                        }
+
+                        var right = document.createElement('div');
+                        right.textContent = money(Number(item.amount), item.currency) + ' • ' + formatDate(item.donatedAt);
+
+                        li.appendChild(left);
+                        li.appendChild(right);
+                        listEl.appendChild(li);
+                    });
+                }
+
+                function refresh() {
+                    fetch('/api/donations?limit=30', { cache: 'no-store' })
+                        .then(function(resp) {
+                            if (!resp.ok) throw new Error('request failed');
+                            return resp.json();
+                        })
+                        .then(function(data) {
+                            render(data.donations || []);
+                            updatedEl.textContent = 'Updated: ' + formatDate(data.updatedAt || new Date().toISOString());
+                        })
+                        .catch(function() {
+                            updatedEl.textContent = 'Live feed unavailable. Check API setup.';
+                        });
+                }
+
+                refresh();
+                setInterval(refresh, 20000);
+            })();
+        </script>
+    </body>
+</html>

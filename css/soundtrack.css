@@ -47,13 +47,13 @@
     padding-right: 14px;
 }
 
-.vinyl-grid {
+.cover-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 18px;
 }
 
-.vinyl-card {
+.cover-card {
     border: 1px solid rgba(2, 255, 119, 0.2);
     border-radius: 10px;
     padding: 12px;
@@ -61,69 +61,89 @@
     text-align: center;
 }
 
-.vinyl-card h2 {
+.cover-card h2 {
     margin: 0 0 10px;
     font-size: 1.05rem;
 }
 
-.vinyl-disc {
+.cover-art {
     position: relative;
     width: min(100%, 320px);
     aspect-ratio: 1 / 1;
     margin: 0 auto;
-    border-radius: 50%;
+    border-radius: 8px;
     overflow: hidden;
-    border: 2px solid rgba(2, 255, 119, 0.35);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.38);
+    border: 1px solid rgba(2, 255, 119, 0.26);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
 }
 
-.vinyl-disc::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: repeating-radial-gradient(circle at center, rgba(0, 0, 0, 0.12) 0 2px, rgba(0, 0, 0, 0) 2px 7px);
-    pointer-events: none;
-}
-
-.vinyl-disc::after {
-    content: "";
-    position: absolute;
-    width: 26%;
-    aspect-ratio: 1 / 1;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #1d4b27, #050505);
-    border: 2px solid rgba(2, 255, 119, 0.35);
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
-}
-
-.vinyl-disc img {
+.cover-art img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.vinyl-caption {
+.cover-caption {
     margin: 10px 0 0;
     font-size: 0.95rem;
     color: rgba(2, 255, 119, 0.9);
 }
 
-.spotify-embed-wrap {
+.tracklist-wrap {
     margin-top: 18px;
     border: 1px solid rgba(2, 255, 119, 0.2);
     border-radius: 10px;
-    overflow: hidden;
+    padding: 14px;
     background: rgba(5, 18, 7, 0.7);
 }
 
-.spotify-embed-wrap iframe {
-    display: block;
-    width: 100%;
-    height: 352px;
-    border: 0;
+.tracklist-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.tracklist-head h2 {
+    margin: 0;
+    color: var(--soundtrack-green);
+}
+
+.tracklist-head .button {
+    border-radius: 999px;
+    padding-left: 14px;
+    padding-right: 14px;
+}
+
+.tracklist {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.tracklist li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed rgba(2, 255, 119, 0.15);
+}
+
+.tracklist li:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.tracklist li span {
+    flex: 1;
+}
+
+.tracklist li .button {
+    flex-shrink: 0;
+    border-radius: 999px;
 }
 
 @media (max-width: 700px) {
@@ -137,7 +157,22 @@
         text-align: center;
     }
 
-    .spotify-embed-wrap iframe {
-        height: 300px;
+    .tracklist-wrap {
+        padding: 12px;
+    }
+
+    .tracklist {
+        padding-left: 16px;
+    }
+
+    .tracklist li {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .tracklist li .button,
+    .tracklist-head .button {
+        width: 100%;
+        text-align: center;
     }
 }
