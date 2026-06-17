@@ -250,6 +250,12 @@
     padding-right: 14px;
 }
 
+.spotify-links-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
 .spotify-embed {
     display: block;
     width: 100%;
@@ -269,5 +275,10 @@
 
     .spotify-embed {
         height: 152px;
+    }
+
+    .spotify-links-row .spotify-open-btn {
+        width: 100%;
+        text-align: center;
     }
 }
