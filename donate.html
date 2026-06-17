@@ -83,7 +83,18 @@
                         }
 
                         var right = document.createElement('div');
-                        right.textContent = money(Number(item.amount), item.currency) + ' • ' + formatDate(item.donatedAt);
+                        right.className = 'donation-right';
+
+                        var amount = document.createElement('div');
+                        amount.className = 'donation-amount';
+                        amount.textContent = money(Number(item.amount), item.currency);
+
+                        var when = document.createElement('div');
+                        when.className = 'donation-time';
+                        when.textContent = formatDate(item.donatedAt);
+
+                        right.appendChild(amount);
+                        right.appendChild(when);
 
                         li.appendChild(left);
                         li.appendChild(right);

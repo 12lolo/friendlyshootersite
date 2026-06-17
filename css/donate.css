@@ -5,9 +5,9 @@
 
 .donate-wrap {
     width: calc(100% - 40px);
-    max-width: 980px;
+    max-width: 920px;
     margin: 16px auto 24px;
-    padding: 16px;
+    padding: 18px;
     border: 1px solid var(--donate-border);
     border-radius: 12px;
     background:
@@ -24,6 +24,11 @@
 .donate-head h1 {
     margin: 0 0 8px;
     color: var(--donate-green);
+}
+
+.donate-head p {
+    margin: 0;
+    color: rgba(2, 255, 119, 0.9);
 }
 
 .donate-actions {
@@ -43,7 +48,7 @@
 .donation-panel {
     border: 1px solid rgba(2, 255, 119, 0.2);
     border-radius: 10px;
-    padding: 12px;
+    padding: 14px;
     background: rgba(5, 18, 7, 0.7);
 }
 
@@ -69,7 +74,7 @@
 .donation-list li {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
     padding: 10px 0;
     border-bottom: 1px dashed rgba(2, 255, 119, 0.16);
@@ -88,8 +93,24 @@
     font-size: 0.9rem;
 }
 
+.donation-right {
+    text-align: right;
+    min-width: 170px;
+}
+
+.donation-amount {
+    font-weight: bold;
+    color: rgba(2, 255, 119, 1);
+}
+
+.donation-time {
+    font-size: 0.85rem;
+    opacity: 0.82;
+}
+
 .donation-empty {
     opacity: 0.9;
+    margin: 8px 0 0;
 }
 
 @media (max-width: 700px) {
@@ -101,6 +122,11 @@
     .donation-list li {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .donation-right {
+        min-width: 0;
+        text-align: left;
     }
 
     .donate-actions .button {
