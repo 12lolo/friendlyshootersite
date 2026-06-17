@@ -156,6 +156,12 @@
     flex: 1;
 }
 
+.track-note {
+    margin-top: 3px;
+    font-size: 0.8rem;
+    opacity: 0.85;
+}
+
 .track-status-wrap {
     flex-shrink: 0;
 }
