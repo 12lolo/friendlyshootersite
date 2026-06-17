@@ -87,28 +87,16 @@ body{
 .install{ background: rgba(0,0,0,0.18); border:1px solid var(--mods-border); padding:12px; border-radius:8px; margin-top:10px }
 .install pre{ background: rgba(0,0,0,0.15); padding:8px; border-radius:6px; color:#fff; overflow:auto }
 
+.page-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
 @media (max-width:800px){
     .center { padding: 16px; margin: 14px auto 20px; }
     .mod-entry{ flex-direction:column-reverse; align-items:stretch }
     .mod-image{ width:100%; flex:0 0 auto }
     .mod-image .frame{ padding:6px }
-}
-
-/* Back to Home button */
-.back-home-btn{
-    position: static;
-    display:inline-block;
-    background-color:#d400b1;
-    color:#ffffff;
-    padding:9px 14px;
-    border-radius:8px;
-    text-decoration:none;
-    margin-bottom: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.32);
-    border:1px solid rgba(0,0,0,0.08);
-    text-shadow: 0 1px 0 #ed19ca;
-}
-
-@media (max-width:480px){
-    .back-home-btn{ padding:6px 10px; }
 }
