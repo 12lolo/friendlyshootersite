@@ -6,19 +6,25 @@
 html,
 body {
     min-height: 100%;
+    background-color: #09280f !important;
 }
 
-body {
+body,
+body.layout_widget {
     margin: 0;
-    background-color: #09280f;
+    background-color: #09280f !important;
     background-image: url(https://img.itch.zone/aW1nLzI1ODUwMjE5LnBuZw==/original/Gbn3z7.png);
     background-repeat: repeat-x;
     background-position: 50% 0;
     background-attachment: fixed;
 }
 
+.layout_widget #wrapper,
+.layout_widget .wrapper,
+.layout_widget #inner_column,
 .wrapper {
     min-height: 100vh;
+    background-color: transparent !important;
 }
 
 .donate-wrap {
