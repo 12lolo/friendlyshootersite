@@ -3,6 +3,24 @@
     --donate-border: #265424;
 }
 
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    margin: 0;
+    background-color: #09280f;
+    background-image: url(https://img.itch.zone/aW1nLzI1ODUwMjE5LnBuZw==/original/Gbn3z7.png);
+    background-repeat: repeat-x;
+    background-position: 50% 0;
+    background-attachment: fixed;
+}
+
+.wrapper {
+    min-height: 100vh;
+}
+
 .donate-wrap {
     width: calc(100% - 40px);
     max-width: 920px;
