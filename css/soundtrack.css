@@ -48,17 +48,21 @@
 }
 
 .cover-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-    max-width: 700px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 14px;
+    flex-wrap: nowrap;
+    max-width: 440px;
     margin: 0 auto;
 }
 
 .cover-card {
+    width: 210px;
+    flex: 0 0 210px;
     border: 1px solid rgba(2, 255, 119, 0.2);
     border-radius: 10px;
-    padding: 12px;
+    padding: 10px;
     background: rgba(10, 22, 10, 0.7);
     text-align: center;
 }
@@ -70,7 +74,7 @@
 
 .cover-art {
     position: relative;
-    width: min(100%, 220px);
+    width: 170px;
     aspect-ratio: 1 / 1;
     margin: 0 auto;
     border-radius: 8px;
@@ -171,7 +175,17 @@
     }
 
     .cover-grid {
-        grid-template-columns: 1fr;
+        flex-wrap: wrap;
+        max-width: 100%;
+    }
+
+    .cover-card {
+        width: 170px;
+        flex-basis: 170px;
+    }
+
+    .cover-art {
+        width: 140px;
     }
 
     .soundtrack-actions .button {
