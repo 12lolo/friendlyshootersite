@@ -52,7 +52,12 @@
 .inner_column .button,.inner_column .button:hover,.inner_column .button:active {
     background-color: #d400b1;
     color: #ffffff;
-    text-shadow: 0 1px 0px #ed19ca
+    text-shadow: 0 1px 0px #ed19ca;
+    border-radius: 8px;
+    display: inline-block;
+    padding: 9px 14px;
+    line-height: 1.2;
+    text-decoration: none
 }
 
 .inner_column hr {
@@ -245,9 +250,7 @@
 
 .spotify-open-btn {
     white-space: nowrap;
-    border-radius: 999px;
-    padding-left: 14px;
-    padding-right: 14px;
+    border-radius: 8px;
 }
 
 .spotify-links-row {

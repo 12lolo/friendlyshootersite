@@ -42,9 +42,7 @@
 }
 
 .soundtrack-actions .button {
-    border-radius: 999px;
-    padding-left: 14px;
-    padding-right: 14px;
+    border-radius: 8px;
 }
 
 .cover-grid {
@@ -127,9 +125,7 @@
 }
 
 .tracklist-head .button {
-    border-radius: 999px;
-    padding-left: 14px;
-    padding-right: 14px;
+    border-radius: 8px;
 }
 
 .tracklist {
@@ -168,7 +164,7 @@
 
 .tracklist li .button {
     flex-shrink: 0;
-    border-radius: 999px;
+    border-radius: 8px;
 }
 
 .track-status {

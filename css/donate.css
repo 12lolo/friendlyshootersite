@@ -64,9 +64,7 @@ body.layout_widget {
 }
 
 .donate-actions .button {
-    border-radius: 999px;
-    padding-left: 14px;
-    padding-right: 14px;
+    border-radius: 8px;
 }
 
 .donation-panel {
