@@ -33,7 +33,9 @@ body{
 .center{
     max-width:980px;
     margin:22px auto 28px;
-    background: var(--mods-panel);
+    background:
+        radial-gradient(circle at top right, rgba(2, 255, 119, 0.14), transparent 38%),
+        linear-gradient(180deg, rgba(35, 56, 34, 0.95), rgba(12, 33, 11, 0.95));
     padding:24px;
     border-radius:10px;
     border: 1px solid var(--mods-border);
