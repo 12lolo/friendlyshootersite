@@ -356,8 +356,7 @@ body {
     max-width: 960px;
     min-height: 0;
     margin: 16px auto 20px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: block;
     overflow: hidden;
     border: 1px solid rgba(2, 255, 119, 0.42);
     background: #0c210b;
@@ -413,7 +412,8 @@ body {
 .mission-card {
     position: relative;
     flex: 0 0 100%;
-    min-height: 180px;
+    height: 180px;
+    min-height: 0;
     overflow: hidden;
     isolation: isolate;
     scroll-snap-align: start;
@@ -633,18 +633,12 @@ body {
         grid-template-columns: 1fr;
     }
 
-    .world-briefing-copy {
-        min-height: 160px;
-    }
+    .world-briefing-copy { min-height: 0; }
 
-    .mission-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        border-top: 1px solid rgba(2, 255, 119, 0.3);
-        border-left: 0;
-    }
+    .mission-grid { border-top: 1px solid rgba(2, 255, 119, 0.3); border-left: 0; }
 
     .mission-card {
-        min-height: 132px;
+        height: 160px;
     }
 
     .mission-enemies img {
