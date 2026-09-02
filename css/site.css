@@ -411,7 +411,7 @@ body {
 
 .mission-card {
     position: relative;
-    flex: 0 0 100%;
+    flex: 0 0 33.3333%;
     height: 180px;
     min-height: 0;
     overflow: hidden;
@@ -467,13 +467,13 @@ body {
     display: flex;
     align-items: end;
     gap: 4px;
-    height: 56px;
+    height: 50px;
 }
 
 .mission-enemies img {
     flex: 0 0 50px;
     width: 50px;
-    height: 56px;
+    height: 50px;
     object-fit: contain;
     box-sizing: border-box;
     padding: 0;
@@ -486,7 +486,8 @@ body {
 .character-wheel-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .character-wheel h2 { margin: 0; font-size: 1.1rem; }
 .character-track { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
-.character-card { --rarity: #a8ada8; flex: 0 0 min(100%, 220px); display: grid; grid-template-columns: 88px 1fr; grid-template-rows: 1fr auto; align-items: end; min-height: 145px; padding: 10px; scroll-snap-align: start; border: 1px solid var(--rarity); background: rgba(7, 21, 9, 0.92); box-shadow: inset 0 0 20px color-mix(in srgb, var(--rarity) 15%, transparent); }
+.character-card { --rarity: #a8ada8; flex: 0 0 min(100%, 220px); display: grid; grid-template-columns: 88px 1fr; grid-template-rows: 1fr auto; align-items: end; min-height: 145px; padding: 10px; scroll-snap-align: start; border: 1px solid var(--rarity); background: rgba(7, 21, 9, 0.92); box-shadow: inset 0 0 20px color-mix(in srgb, var(--rarity) 15%, transparent); opacity: 0.58; transform: scale(0.92); transition: transform 180ms ease, opacity 180ms ease, box-shadow 180ms ease; }
+.character-card.active { position: relative; z-index: 1; opacity: 1; transform: scale(1.06) translateY(-5px); box-shadow: 0 7px 0 rgba(0, 0, 0, 0.48), inset 0 0 28px color-mix(in srgb, var(--rarity) 30%, transparent); }
 .character-card img { grid-row: 1 / span 2; width: 80px; height: 120px; object-fit: contain; filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.65)); }
 .character-card strong { color: #fff; font-size: 0.9rem; }
 .character-card span { justify-self: start; margin-top: 7px; padding: 3px 5px; background: var(--rarity); color: #071509; font-size: 0.68rem; text-transform: uppercase; }
@@ -638,11 +639,14 @@ body {
     .mission-grid { border-top: 1px solid rgba(2, 255, 119, 0.3); border-left: 0; }
 
     .mission-card {
+        flex-basis: 100%;
         height: 160px;
     }
 
     .mission-enemies img {
-        width: 38px;
+        flex-basis: 50px;
+        width: 50px;
+        height: 50px;
     }
 
     .spotify-section {

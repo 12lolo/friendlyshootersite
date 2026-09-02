@@ -219,20 +219,20 @@
                             <div class="mission-info"><div><strong>02 // The Dessert</strong><span>Dessert Tower · Grenade · Spread Shooter</span></div><div class="mission-enemies"><img src="Enemy/DessertTower.png" alt="Dessert Tower enemy"/><img src="Enemy/Grenande.png" alt="Grenade enemy"/><img src="Enemy/SpreadShooter.png" alt="Spread Shooter enemy"/></div></div>
                         </article>
                         <article class="mission-card city-mission">
-                            <img class="mission-map" src="maps/Citynew.png" alt="City world"/>
+                            <img class="mission-map" src="maps/Citynew.png" alt="City world" loading="lazy" decoding="async"/>
                             <div class="mission-info"><div><strong>03 // The City</strong><span>Cannon Tower · Spawner · The Homing</span></div><div class="mission-enemies"><img src="Enemy/CannonTower.png" alt="Cannon Tower enemy"/><img src="Enemy/Spawner.png" alt="Spawner enemy"/><img src="Enemy/The homing.png" alt="Homing enemy"/></div></div>
                         </article>
                         <article class="mission-card final-mission">
-                            <img class="mission-map" src="maps/finalShowdown.png" alt="Final Showdown world"/>
+                            <img class="mission-map" src="maps/finalShowdown.png" alt="Final Showdown world" loading="lazy" decoding="async"/>
                             <div class="mission-info"><div><strong>04 // Final Showdown</strong><span>Gable · Goble · Big Spawner</span></div><div class="mission-enemies"><img src="Enemy/Gable.png" alt="Gable enemy"/><img src="Enemy/Goble.png" alt="Goble enemy"/><img src="Enemy/Spawnerbig.png" alt="Big Spawner enemy"/></div></div>
                         </article>
                         <article class="mission-card quick-mission">
-                            <img class="mission-map" src="maps/QuickLevels.png" alt="Quick Levels arena"/>
+                            <img class="mission-map" src="maps/QuickLevels.png" alt="Quick Levels arena" loading="lazy" decoding="async"/>
                             <div class="mission-info"><div><strong>05 // Quicklevels</strong><span>Burst · Rocketeer · Tank</span></div><div class="mission-enemies"><img src="Enemy/Burst.png" alt="Burst enemy"/><img src="Enemy/Rocketeer.png" alt="Rocketeer enemy"/><img src="Enemy/Tank.png" alt="Tank enemy"/></div></div>
                         </article>
                         <article class="mission-card prefinal-mission">
-                            <img class="mission-map" src="maps/Pre-final.png" alt="Pre-final Schizo level corridor"/>
-                            <div class="mission-info"><span>06 // Pre-final</span><div class="mission-warning">Signal corrupted</div></div>
+                            <img class="mission-map" src="maps/Pre-final.png" alt="Pre-final Schizo level corridor" loading="lazy" decoding="async"/>
+                            <div class="mission-info"><span>06 // ?????</span><div class="mission-warning">Signal corrupted</div></div>
                         </article>
                         </div>
                     </div>
@@ -243,7 +243,7 @@
                         <div class="carousel-controls"><button class="carousel-button" type="button" data-direction="previous" aria-label="Previous character">&lt;</button><span class="carousel-count" aria-live="polite">01 / 25</span><button class="carousel-button" type="button" data-direction="next" aria-label="Next character">&gt;</button></div>
                     </div>
                     <div class="character-track" data-carousel-track>
-                        <article class="character-card common"><img src="Charachters/ARv2.png" alt="AR character"/><strong>AR</strong><span>Common</span></article>
+                        <article class="character-card common active"><img src="Charachters/ARv2.png" alt="AR character" decoding="async"/><strong>AR</strong><span>Common</span></article>
                         <article class="character-card common"><img src="Charachters/Pistol2.png" alt="Pistol character"/><strong>Pistol</strong><span>Common</span></article>
                         <article class="character-card common"><img src="Charachters/SMGv2.png" alt="SMG character"/><strong>SMG</strong><span>Common</span></article>
                         <article class="character-card common"><img src="Charachters/Shotgunv2.png" alt="Shotgun character"/><strong>Shotgun</strong><span>Common</span></article>
@@ -662,19 +662,39 @@
                 var cards = track.children;
                 var count = carousel.querySelector('.carousel-count');
                 var currentIndex = 0;
+                var isCharacterWheel = carousel.classList.contains('character-wheel');
+                var isWorldCarousel = carousel.classList.contains('world-carousel');
+                var getPageSize = function() {
+                    return isWorldCarousel && window.matchMedia('(min-width: 701px)').matches ? 3 : 1;
+                };
+                var updateActiveCard = function() {
+                    if (!isCharacterWheel) return;
+                    Array.prototype.forEach.call(cards, function(card, index) {
+                        card.classList.toggle('active', index === currentIndex);
+                    });
+                };
                 var updateCount = function() {
-                    currentIndex = Math.round(track.scrollLeft / track.clientWidth);
-                    count.textContent = String(currentIndex + 1).padStart(2, '0') + ' / ' + String(cards.length).padStart(2, '0');
+                    var rawIndex = Math.round(track.scrollLeft / cards[0].getBoundingClientRect().width);
+                    var pageSize = getPageSize();
+                    currentIndex = isWorldCarousel ? Math.round(rawIndex / pageSize) * pageSize : rawIndex;
+                    var endIndex = Math.min(cards.length, currentIndex + pageSize);
+                    count.textContent = String(currentIndex + 1).padStart(2, '0') + (isWorldCarousel ? '-' + String(endIndex).padStart(2, '0') : '') + ' / ' + String(cards.length).padStart(2, '0');
+                    updateActiveCard();
                 };
                 carousel.querySelectorAll('[data-direction]').forEach(function(button) {
                     button.addEventListener('click', function() {
-                        currentIndex += button.dataset.direction === 'next' ? 1 : -1;
-                        currentIndex = Math.max(0, Math.min(cards.length - 1, currentIndex));
-                        track.scrollTo({ left: currentIndex * track.clientWidth, behavior: 'smooth' });
-                        count.textContent = String(currentIndex + 1).padStart(2, '0') + ' / ' + String(cards.length).padStart(2, '0');
+                        var pageSize = getPageSize();
+                        currentIndex += button.dataset.direction === 'next' ? pageSize : -pageSize;
+                        currentIndex = Math.max(0, Math.min(cards.length - pageSize, currentIndex));
+                        track.scrollTo({ left: currentIndex * cards[0].getBoundingClientRect().width, behavior: 'smooth' });
+                        var endIndex = Math.min(cards.length, currentIndex + pageSize);
+                        count.textContent = String(currentIndex + 1).padStart(2, '0') + (isWorldCarousel ? '-' + String(endIndex).padStart(2, '0') : '') + ' / ' + String(cards.length).padStart(2, '0');
+                        updateActiveCard();
                     });
                 });
                 track.addEventListener('scroll', updateCount, { passive: true });
+                window.addEventListener('resize', updateCount, { passive: true });
+                updateCount();
             });
         </script>
     </body>
