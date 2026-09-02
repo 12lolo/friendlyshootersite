@@ -420,6 +420,12 @@ body {
     background: #071509;
 }
 
+@media (min-width: 701px) {
+    .mission-card {
+        flex-basis: 33.3333% !important;
+    }
+}
+
 .mission-card::after {
     content: "";
     position: absolute;
