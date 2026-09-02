@@ -37,8 +37,8 @@ body {
     background-attachment: fixed;
     background-image:
         linear-gradient(rgba(7, 21, 9, 0.74), rgba(7, 21, 9, 0.92)),
-        url("../maps/finalShowdown.png"),
-        url("../maps/World1.png"),
+        url("../maps/finalShowdown.webp"),
+        url("../maps/World1.webp"),
         repeating-linear-gradient(0deg, rgba(2, 255, 119, 0.035) 0, rgba(2, 255, 119, 0.035) 1px, transparent 1px, transparent 4px);
     background-size: auto, 720px auto, 720px auto, auto;
     background-repeat: repeat, no-repeat, no-repeat, repeat;
@@ -58,9 +58,9 @@ body {
     background-image:
         linear-gradient(rgba(3, 15, 7, 0.58), rgba(3, 15, 7, 0.82)),
         repeating-linear-gradient(0deg, rgba(2, 255, 119, 0.08) 0, rgba(2, 255, 119, 0.08) 1px, transparent 1px, transparent 4px),
-        url("../maps/Citynew.png"),
-        url("../maps/World1.png"),
-        url("../maps/finalShowdown.png");
+        url("../maps/Citynew.webp"),
+        url("../maps/World1.webp"),
+        url("../maps/finalShowdown.webp");
     background-size: auto, auto, min(82vw, 1200px) auto, min(82vw, 1200px) auto, min(82vw, 1200px) auto;
     background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat;
     background-position: 0 0, 0 0, 110vw 16vh, 220vw 48vh, 330vw 8vh;
@@ -74,7 +74,7 @@ body {
     inset: 0;
     pointer-events: none;
     opacity: 0;
-    background-image: url("../Schizoimages/Alone.png"), url("../Schizoimages/Ending.png");
+    background-image: url("../Schizoimages/Alone.webp"), url("../Schizoimages/Ending.webp");
     background-position: 8% 78%, 92% 24%;
     background-repeat: no-repeat;
     background-size: min(28vw, 360px) auto, min(24vw, 320px) auto;
