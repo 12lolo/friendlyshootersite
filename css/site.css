@@ -1,6 +1,21 @@
 :root {
-    --itchio_ui_bg: #2a302b;
-    --itchio_ui_bg_dark: #242a25
+    --fs-green: #02ff77;
+    --fs-pink: #d400b1;
+    --fs-deep: #071509;
+    --fs-panel: #0c210b;
+    --fs-line: #265424;
+    --itchio_ui_bg: #121a12;
+    --itchio_ui_bg_dark: #071509
+}
+
+html {
+    min-height: 100%;
+    background: var(--fs-deep);
+}
+
+body {
+    min-height: 100%;
+    background-color: var(--fs-deep);
 }
 
 .wrapper {
@@ -14,19 +29,24 @@
     --itchio_button_color: #d400b1;
     --itchio_button_fg_color: #ffffff;
     --itchio_button_shadow_color: #ed19ca;
-    background-color: #09280f;
+    background-color: #071509;
     /*! */
     background-image: url(https://img.itch.zone/aW1nLzI1ODUwMjE5LnBuZw==/original/Gbn3z7.png);
-    ;background-repeat: repeat-x;
-    background-position: 50% 0;
+    background-repeat: repeat-x, repeat;
+    background-position: 50% 0, 0 0;
     background-attachment: fixed;
+    background-image:
+        linear-gradient(rgba(7, 21, 9, 0.78), rgba(7, 21, 9, 0.94)),
+        repeating-linear-gradient(0deg, rgba(2, 255, 119, 0.035) 0, rgba(2, 255, 119, 0.035) 1px, transparent 1px, transparent 4px);
     /* */
 }
 
 .inner_column {
     color: #02ff77;
     font-family: '04b_03',Lato,LatoExtended,sans-serif;
-    background-color: rgba(12, 33, 11, 1)
+    background-color: rgba(7, 21, 9, 0.94);
+    border-left: 1px solid rgba(2, 255, 119, 0.18);
+    border-right: 1px solid rgba(2, 255, 119, 0.18)
 }
 
 .inner_column ::selection {
@@ -52,8 +72,10 @@
 .inner_column .button,.inner_column .button:hover,.inner_column .button:active {
     background-color: #d400b1;
     color: #ffffff;
-    text-shadow: 0 1px 0px #ed19ca;
-    border-radius: 8px;
+    text-shadow: 1px 1px 0 #790064;
+    border-radius: 0 !important;
+    border: 1px solid #ff5ee1;
+    box-shadow: 3px 3px 0 #570047;
     display: inline-block;
     padding: 9px 14px;
     line-height: 1.2;
@@ -61,6 +83,31 @@
     font-family: inherit;
     font-weight: 700;
     text-decoration: none
+}
+
+.inner_column .button:hover {
+    background-color: #f000c9;
+    color: #ffffff;
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 #570047;
+}
+
+.inner_column .button:focus-visible {
+    outline: 2px solid var(--fs-green);
+    outline-offset: 3px;
+}
+
+.inner_column h1,
+.inner_column h2 {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
+}
+
+.inner_column h1::before,
+.inner_column h2::before {
+    content: '// ';
+    color: var(--fs-pink);
 }
 
 .inner_column hr {
@@ -214,11 +261,13 @@
     margin: 16px auto 20px;
     padding: 16px;
     border: 1px solid #265424;
-    border-radius: 10px;
+    border-radius: 0;
     background:
-        radial-gradient(circle at top right, rgba(2, 255, 119, 0.14), transparent 38%),
-        linear-gradient(180deg, rgba(35, 56, 34, 0.95), rgba(12, 33, 11, 0.95));
-    box-shadow: inset 0 0 0 1px rgba(2, 255, 119, 0.09), 0 8px 20px rgba(0, 0, 0, 0.22);
+        linear-gradient(90deg, rgba(2, 255, 119, 0.07) 1px, transparent 1px),
+        linear-gradient(rgba(2, 255, 119, 0.05) 1px, transparent 1px),
+        rgba(12, 33, 11, 0.95);
+    background-size: 16px 16px;
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.4);
 }
 
 .spotify-header-row {
@@ -245,7 +294,7 @@
 .spotify-player-wrap {
     max-width: 760px;
     margin: 0 auto;
-    border-radius: 8px;
+    border-radius: 0;
     overflow: hidden;
     border: 1px solid rgba(2, 255, 119, 0.2);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
@@ -253,7 +302,19 @@
 
 .spotify-open-btn {
     white-space: nowrap;
-    border-radius: 8px;
+    border-radius: 0;
+}
+
+.view_game_page .header_buy_row,
+.view_game_page .game_info_panel_widget,
+.view_game_page .formatted_description {
+    border-color: rgba(2, 255, 119, 0.22);
+}
+
+.view_game_page .header_buy_row {
+    background: rgba(2, 255, 119, 0.045);
+    border-top: 1px solid rgba(2, 255, 119, 0.22);
+    border-bottom: 1px solid rgba(2, 255, 119, 0.22);
 }
 
 .spotify-links-row {
