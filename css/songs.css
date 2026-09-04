@@ -1,0 +1,97 @@
+:root {
+    --songs-green: #02ff77;
+    --songs-pink: #d400b1;
+    --songs-panel: rgba(5, 18, 7, 0.86);
+}
+
+.songs-wrap {
+    width: calc(100% - 40px);
+    max-width: 1060px;
+    margin: 16px auto 28px;
+    padding: 20px;
+    border: 1px solid rgba(2, 255, 119, 0.3);
+    background:
+        linear-gradient(rgba(7, 21, 9, 0.9), rgba(7, 21, 9, 0.95)),
+        url("../maps/Citynew.webp");
+    background-position: center;
+    background-size: cover;
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.4);
+}
+
+.songs-header {
+    text-align: center;
+}
+
+.songs-kicker {
+    margin: 0 0 8px;
+    color: var(--songs-pink);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.songs-header h1 {
+    margin: 0 0 8px;
+    color: var(--songs-green);
+}
+
+.songs-header p:last-child {
+    margin: 0;
+}
+
+.songs-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 18px 0;
+}
+
+.album-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.album-card {
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid rgba(2, 255, 119, 0.25);
+    background: var(--songs-panel);
+    box-shadow: 3px 3px 0 rgba(212, 0, 177, 0.38);
+}
+
+.album-card iframe {
+    display: block;
+    border: 0;
+    border-radius: 0;
+}
+
+.album-card a {
+    display: block;
+    margin-top: 10px;
+    color: var(--songs-green);
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .album-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 620px) {
+    .songs-wrap {
+        width: calc(100% - 24px);
+        padding: 12px;
+    }
+
+    .songs-actions .button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .album-grid {
+        grid-template-columns: 1fr;
+    }
+}
