@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <title>World RPG — FriendlyShooter</title>
+        <meta name="description" content="FriendlyShooter World RPG: build a squad of 4 characters, fight through roguelike levels, and spin the wheel for new abilities after every win."/>
+        <link type="image/png" href="https://img.itch.zone/aW1nLzI1ODYyMDI3LnBuZw==/32x32%23/D5oY%2By.png" rel="icon" />
+        <link rel="stylesheet" href="css/site.css?v=20260907a">
+        <link rel="stylesheet" href="css/rpg.css?v=20260907a">
+    </head>
+    <body class="locale_en game_layout_widget layout_widget no_theme_toggle responsive" data-host="itch.io" data-page_name="view_game">
+        <div id="wrapper" class="main wrapper">
+            <div class="inner_column size_large family_pixel" id="inner_column">
+                <div class="center">
+
+                    <header class="rpg-head">
+                        <h1>FriendlyShooter World RPG</h1>
+                        <p>A roguelike squad battler — recruit up to 4 characters, fight through the world, and spin the wheel after every victory.</p>
+                    </header>
+                    <div class="page-actions">
+                        <a href="index.html" class="button">Back to Home</a>
+                    </div>
+
+                    <!-- START SCREEN -->
+                    <section id="screen-start" class="rpg-screen active">
+                        <h2>Your Squad</h2>
+                        <p>You begin every run with <strong>Pistol</strong> and <strong>Melee</strong>. Win battles to unlock new characters and abilities on the reward wheel — fill all 4 squad slots as you go.</p>
+                        <div class="roster-grid" id="start-squad-preview"></div>
+                        <p style="text-align:center;">Best level reached: <strong id="best-level">0</strong></p>
+                        <div class="page-actions">
+                            <button class="button" id="btn-start-run">Start Run</button>
+                        </div>
+                    </section>
+
+                    <!-- BATTLE SCREEN -->
+                    <section id="screen-battle" class="rpg-screen">
+                        <div class="rpg-hud">
+                            <div class="stat">Level: <strong id="hud-level">1</strong></div>
+                            <div class="stat">Round: <strong id="hud-round">1</strong></div>
+                            <div class="stat">Squad Alive: <strong id="hud-alive">4</strong></div>
+                        </div>
+                        <div class="battlefield">
+                            <div class="rpg-side">
+                                <h3>Enemies</h3>
+                                <div class="rpg-row" id="enemy-row"></div>
+                            </div>
+                            <div class="rpg-side">
+                                <h3>Your Squad</h3>
+                                <div class="rpg-row" id="squad-row"></div>
+                            </div>
+                        </div>
+                        <div class="action-bar" id="action-bar">Select a squad member to act.</div>
+                        <div class="ability-panel" id="ability-panel"></div>
+                        <div class="rpg-log" id="battle-log"></div>
+                    </section>
+
+                    <!-- VICTORY / WHEEL SCREEN -->
+                    <section id="screen-victory" class="rpg-screen">
+                        <h2>Level Cleared!</h2>
+                        <p style="text-align:center;">Spin the wheel for a chance at a new character or a squad upgrade.</p>
+                        <div class="wheel-wrap">
+                            <div class="wheel-outer">
+                                <div class="wheel-pointer"></div>
+                                <div class="wheel" id="wheel"></div>
+                                <div class="wheel-center-dot"></div>
+                            </div>
+                            <button class="button" id="btn-spin">Spin the Wheel</button>
+                            <div class="reward-result" id="reward-result"></div>
+                            <button class="button" id="btn-next-level" style="display:none;">Next Level</button>
+                        </div>
+                    </section>
+
+                    <!-- GAME OVER SCREEN -->
+                    <section id="screen-gameover" class="rpg-screen">
+                        <h2>Squad Wiped</h2>
+                        <p style="text-align:center;">Your squad fell on level <strong id="gameover-level">1</strong>.</p>
+                        <div class="page-actions">
+                            <button class="button" id="btn-restart">Start New Run</button>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </div>
+        <script src="js/rpg.js?v=20260907a"></script>
+    </body>
+</html>
