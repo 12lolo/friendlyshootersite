@@ -185,6 +185,26 @@ body {
 .unit-card.targetable:hover { box-shadow: 3px 3px 0 rgba(255,209,102,0.5); }
 .unit-card.empty-slot { opacity: 0.3; border-style: dashed; display: flex; align-items: center; justify-content: center; }
 
+.unit-card.anim-attack { animation: anim-lunge 450ms ease; }
+.unit-card.anim-hit { animation: anim-shake 450ms ease; }
+.unit-card.anim-heal { animation: anim-glow 650ms ease; }
+@keyframes anim-lunge {
+    0% { transform: translateY(0); }
+    35% { transform: translateY(-10px) scale(1.06); }
+    100% { transform: translateY(0) scale(1); }
+}
+@keyframes anim-shake {
+    0%, 100% { transform: translateX(0); filter: brightness(1); }
+    20% { transform: translateX(-6px); filter: brightness(2) saturate(3) hue-rotate(-30deg); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+@keyframes anim-glow {
+    0%, 100% { box-shadow: none; }
+    50% { box-shadow: 0 0 16px 4px rgba(110, 203, 255, 0.8); }
+}
+
 .rpg-log {
     height: 130px;
     overflow-y: auto;
@@ -213,6 +233,15 @@ body {
 .ability-panel.show { display: block; }
 .ability-panel .a-name { color: var(--rpg-title); font-weight: 700; }
 .ability-panel .a-desc { color: var(--rpg-text); font-size: 0.85rem; margin: 4px 0 8px; }
+.ability-panel .move-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 6px 0;
+}
+.ability-panel .move-option .a-desc { margin: 0; text-align: left; flex: 1 1 220px; }
 
 /* ----- Squad build / start screen ----- */
 .roster-grid, .squad-slots {
@@ -241,11 +270,15 @@ body {
 .wheel-seg-label {
     position: absolute; top: 50%; left: 50%;
     width: 60px; height: 60px; margin: -30px 0 0 -30px;
-    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     text-align: center;
 }
-.wheel-seg-label img { width: 34px; height: 34px; object-fit: contain; image-rendering: pixelated; }
-.wheel-seg-label span { font-size: 0.55rem; color: #fff; text-shadow: 1px 1px 0 #000; max-width: 60px; }
+.wheel-seg-inner {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    transition: transform 4s cubic-bezier(0.15, 0.85, 0.25, 1);
+}
+.wheel-seg-inner img { width: 34px; height: 34px; object-fit: contain; image-rendering: pixelated; }
+.wheel-seg-inner span { font-size: 0.55rem; color: #fff; text-shadow: 1px 1px 0 #000; max-width: 60px; }
 .wheel-center-dot {
     position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px;
     background: var(--rpg-panel); border: 2px solid var(--rpg-accent); border-radius: 50%; z-index: 4;
