@@ -16,18 +16,20 @@
 
                     <header class="rpg-head">
                         <h1>FriendlyShooter World RPG</h1>
-                        <p>A roguelike squad battler — recruit up to 4 characters, fight through the world, and spin the wheel after every victory.</p>
+                        <p>A roguelike squad battler — recruit up to 4 characters, battle through forest, desert, and city arenas, and spin the wheel after every victory.</p>
                     </header>
                     <div class="page-actions">
                         <a href="index.html" class="button">Back to Home</a>
+                        <button class="button secondary" id="btn-music-toggle">Play Theme</button>
                     </div>
+                    <div id="music-embed" class="music-embed"></div>
 
                     <!-- START SCREEN -->
                     <section id="screen-start" class="rpg-screen active">
                         <h2>Your Squad</h2>
-                        <p>You begin every run with <strong>Pistol</strong> and <strong>Melee</strong>. Win battles to unlock new characters and abilities on the reward wheel — fill all 4 squad slots as you go.</p>
+                        <p>You begin every run with <strong>Pistol</strong> and <strong>Melee</strong>. Win battles to unlock new characters and abilities on the reward wheel — fill all 4 squad slots as you go through the Forest, Desert, City, a Frobble swarm, a door-lined corridor, and the Gable &amp; Goble final showdown.</p>
                         <div class="roster-grid" id="start-squad-preview"></div>
-                        <p style="text-align:center;">Best level reached: <strong id="best-level">0</strong></p>
+                        <p style="text-align:center;">Best stage reached: <strong id="best-level">0</strong></p>
                         <div class="page-actions">
                             <button class="button" id="btn-start-run">Start Run</button>
                         </div>
@@ -36,15 +38,17 @@
                     <!-- BATTLE SCREEN -->
                     <section id="screen-battle" class="rpg-screen">
                         <div class="rpg-hud">
-                            <div class="stat">Level: <strong id="hud-level">1</strong></div>
+                            <div class="stat">Stage: <strong id="hud-level">1</strong></div>
                             <div class="stat">Round: <strong id="hud-round">1</strong></div>
                             <div class="stat">Squad Alive: <strong id="hud-alive">4</strong></div>
                         </div>
-                        <div class="battlefield">
+                        <div class="stage-banner" id="stage-banner"></div>
+                        <div class="battlefield" id="battlefield">
                             <div class="rpg-side">
                                 <h3>Enemies</h3>
                                 <div class="rpg-row" id="enemy-row"></div>
                             </div>
+                            <div class="ground-line"></div>
                             <div class="rpg-side">
                                 <h3>Your Squad</h3>
                                 <div class="rpg-row" id="squad-row"></div>
@@ -57,7 +61,7 @@
 
                     <!-- VICTORY / WHEEL SCREEN -->
                     <section id="screen-victory" class="rpg-screen">
-                        <h2>Level Cleared!</h2>
+                        <h2 id="victory-heading">Stage Cleared!</h2>
                         <p style="text-align:center;">Spin the wheel for a chance at a new character or a squad upgrade.</p>
                         <div class="wheel-wrap">
                             <div class="wheel-outer">
@@ -67,16 +71,36 @@
                             </div>
                             <button class="button" id="btn-spin">Spin the Wheel</button>
                             <div class="reward-result" id="reward-result"></div>
-                            <button class="button" id="btn-next-level" style="display:none;">Next Level</button>
+                            <button class="button" id="btn-next-level" style="display:none;">Next Stage</button>
+                        </div>
+                    </section>
+
+                    <!-- DOORS (PRE-FINAL) SCREEN -->
+                    <section id="screen-doors" class="rpg-screen">
+                        <h2>The Final Corridor</h2>
+                        <p style="text-align:center;">Three doors stand before the final showdown. Shoot one — it may hold an ability, or nothing at all.</p>
+                        <div class="doors-wrap" id="doors-wrap"></div>
+                        <div class="reward-result" id="doors-result"></div>
+                        <div class="page-actions">
+                            <button class="button" id="btn-doors-continue" style="display:none;">Continue to Final Showdown</button>
                         </div>
                     </section>
 
                     <!-- GAME OVER SCREEN -->
                     <section id="screen-gameover" class="rpg-screen">
                         <h2>Squad Wiped</h2>
-                        <p style="text-align:center;">Your squad fell on level <strong id="gameover-level">1</strong>.</p>
+                        <p style="text-align:center;">Your squad fell on stage <strong id="gameover-level">1</strong>.</p>
                         <div class="page-actions">
                             <button class="button" id="btn-restart">Start New Run</button>
+                        </div>
+                    </section>
+
+                    <!-- CAMPAIGN COMPLETE SCREEN -->
+                    <section id="screen-complete" class="rpg-screen">
+                        <h2>Campaign Complete!</h2>
+                        <p style="text-align:center;">You defeated Gable &amp; Goble and cleared the whole world. Great work, squad leader!</p>
+                        <div class="page-actions">
+                            <button class="button" id="btn-play-again">Play Again</button>
                         </div>
                     </section>
 

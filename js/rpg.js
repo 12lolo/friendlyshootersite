@@ -4,10 +4,12 @@
 
   const CHAR_DIR = 'Charachters/';
   const ENEMY_DIR = 'Enemy/';
-  const SAVE_KEY = 'fs_rpg_best_level';
+  const SAVE_KEY = 'fs_rpg_best_stage';
+  const THEME_TRACK_ID = '7gl7F2y7tiB9x8c3bdqwiu'; // "Main theme - Friendlyshooter" on Spotify
 
   const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const shuffle = (arr) => arr.slice().sort(() => Math.random() - 0.5);
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
   // ---------------------------------------------------------------
@@ -50,7 +52,7 @@
       }
     },
     {
-      id: 'justice', name: 'Justice', img: 'RevolverV2', maxHp: 65,
+      id: 'revolver', name: 'Revolver', img: 'RevolverV2', maxHp: 65,
       atkName: 'Verdict', targetType: 'enemy',
       desc: 'Judges one enemy; executes foes below 25% HP.',
       run(ctx) {
@@ -208,7 +210,7 @@
       }
     },
     {
-      id: 'phoenix', name: 'Phoenix', img: 'PhoenixV2', maxHp: 60,
+      id: 'justice', name: 'Justice', img: 'PhoenixV2', maxHp: 60,
       atkName: 'Rebirth', targetType: 'auto',
       desc: 'Revives a fallen ally, or heals the squad if none have fallen.',
       run(ctx) {
@@ -319,39 +321,206 @@
   const CHAR_BY_ID = Object.fromEntries(ROSTER.map(c => [c.id, c]));
 
   // ---------------------------------------------------------------
-  // Enemy types
+  // Enemy types. Each may define `abilities`: a list of
+  // { name, chance, run(ctx) } rolled in order on the enemy's turn.
+  // If none trigger, the enemy falls back to a basic attack.
   // ---------------------------------------------------------------
   const ENEMY_TYPES = [
     { id: 'weak', name: 'Weak', img: 'Weak', baseHp: 20, baseAtk: 4 },
-    { id: 'burst', name: 'Burst', img: 'Burst', baseHp: 26, baseAtk: 6 },
-    { id: 'machinegunner', name: 'Machine Gunner', img: 'MachineGunner', baseHp: 32, baseAtk: 7 },
-    { id: 'spreadshooter', name: 'Spread Shooter', img: 'SpreadShooter', baseHp: 30, baseAtk: 6 },
-    { id: 'sniper', name: 'Sniper', img: 'Sniper', baseHp: 24, baseAtk: 10 },
-    { id: 'rocketeer', name: 'Rocketeer', img: 'Rocketeer', baseHp: 34, baseAtk: 9 },
-    { id: 'grenande', name: 'Grenadier', img: 'Grenande', baseHp: 36, baseAtk: 8 },
-    { id: 'boomshooter', name: 'Boom Shooter', img: 'BoomShooter', baseHp: 30, baseAtk: 9 },
-    { id: 'frobble', name: 'Frobble', img: 'Frobble', baseHp: 22, baseAtk: 5 },
-    { id: 'gable', name: 'Gable', img: 'Gable', baseHp: 26, baseAtk: 6 },
-    { id: 'goble', name: 'Goble', img: 'Goble', baseHp: 26, baseAtk: 6 },
-    { id: 'cannontower', name: 'Cannon Tower', img: 'CannonTower', baseHp: 46, baseAtk: 11 },
-    { id: 'dosserttower', name: 'Desert Tower', img: 'DessertTower', baseHp: 44, baseAtk: 10 },
-    { id: 'tank', name: 'Tank', img: 'Tank', baseHp: 60, baseAtk: 9 },
-    { id: 'tankdessert', name: 'Desert Tank', img: 'Tankdessert', baseHp: 64, baseAtk: 10 },
-    { id: 'homing', name: 'The Homing', img: 'The homing', baseHp: 28, baseAtk: 8 }
+    {
+      id: 'burst', name: 'Burst', img: 'Burst', baseHp: 26, baseAtk: 6,
+      abilities: [{
+        name: 'Rapid Burst', chance: 0.35,
+        run(ctx) {
+          shuffle(ctx.squad).slice(0, 2).forEach(t =>
+            ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.6) + rand(-1, 2), `${ctx.self.name}'s Rapid Burst`));
+        }
+      }]
+    },
+    {
+      id: 'machinegunner', name: 'Machine Gunner', img: 'MachineGunner', baseHp: 32, baseAtk: 7,
+      abilities: [{
+        name: 'Suppressive Fire', chance: 0.4,
+        run(ctx) {
+          const t = pick(ctx.squad);
+          for (let i = 0; i < 3; i++) ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.4), `${ctx.self.name}'s Suppressive Fire`);
+        }
+      }]
+    },
+    {
+      id: 'spreadshooter', name: 'Spread Shooter', img: 'SpreadShooter', baseHp: 30, baseAtk: 6,
+      abilities: [{
+        name: 'Spread Shot', chance: 0.45,
+        run(ctx) {
+          shuffle(ctx.squad).slice(0, 2).forEach(t => ctx.applyDamageToSquad(t, ctx.self.atk, `${ctx.self.name}'s Spread Shot`));
+        }
+      }]
+    },
+    {
+      id: 'sniper', name: 'Sniper', img: 'Sniper', baseHp: 24, baseAtk: 10,
+      abilities: [{
+        name: 'Deadeye', chance: 0.35,
+        run(ctx) {
+          const t = ctx.squad.reduce((a, b) => (a.hp < b.hp ? a : b));
+          ctx.applyDamageToSquad(t, ctx.self.atk * 2, `${ctx.self.name}'s Deadeye`);
+        }
+      }]
+    },
+    {
+      id: 'rocketeer', name: 'Rocketeer', img: 'Rocketeer', baseHp: 34, baseAtk: 9,
+      abilities: [{
+        name: 'Rocket Volley', chance: 0.3,
+        run(ctx) { ctx.squad.forEach(t => ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.5), `${ctx.self.name}'s Rocket Volley`)); }
+      }]
+    },
+    {
+      id: 'grenande', name: 'Grenadier', img: 'Grenande', baseHp: 36, baseAtk: 8,
+      abilities: [{
+        name: 'Grenade Toss', chance: 0.4,
+        run(ctx) { ctx.squad.forEach(t => ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.6), `${ctx.self.name}'s Grenade Toss`)); }
+      }]
+    },
+    {
+      id: 'boomshooter', name: 'Boom Shooter', img: 'BoomShooter', baseHp: 30, baseAtk: 9,
+      abilities: [{
+        name: 'Boom Blast', chance: 0.35,
+        run(ctx) { ctx.squad.forEach(t => ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.7), `${ctx.self.name}'s Boom Blast`)); }
+      }]
+    },
+    {
+      id: 'frobble', name: 'Frobble', img: 'Frobble', baseHp: 22, baseAtk: 5,
+      abilities: [{
+        name: 'Quick Strike', chance: 1,
+        run(ctx) {
+          for (let i = 0; i < 2; i++) ctx.applyDamageToSquad(pick(ctx.squad), Math.round(ctx.self.atk * 0.65), `${ctx.self.name}'s Quick Strike`);
+        }
+      }]
+    },
+    {
+      id: 'gable', name: 'Gable', img: 'Gable', baseHp: 26, baseAtk: 6,
+      abilities: [{
+        name: 'Rally Cry', chance: 0.4,
+        run(ctx) {
+          const ally = ctx.enemies.find(e => e.hp > 0 && e !== ctx.self);
+          if (ally) { ally.atkBuff = 1.5; ctx.log(`${ctx.self.name} rallies ${ally.name}, boosting its attack!`); }
+          else { ctx.self.hp = clamp(ctx.self.hp + Math.round(ctx.self.maxHp * 0.15), 0, ctx.self.maxHp); ctx.log(`${ctx.self.name} rallies itself and recovers HP.`); }
+        }
+      }]
+    },
+    {
+      id: 'goble', name: 'Goble', img: 'Goble', baseHp: 26, baseAtk: 6,
+      abilities: [{
+        name: 'Heavy Slam', chance: 0.4,
+        run(ctx) { ctx.applyDamageToSquad(pick(ctx.squad), Math.round(ctx.self.atk * 1.6), `${ctx.self.name}'s Heavy Slam`); }
+      }]
+    },
+    {
+      id: 'cannontower', name: 'Cannon Tower', img: 'CannonTower', baseHp: 46, baseAtk: 11,
+      abilities: [{
+        name: 'Cannon Blast', chance: 0.5,
+        run(ctx) { ctx.applyDamageToSquad(pick(ctx.squad), Math.round(ctx.self.atk * 1.5), `${ctx.self.name}'s Cannon Blast`); }
+      }]
+    },
+    {
+      id: 'dosserttower', name: 'Desert Tower', img: 'DessertTower', baseHp: 44, baseAtk: 10,
+      abilities: [{
+        name: 'Cannon Blast', chance: 0.5,
+        run(ctx) { ctx.applyDamageToSquad(pick(ctx.squad), Math.round(ctx.self.atk * 1.5), `${ctx.self.name}'s Cannon Blast`); }
+      }]
+    },
+    {
+      id: 'tank', name: 'Tank', img: 'Tank', baseHp: 60, baseAtk: 9,
+      abilities: [{
+        name: 'Fortify', chance: 0.3,
+        run(ctx) { ctx.self.defBuff = 0.4; ctx.log(`${ctx.self.name} hunkers down, bracing for the next attack.`); }
+      }]
+    },
+    {
+      id: 'tankdessert', name: 'Desert Tank', img: 'Tankdessert', baseHp: 64, baseAtk: 10,
+      abilities: [{
+        name: 'Fortify', chance: 0.3,
+        run(ctx) { ctx.self.defBuff = 0.4; ctx.log(`${ctx.self.name} hunkers down, bracing for the next attack.`); }
+      }]
+    },
+    { id: 'homing', name: 'The Homing', img: 'The homing', baseHp: 28, baseAtk: 8, homing: true },
+    {
+      id: 'spawner', name: 'Spawner', img: 'Spawner', baseHp: 24, baseAtk: 5,
+      abilities: [{
+        name: 'Spawn Minion', chance: 0.3,
+        run(ctx) {
+          if (ctx.enemies.filter(e => e.hp > 0).length < 5) {
+            ctx.enemies.push(ctx.makeEnemy(ENEMY_TYPE_BY_ID.weak, ctx.stageScale, 0.8));
+            ctx.log(`${ctx.self.name} spawns a minion!`);
+          } else {
+            ctx.applyDamageToSquad(pick(ctx.squad), ctx.self.atk, ctx.self.name);
+          }
+        }
+      }]
+    },
+    {
+      id: 'spawnerbig', name: 'Big Spawner', img: 'Spawnerbig', baseHp: 90, baseAtk: 10,
+      abilities: [{
+        name: 'Mass Spawn', chance: 0.4,
+        run(ctx) {
+          const n = ctx.enemies.filter(e => e.hp > 0).length < 4 ? 2 : 1;
+          for (let i = 0; i < n; i++) {
+            if (ctx.enemies.filter(e => e.hp > 0).length >= 6) break;
+            ctx.enemies.push(ctx.makeEnemy(ENEMY_TYPE_BY_ID.weak, ctx.stageScale, 0.8));
+          }
+          ctx.log(`${ctx.self.name} spawns minions to aid it!`);
+        }
+      }]
+    }
+  ];
+  const ENEMY_TYPE_BY_ID = Object.fromEntries(ENEMY_TYPES.map(t => [t.id, t]));
+
+  // ---------------------------------------------------------------
+  // Arenas & campaign stages
+  // ---------------------------------------------------------------
+  const ARENAS = {
+    forest: { label: 'Whispering Forest' },
+    desert: { label: 'Scorching Desert' },
+    city: { label: 'Ruined City' },
+    quick: { label: 'Quick Level 5' },
+    doors: { label: 'The Final Corridor' },
+    final: { label: 'Final Showdown' }
+  };
+
+  const STAGE_POOLS = {
+    forest: ['weak', 'burst', 'frobble', 'spawner'],
+    desert: ['boomshooter', 'grenande', 'rocketeer', 'tank', 'tankdessert'],
+    city: ['machinegunner', 'spreadshooter', 'homing', 'burst', 'sniper']
+  };
+
+  const STAGES = [
+    { arena: 'forest', type: 'fight', count: 2, label: 'Forest Patrol' },
+    { arena: 'forest', type: 'fight', count: 3, label: 'Forest Ambush' },
+    { arena: 'forest', type: 'boss', bossIds: ['spawnerbig'], label: 'Forest Boss: Big Spawner', bossScale: 1.4 },
+    { arena: 'desert', type: 'fight', count: 2, label: 'Desert Patrol' },
+    { arena: 'desert', type: 'fight', count: 3, label: 'Desert Ambush' },
+    { arena: 'desert', type: 'boss', bossIds: ['tankdessert'], label: 'Desert Boss: The Tank', bossScale: 1.5 },
+    { arena: 'city', type: 'fight', count: 2, label: 'City Patrol' },
+    { arena: 'city', type: 'fight', count: 3, label: 'City Ambush' },
+    { arena: 'city', type: 'boss', bossIds: ['cannontower'], label: 'City Boss: Cannon Tower', bossScale: 1.5 },
+    { arena: 'quick', type: 'boss', bossIds: ['frobble', 'frobble', 'frobble'], label: 'Quick Level 5: Frobble Swarm', bossScale: 1.1 },
+    { arena: 'doors', type: 'doors', label: 'The Final Corridor' },
+    { arena: 'final', type: 'boss', bossIds: ['gable', 'goble'], label: 'Final Showdown: Gable & Goble', bossScale: 2 }
   ];
 
   // ---------------------------------------------------------------
   // Game state
   // ---------------------------------------------------------------
   const state = {
-    squad: [],       // up to 4 { id, name, img, maxHp, hp, shield, burn, def, acted }
+    squad: [],       // up to 4 { id, name, img, maxHp, hp, shield, burn, atkMult, acted }
     enemies: [],
     unlocked: new Set(['pistol', 'melee']),
-    level: 1,
+    stageIndex: 0,
     round: 1,
     pendingAttacker: null,
     battleOver: false
   };
+  let doorsResolved = false;
+  let musicOn = false;
 
   let els = {};
 
@@ -373,28 +542,36 @@
   function makeUnit(def) {
     return {
       id: def.id, name: def.name, img: def.img, maxHp: def.maxHp,
-      hp: def.maxHp, shield: 0, burn: null, acted: false
+      hp: def.maxHp, shield: 0, burn: null, acted: false, atkMult: 1
     };
   }
 
-  function makeEnemy(type, level) {
-    const hpMul = 1 + (level - 1) * 0.22;
-    const atkMul = 1 + (level - 1) * 0.14;
+  function makeEnemy(type, stageIndex, scaleMult) {
+    scaleMult = scaleMult || 1;
+    const hpMul = (1 + (stageIndex || 0) * 0.12) * scaleMult;
+    const atkMul = (1 + (stageIndex || 0) * 0.08) * scaleMult;
     return {
       id: type.id + '_' + Math.random().toString(36).slice(2, 7),
-      name: type.name, img: type.img,
+      typeId: type.id, name: type.name, img: type.img,
       maxHp: Math.round(type.baseHp * hpMul),
       hp: Math.round(type.baseHp * hpMul),
       atk: Math.round(type.baseAtk * atkMul),
-      suppressed: false, burn: null
+      homing: !!type.homing,
+      suppressed: false, burn: null, defBuff: 0, atkBuff: 0
     };
   }
 
-  function genEnemies(level) {
-    const count = clamp(1 + Math.floor(level / 2), 1, 5);
-    const list = [];
-    for (let i = 0; i < count; i++) list.push(makeEnemy(pick(ENEMY_TYPES), level));
-    return list;
+  function genEnemiesForStage(stage, stageIndex) {
+    if (stage.type === 'fight') {
+      const poolIds = STAGE_POOLS[stage.arena];
+      const list = [];
+      for (let i = 0; i < stage.count; i++) list.push(makeEnemy(ENEMY_TYPE_BY_ID[pick(poolIds)], stageIndex, 1));
+      return list;
+    }
+    if (stage.type === 'boss') {
+      return stage.bossIds.map(id => makeEnemy(ENEMY_TYPE_BY_ID[id], stageIndex, stage.bossScale || 1.3));
+    }
+    return [];
   }
 
   // ---------------------------------------------------------------
@@ -409,11 +586,27 @@
 
     q('#btn-start-run').addEventListener('click', startRun);
     q('#btn-restart').addEventListener('click', startRun);
-    q('#btn-next-level').addEventListener('click', nextLevel);
+    q('#btn-next-level').addEventListener('click', nextStage);
     q('#btn-spin').addEventListener('click', spinWheel);
+    q('#btn-doors-continue').addEventListener('click', nextStage);
+    q('#btn-play-again').addEventListener('click', startRun);
+    q('#btn-music-toggle').addEventListener('click', toggleMusic);
 
     const best = localStorage.getItem(SAVE_KEY);
     if (best) q('#best-level').textContent = best;
+  }
+
+  function toggleMusic() {
+    const holder = q('#music-embed');
+    const btn = q('#btn-music-toggle');
+    musicOn = !musicOn;
+    if (musicOn) {
+      holder.innerHTML = `<iframe src="https://open.spotify.com/embed/track/${THEME_TRACK_ID}?utm_source=generator&autoplay=1" width="100%" height="80" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+      btn.textContent = '\uD83D\uDD07 Stop Theme';
+    } else {
+      holder.innerHTML = '';
+      btn.textContent = '\uD83C\uDFB5 Play Theme';
+    }
   }
 
   function renderStart() {
@@ -437,17 +630,34 @@
     state.squad = ROSTER.filter(c => c.starter).map(makeUnit);
     while (state.squad.length < 4) state.squad.push(null);
     state.unlocked = new Set(['pistol', 'melee']);
-    state.level = 1;
-    beginLevel();
+    state.stageIndex = 0;
+    beginStage();
   }
 
-  function beginLevel() {
+  function setArenaVisual(arenaKey, label, isBoss) {
+    const bf = q('#battlefield');
+    bf.className = 'battlefield arena-' + arenaKey;
+    const banner = q('#stage-banner');
+    banner.textContent = label;
+    banner.className = 'stage-banner' + (isBoss ? ' boss-banner' : '');
+  }
+
+  function beginStage() {
+    const stage = STAGES[state.stageIndex];
     state.round = 1;
     state.battleOver = false;
-    state.enemies = genEnemies(state.level);
+    state.pendingAttacker = null;
     state.squad.forEach(u => { if (u) { u.shield = 0; u.acted = false; u.burn = null; } });
     clearLog();
-    log(`Level ${state.level} begins!`, 'sys');
+
+    if (stage.type === 'doors') {
+      showDoorsStage(stage);
+      return;
+    }
+
+    state.enemies = genEnemiesForStage(stage, state.stageIndex);
+    log(`${stage.label}!`, 'sys');
+    setArenaVisual(stage.arena, stage.label, stage.type === 'boss');
     showScreen('screen-battle');
     renderBattle();
   }
@@ -468,7 +678,7 @@
   // Battle rendering
   // ---------------------------------------------------------------
   function renderBattle() {
-    q('#hud-level').textContent = state.level;
+    q('#hud-level').textContent = `Stage ${state.stageIndex + 1} / ${STAGES.length}`;
     q('#hud-round').textContent = state.round;
     q('#hud-alive').textContent = state.squad.filter(u => u && u.hp > 0).length;
 
@@ -490,6 +700,7 @@
         <div class="u-hpbar"><div class="u-hpfill ${pct <= 30 ? 'low' : ''}" style="width:${pct}%"></div></div>
         <div class="u-hptext">${Math.max(0, u.hp)}/${u.maxHp}</div>
         ${u.shield > 0 ? `<div class="u-shield">Shield ${u.shield}</div>` : ''}
+        ${u.atkMult > 1 ? `<div class="u-burn">ATK x${u.atkMult.toFixed(2)}</div>` : ''}
       `;
       imgFallback(card.querySelector('img'), CHAR_DIR, u.img);
       if (!dead && !u.acted && state.pendingAttacker === null) {
@@ -560,7 +771,24 @@
   }
 
   function damageEnemy(enemy, amount, crit, ignoreShield) {
-    enemy.hp = clamp(enemy.hp - amount, 0, enemy.maxHp);
+    let amt = amount;
+    if (enemy.defBuff && !ignoreShield) amt = Math.round(amt * (1 - enemy.defBuff));
+    enemy.hp = clamp(enemy.hp - amt, 0, enemy.maxHp);
+  }
+
+  function applyDamageToSquad(target, dmg, sourceName) {
+    if (!target || target.hp <= 0) return;
+    dmg = Math.max(1, Math.round(dmg));
+    if (target.shield > 0) {
+      const absorbed = Math.min(target.shield, dmg);
+      target.shield -= absorbed;
+      dmg -= absorbed;
+      log(`${target.name}'s shield absorbs ${absorbed} damage.`, 'heal');
+    }
+    if (dmg > 0) {
+      target.hp = clamp(target.hp - dmg, 0, target.maxHp);
+      log(`${sourceName} hits ${target.name} for ${dmg}.`, 'dmg');
+    }
   }
 
   function resolveAttack(enemyIdx) {
@@ -571,7 +799,10 @@
 
     const ctx = {
       self: unit, squad: state.squad, enemies: state.enemies, target,
-      damageEnemy: (e, amt, crit, ignoreShield) => { damageEnemy(e, amt, crit, ignoreShield); },
+      damageEnemy: (e, amt, crit, ignoreShield) => {
+        const scaled = Math.round(amt * (unit.atkMult || 1));
+        damageEnemy(e, scaled, crit, ignoreShield);
+      },
       log
     };
     def.run(ctx);
@@ -606,23 +837,39 @@
       setTimeout(onVictory, 500);
       return;
     }
+    // clear defensive buffs from last round so they don't stack forever
+    state.enemies.forEach(e => { if (e.hp > 0) e.defBuff = 0; });
+
     state.enemies.filter(e => e.hp > 0).forEach(e => {
       const aliveSquad = state.squad.filter(u => u && u.hp > 0);
       if (!aliveSquad.length) return;
-      const target = pick(aliveSquad);
-      let dmg = e.atk + rand(-2, 3);
-      if (e.suppressed) { dmg = Math.round(dmg * 0.7); e.suppressed = false; }
-      dmg = Math.max(1, dmg);
-      if (target.shield > 0) {
-        const absorbed = Math.min(target.shield, dmg);
-        target.shield -= absorbed;
-        dmg -= absorbed;
-        log(`${target.name}'s shield absorbs ${absorbed} damage.`, 'heal');
+
+      const type = ENEMY_TYPE_BY_ID[e.typeId];
+      const buffMult = e.atkBuff || 1;
+      e.atkBuff = 0;
+      const baseAtk = e.atk;
+      e.atk = Math.round(baseAtk * buffMult);
+
+      let used = false;
+      if (type && type.abilities) {
+        for (const ab of type.abilities) {
+          if (Math.random() < ab.chance) {
+            ab.run({
+              self: e, enemies: state.enemies, squad: aliveSquad,
+              applyDamageToSquad, log, makeEnemy, stageScale: state.stageIndex
+            });
+            used = true;
+            break;
+          }
+        }
       }
-      if (dmg > 0) {
-        target.hp = clamp(target.hp - dmg, 0, target.maxHp);
-        log(`${e.name} attacks ${target.name} for ${dmg}.`, 'dmg');
+      if (!used) {
+        const target = e.homing ? aliveSquad.reduce((a, b) => (a.hp < b.hp ? a : b)) : pick(aliveSquad);
+        let dmg = e.atk + rand(-2, 3);
+        if (e.suppressed) { dmg = Math.round(dmg * 0.7); e.suppressed = false; }
+        applyDamageToSquad(target, dmg, e.name);
       }
+      e.atk = baseAtk;
     });
 
     if (state.squad.every(u => !u || u.hp <= 0)) {
@@ -639,8 +886,8 @@
 
   function onGameOver() {
     const best = parseInt(localStorage.getItem(SAVE_KEY) || '0', 10);
-    if (state.level > best) localStorage.setItem(SAVE_KEY, String(state.level));
-    q('#gameover-level').textContent = state.level;
+    if (state.stageIndex > best) localStorage.setItem(SAVE_KEY, String(state.stageIndex));
+    q('#gameover-level').textContent = `${state.stageIndex + 1} / ${STAGES.length}`;
     showScreen('screen-gameover');
   }
 
@@ -651,28 +898,40 @@
   let wheelSegments = [];
 
   function onVictory() {
-    log(`Level ${state.level} cleared!`, 'sys');
+    const stage = STAGES[state.stageIndex];
+    log(`${stage.label} cleared!`, 'sys');
+    if (state.stageIndex >= STAGES.length - 1) {
+      onCampaignComplete();
+      return;
+    }
+    q('#victory-heading').textContent = `${stage.label} Cleared!`;
     showScreen('screen-victory');
     buildWheel();
   }
 
-  function nextLevel() {
-    state.level++;
-    beginLevel();
+  function onCampaignComplete() {
+    const best = parseInt(localStorage.getItem(SAVE_KEY) || '0', 10);
+    if (STAGES.length > best) localStorage.setItem(SAVE_KEY, String(STAGES.length));
+    showScreen('screen-complete');
+  }
+
+  function nextStage() {
+    state.stageIndex++;
+    beginStage();
   }
 
   function buildWheel() {
     const lockedIds = ROSTER.map(c => c.id).filter(id => !state.unlocked.has(id));
     const segs = [];
-    const shuffledLocked = lockedIds.sort(() => Math.random() - 0.5).slice(0, 4);
+    const shuffledLocked = shuffle(lockedIds).slice(0, 4);
     shuffledLocked.forEach(id => segs.push({ type: 'char', id }));
     const upgrades = [
-      { type: 'upgrade', kind: 'heal', label: 'Full Heal', img: null },
-      { type: 'upgrade', kind: 'maxhp', label: 'Max HP Up', img: null },
-      { type: 'upgrade', kind: 'atk', label: 'Power Up', img: null }
+      { type: 'upgrade', kind: 'heal' },
+      { type: 'upgrade', kind: 'maxhp' },
+      { type: 'upgrade', kind: 'upgrade' }
     ];
     while (segs.length < 6) segs.push(pick(upgrades));
-    wheelSegments = segs.sort(() => Math.random() - 0.5);
+    wheelSegments = shuffle(segs);
 
     const wheel = q('#wheel');
     wheel.innerHTML = '';
@@ -685,6 +944,7 @@
     });
     wheel.style.background = `conic-gradient(${gradientParts.join(',')})`;
 
+    const wheelLabels = { heal: 'Full Heal', maxhp: 'Max HP Up', upgrade: 'Upgrade Char' };
     wheelSegments.forEach((s, i) => {
       const mid = (360 / n) * i + (360 / n) / 2;
       const label = document.createElement('div');
@@ -695,7 +955,7 @@
         label.innerHTML = `<img src="${imgSrc(CHAR_DIR, def.img)}" alt="${def.name}"><span>${def.name}</span>`;
         imgFallback(label.querySelector('img'), CHAR_DIR, def.img);
       } else {
-        label.innerHTML = `<span>${s.label}</span>`;
+        label.innerHTML = `<span>${wheelLabels[s.kind]}</span>`;
       }
       wheel.appendChild(label);
     });
@@ -745,28 +1005,31 @@
       imgFallback(box.querySelector('img'), CHAR_DIR, def.img);
       q('#btn-keep').addEventListener('click', () => keepCharacter(def));
       q('#btn-discard').addEventListener('click', () => discardReward());
-    } else {
-      const labels = {
-        heal: ['Full Heal', 'Fully restores your squad\'s HP for the next level.'],
-        maxhp: ['Max HP Up', 'Permanently boosts a random squad member\'s max HP by 15.'],
-        atk: ['Power Up', 'Fully heals and readies your squad for battle.']
-      };
-      const [title, desc] = labels[reward.kind];
-      box.innerHTML = `
-        <h3>${title}</h3>
-        <p>${desc}</p>
-        <div class="reward-actions">
-          <button class="button" id="btn-keep">Keep</button>
-          <button class="button secondary" id="btn-discard">Discard</button>
-        </div>
-      `;
-      q('#btn-keep').addEventListener('click', () => applyUpgrade(reward.kind));
-      q('#btn-discard').addEventListener('click', () => discardReward());
+      return;
     }
+    if (reward.kind === 'upgrade') {
+      showUpgradePicker();
+      return;
+    }
+    const labels = {
+      heal: ['Full Heal', 'Fully restores your squad\'s HP for the next fight.'],
+      maxhp: ['Max HP Up', 'Permanently boosts a random squad member\'s max HP by 15.']
+    };
+    const [title, desc] = labels[reward.kind];
+    box.innerHTML = `
+      <h3>${title}</h3>
+      <p>${desc}</p>
+      <div class="reward-actions">
+        <button class="button" id="btn-keep">Keep</button>
+        <button class="button secondary" id="btn-discard">Discard</button>
+      </div>
+    `;
+    q('#btn-keep').addEventListener('click', () => applyUpgrade(reward.kind));
+    q('#btn-discard').addEventListener('click', () => discardReward());
   }
 
   function applyUpgrade(kind) {
-    if (kind === 'heal' || kind === 'atk') {
+    if (kind === 'heal') {
       state.squad.forEach(u => { if (u) u.hp = u.maxHp; });
       log('Squad fully healed!', 'heal');
     } else if (kind === 'maxhp') {
@@ -779,6 +1042,31 @@
       }
     }
     finishReward();
+  }
+
+  function showUpgradePicker() {
+    const box = q('#reward-result');
+    box.innerHTML = `
+      <h3>Upgrade Character</h3>
+      <p>Choose a squad member to permanently boost their attack power by 25%.</p>
+      <div class="roster-grid" id="upgrade-grid"></div>
+      <div class="reward-actions"><button class="button secondary" id="btn-skip-upgrade">Skip</button></div>
+    `;
+    const grid = q('#upgrade-grid');
+    state.squad.forEach(u => {
+      if (!u) return;
+      const card = document.createElement('div');
+      card.className = 'unit-card selectable';
+      card.innerHTML = `<img src="${imgSrc(CHAR_DIR, u.img)}" alt="${u.name}"><div class="u-name">${u.name}</div><div class="u-hptext">ATK x${(u.atkMult || 1).toFixed(2)}</div>`;
+      imgFallback(card.querySelector('img'), CHAR_DIR, u.img);
+      card.addEventListener('click', () => {
+        u.atkMult = Math.round(((u.atkMult || 1) + 0.25) * 100) / 100;
+        log(`${u.name}'s attack power increased to x${u.atkMult}!`, 'heal');
+        finishReward();
+      });
+      grid.appendChild(card);
+    });
+    q('#btn-skip-upgrade').addEventListener('click', () => discardReward());
   }
 
   function discardReward() {
@@ -825,6 +1113,59 @@
   function finishReward() {
     q('#reward-result').classList.remove('show');
     q('#btn-next-level').style.display = '';
+  }
+
+  // ---------------------------------------------------------------
+  // Prefinal doors corridor: shoot a door for an ability, or nothing.
+  // ---------------------------------------------------------------
+  function showDoorsStage(stage) {
+    doorsResolved = false;
+    showScreen('screen-doors');
+    q('#doors-result').classList.remove('show');
+    q('#doors-result').innerHTML = '';
+    q('#btn-doors-continue').style.display = 'none';
+    const wrap = q('#doors-wrap');
+    wrap.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+      const d = document.createElement('div');
+      d.className = 'door selectable';
+      d.innerHTML = `<div class="door-face">Door ${i + 1}</div>`;
+      d.addEventListener('click', () => openDoor(d));
+      wrap.appendChild(d);
+    }
+  }
+
+  function openDoor(doorEl) {
+    if (doorsResolved) return;
+    doorsResolved = true;
+    qa('.door').forEach(d => d.classList.add('acted'));
+    doorEl.classList.add('active-turn');
+
+    const box = q('#doors-result');
+    box.classList.add('show');
+    const got = Math.random() < 0.5;
+    if (!got) {
+      box.innerHTML = `<h3>Empty Room</h3><p>Nothing but dust behind this door.</p>`;
+      log('The door was empty.', 'sys');
+    } else {
+      const kind = pick(['heal', 'maxhp', 'upgrade']);
+      const alive = state.squad.filter(u => u);
+      if (kind === 'upgrade' && alive.length) {
+        const u = pick(alive);
+        u.atkMult = Math.round(((u.atkMult || 1) + 0.25) * 100) / 100;
+        box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name}'s attack power increased to x${u.atkMult}!</p>`;
+      } else if (kind === 'maxhp' && alive.length) {
+        const u = pick(alive);
+        u.maxHp += 15;
+        u.hp = Math.min(u.hp + 15, u.maxHp);
+        box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name}'s max HP increased to ${u.maxHp}!</p>`;
+      } else {
+        state.squad.forEach(u => { if (u) u.hp = u.maxHp; });
+        box.innerHTML = `<h3>Hidden Cache!</h3><p>Your squad has been fully healed.</p>`;
+      }
+      log('The door held a hidden reward!', 'heal');
+    }
+    q('#btn-doors-continue').style.display = '';
   }
 
   document.addEventListener('DOMContentLoaded', init);

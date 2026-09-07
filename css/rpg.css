@@ -61,6 +61,12 @@ body {
     margin: 14px 0 20px;
 }
 
+.music-embed {
+    max-width: 420px;
+    margin: 0 auto 14px;
+}
+.music-embed iframe { display: block; border-radius: 4px; }
+
 .inner_column .button {
     background-color: #d400b1;
     color: #ffffff;
@@ -99,15 +105,55 @@ body {
 .rpg-hud .stat { color: var(--rpg-text); font-size: 0.95rem; }
 .rpg-hud .stat strong { color: var(--rpg-title); }
 
-/* ----- Battlefield ----- */
+/* ----- Stage banner (FNaF-World-style zone title card) ----- */
+.stage-banner {
+    text-align: center;
+    margin: 0 0 12px;
+    padding: 6px 10px;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    color: #fff;
+    background: linear-gradient(90deg, #1a5c2a, #0c2b12);
+    border: 1px solid var(--rpg-border);
+    text-shadow: 1px 1px 0 #000;
+}
+.stage-banner.boss-banner {
+    background: linear-gradient(90deg, #9c1c1c, #4a0c0c);
+    border-color: #ff8a4a;
+    animation: boss-pulse 1.6s ease-in-out infinite;
+}
+@keyframes boss-pulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(255, 138, 74, 0); }
+    50% { box-shadow: 0 0 14px rgba(255, 138, 74, 0.6); }
+}
+
+/* ----- Battlefield: FNaF-World style formation (enemies up top, squad on the ground) ----- */
 .battlefield {
     display: flex;
-    justify-content: space-between;
-    gap: 24px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 6px;
     margin-bottom: 16px;
+    padding: 16px 12px;
+    border: 1px solid var(--rpg-border);
+    background-size: cover;
+    background-position: center;
+    transition: background 300ms ease;
 }
-.rpg-side { flex: 1 1 320px; min-width: 280px; }
+.battlefield.arena-forest { background: radial-gradient(circle at 50% 0%, #1d4a24, #09280f 75%); }
+.battlefield.arena-desert { background: radial-gradient(circle at 50% 0%, #6b5223, #2a1f0c 75%); }
+.battlefield.arena-city { background: radial-gradient(circle at 50% 0%, #3a3f47, #131519 75%); }
+.battlefield.arena-quick { background: radial-gradient(circle at 50% 0%, #4a3a1d, #1c1409 75%); }
+.battlefield.arena-doors { background: radial-gradient(circle at 50% 0%, #241a2e, #0c0810 75%); }
+.battlefield.arena-final { background: radial-gradient(circle at 50% 0%, #5c1414, #1a0505 75%); }
+
+.ground-line {
+    height: 3px;
+    margin: 8px auto;
+    max-width: 90%;
+    background: repeating-linear-gradient(90deg, rgba(2, 255, 119, 0.5) 0 10px, transparent 10px 20px);
+}
+
+.rpg-side { min-width: 280px; }
 .rpg-side h3 { color: var(--rpg-title); text-align: center; margin: 0 0 10px; }
 .rpg-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 
@@ -221,6 +267,37 @@ body {
 
 .swap-picker { text-align: center; }
 .swap-picker p { color: var(--rpg-text); }
+
+/* ----- Doors (pre-final corridor) ----- */
+.doors-wrap {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+.door {
+    width: 110px;
+    height: 160px;
+    background: linear-gradient(180deg, #3a2415, #1a0f08);
+    border: 3px solid #6b4a2a;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.door:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 rgba(212, 0, 177, 0.34); }
+.door.acted { pointer-events: none; opacity: 0.55; }
+.door.active-turn { border-color: var(--rpg-accent); box-shadow: 0 0 0 2px rgba(212, 0, 177, 0.5); }
+.door-face { color: #d9b98a; font-size: 0.85rem; text-shadow: 1px 1px 0 #000; }
+
+#screen-doors.active {
+    background: radial-gradient(circle at 50% 0%, #241a2e, #0c0810 75%);
+    padding: 10px;
+    border: 1px solid var(--rpg-border);
+}
 
 /* ----- Overlays ----- */
 .overlay {
