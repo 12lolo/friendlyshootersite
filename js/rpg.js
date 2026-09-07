@@ -486,26 +486,38 @@
     final: { label: 'Final Showdown' }
   };
 
+  // Each arena pool only contains that arena's own enemies — no bosses
+  // from other arenas ever appear outside their own stage.
   const STAGE_POOLS = {
     forest: ['weak', 'burst', 'frobble', 'spawner'],
     desert: ['boomshooter', 'grenande', 'rocketeer', 'tank', 'tankdessert'],
-    city: ['machinegunner', 'spreadshooter', 'homing', 'burst', 'sniper']
+    city: ['machinegunner', 'spreadshooter', 'homing', 'burst', 'sniper'],
+    quick: ['frobble']
   };
 
+  // Every stage is 3 waves; wave 3 is always the boss wave. A wheel spin
+  // follows every wave, win or boss alike.
   const STAGES = [
-    { arena: 'forest', type: 'fight', count: 2, label: 'Forest Patrol' },
-    { arena: 'forest', type: 'fight', count: 3, label: 'Forest Ambush' },
-    { arena: 'forest', type: 'boss', bossIds: ['spawnerbig'], label: 'Forest Boss: Big Spawner', bossScale: 1.4 },
-    { arena: 'desert', type: 'fight', count: 2, label: 'Desert Patrol' },
-    { arena: 'desert', type: 'fight', count: 3, label: 'Desert Ambush' },
-    { arena: 'desert', type: 'boss', bossIds: ['tankdessert'], label: 'Desert Boss: The Tank', bossScale: 1.5 },
-    { arena: 'city', type: 'fight', count: 2, label: 'City Patrol' },
-    { arena: 'city', type: 'fight', count: 3, label: 'City Ambush' },
-    { arena: 'city', type: 'boss', bossIds: ['cannontower'], label: 'City Boss: Cannon Tower', bossScale: 1.5 },
-    { arena: 'quick', type: 'boss', bossIds: ['frobble', 'frobble', 'frobble'], label: 'Quick Level 5: Frobble Swarm', bossScale: 1.1 },
-    { arena: 'doors', type: 'doors', label: 'The Final Corridor' },
-    { arena: 'final', type: 'boss', bossIds: ['gable', 'goble'], label: 'Final Showdown: Gable & Goble', bossScale: 2 }
+    { stageNumber: 1, arena: 'forest', type: 'fight', count: 2, waveLabel: 'Wave 1/3', label: 'Forest — Wave 1/3' },
+    { stageNumber: 1, arena: 'forest', type: 'fight', count: 3, waveLabel: 'Wave 2/3', label: 'Forest — Wave 2/3' },
+    { stageNumber: 1, arena: 'forest', type: 'boss', bossIds: ['spawnerbig'], waveLabel: 'Boss Wave 3/3', label: 'Forest Boss: Big Spawner', bossScale: 1.4 },
+
+    { stageNumber: 2, arena: 'desert', type: 'fight', count: 2, waveLabel: 'Wave 1/3', label: 'Desert — Wave 1/3' },
+    { stageNumber: 2, arena: 'desert', type: 'fight', count: 3, waveLabel: 'Wave 2/3', label: 'Desert — Wave 2/3' },
+    { stageNumber: 2, arena: 'desert', type: 'boss', bossIds: ['tankdessert'], waveLabel: 'Boss Wave 3/3', label: 'Desert Boss: The Tank', bossScale: 1.5 },
+
+    { stageNumber: 3, arena: 'city', type: 'fight', count: 2, waveLabel: 'Wave 1/3', label: 'City — Wave 1/3' },
+    { stageNumber: 3, arena: 'city', type: 'fight', count: 3, waveLabel: 'Wave 2/3', label: 'City — Wave 2/3' },
+    { stageNumber: 3, arena: 'city', type: 'boss', bossIds: ['cannontower'], waveLabel: 'Boss Wave 3/3', label: 'City Boss: Cannon Tower', bossScale: 1.5 },
+
+    { stageNumber: 4, arena: 'quick', type: 'fight', count: 1, waveLabel: 'Wave 1/3', label: 'Quick Level 5 — Wave 1/3' },
+    { stageNumber: 4, arena: 'quick', type: 'fight', count: 2, waveLabel: 'Wave 2/3', label: 'Quick Level 5 — Wave 2/3' },
+    { stageNumber: 4, arena: 'quick', type: 'boss', bossIds: ['frobble', 'frobble', 'frobble'], waveLabel: 'Boss Wave 3/3', label: 'Quick Level 5 Boss: Frobble Swarm', bossScale: 1.2 },
+
+    { stageNumber: 5, arena: 'doors', type: 'doors', label: 'The Final Corridor' },
+    { stageNumber: 6, arena: 'final', type: 'boss', bossIds: ['gable', 'goble'], waveLabel: 'Final Boss', label: 'Final Showdown: Gable & Goble', bossScale: 2 }
   ];
+  const TOTAL_STAGE_NUMBERS = STAGES[STAGES.length - 1].stageNumber;
 
   // ---------------------------------------------------------------
   // Game state
@@ -678,7 +690,8 @@
   // Battle rendering
   // ---------------------------------------------------------------
   function renderBattle() {
-    q('#hud-level').textContent = `Stage ${state.stageIndex + 1} / ${STAGES.length}`;
+    const stage = STAGES[state.stageIndex];
+    q('#hud-level').textContent = `Stage ${stage.stageNumber} / ${TOTAL_STAGE_NUMBERS} — ${stage.waveLabel || ''}`;
     q('#hud-round').textContent = state.round;
     q('#hud-alive').textContent = state.squad.filter(u => u && u.hp > 0).length;
 
@@ -887,7 +900,8 @@
   function onGameOver() {
     const best = parseInt(localStorage.getItem(SAVE_KEY) || '0', 10);
     if (state.stageIndex > best) localStorage.setItem(SAVE_KEY, String(state.stageIndex));
-    q('#gameover-level').textContent = `${state.stageIndex + 1} / ${STAGES.length}`;
+    const stage = STAGES[state.stageIndex];
+    q('#gameover-level').textContent = `Stage ${stage.stageNumber} (${stage.waveLabel || stage.label})`;
     showScreen('screen-gameover');
   }
 
