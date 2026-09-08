@@ -418,7 +418,7 @@
       ]
     },
     {
-      id: 'turret', name: 'Turret', img: 'ShieldV2', maxHp: 45,
+      id: 'turret', name: 'Turret', img: 'Flying', maxHp: 45,
       moves: [
         {
           atkName: 'Auto Fire', targetType: 'auto',
