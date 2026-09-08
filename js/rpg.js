@@ -165,17 +165,17 @@
       moves: [
         {
           atkName: 'Frag Out', targetType: 'auto',
-          desc: 'Lobs a grenade, damaging all enemies (12-18).',
+          desc: 'Lobs a grenade, damaging all enemies (9-13).',
           run(ctx) {
-            ctx.enemies.filter(e => e.hp > 0).forEach(e => ctx.damageEnemy(e, rand(12, 18)));
+            ctx.enemies.filter(e => e.hp > 0).forEach(e => ctx.damageEnemy(e, rand(9, 13)));
             ctx.log(`${ctx.self.name} throws a grenade into the enemy group!`);
           }
         },
         {
           atkName: 'Sticky Bomb', targetType: 'enemy',
-          desc: 'Sticks a bomb to one enemy for heavy damage (25-32).',
+          desc: 'Sticks a bomb to one enemy for heavy damage (22-28).',
           run(ctx) {
-            const dmg = rand(25, 32);
+            const dmg = rand(22, 28);
             ctx.damageEnemy(ctx.target, dmg);
             ctx.log(`${ctx.self.name} sticks a bomb to ${ctx.target.name} for ${dmg}!`, 'crit');
           }
@@ -319,17 +319,24 @@
           }
         },
         {
-          atkName: 'Combat Stims', targetType: 'auto',
-          desc: 'Grants the squad shield (5-10 each) and gives the weakest ally a small heal.',
+          atkName: 'Rebirth', targetType: 'auto',
+          desc: 'Revives a fallen ally at 40% HP, or heals the weakest ally if no one has fallen.',
           run(ctx) {
-            const alive = ctx.squad.filter(u => u && u.hp > 0);
-            alive.forEach(u => u.shield = (u.shield || 0) + rand(5, 10));
-            if (alive.length) {
-              const t = alive.reduce((a, b) => (a.hp / a.maxHp <= b.hp / b.maxHp ? a : b));
-              const heal = Math.round(rand(10, 15) * (ctx.self.atkMult || 1));
-              t.hp = clamp(t.hp + heal, 0, t.maxHp);
+            const fallen = ctx.squad.filter(u => u && u.hp <= 0);
+            if (fallen.length) {
+              const t = pick(fallen);
+              t.hp = Math.round(t.maxHp * 0.4);
+              t.shield = 0;
+              t.acted = true;
+              ctx.log(`${ctx.self.name} brings ${t.name} back from the brink!`, 'heal');
+              return;
             }
-            ctx.log(`${ctx.self.name} hands out combat stims to the squad.`, 'heal');
+            const alive = ctx.squad.filter(u => u && u.hp > 0);
+            if (!alive.length) return;
+            const t = alive.reduce((a, b) => (a.hp / a.maxHp <= b.hp / b.maxHp ? a : b));
+            const heal = Math.round(rand(15, 20) * (ctx.self.atkMult || 1));
+            t.hp = clamp(t.hp + heal, 0, t.maxHp);
+            ctx.log(`${ctx.self.name} channels rebirth energy into ${t.name} for ${heal} HP.`, 'heal');
           }
         }
       ]
@@ -464,13 +471,16 @@
           }
         },
         {
-          atkName: 'Shield Bash', targetType: 'enemy',
-          desc: 'Bashes an enemy (8-12 dmg) and suppresses it.',
+          atkName: 'Guardian Light', targetType: 'auto',
+          desc: 'Bathes the squad in protective light, granting 10 shield each and healing the weakest ally.',
           run(ctx) {
-            const dmg = rand(8, 12);
-            ctx.damageEnemy(ctx.target, dmg);
-            ctx.target.suppressed = true;
-            ctx.log(`${ctx.self.name} bashes ${ctx.target.name} with a shield for ${dmg}.`);
+            const alive = ctx.squad.filter(u => u && u.hp > 0);
+            alive.forEach(u => u.shield = (u.shield || 0) + 10);
+            if (alive.length) {
+              const t = alive.reduce((a, b) => (a.hp / a.maxHp <= b.hp / b.maxHp ? a : b));
+              t.hp = clamp(t.hp + rand(10, 15), 0, t.maxHp);
+            }
+            ctx.log(`${ctx.self.name} calls down a guardian light over the squad.`, 'heal');
           }
         }
       ]
@@ -491,11 +501,11 @@
         },
         {
           atkName: 'Napalm', targetType: 'enemy',
-          desc: 'A concentrated burst on one enemy (18-24) with a heavy burn.',
+          desc: 'A concentrated burst on one enemy (18-24) with a burn.',
           run(ctx) {
             const dmg = rand(18, 24);
             ctx.damageEnemy(ctx.target, dmg);
-            ctx.target.burn = { turns: 3, dmg: 6 };
+            ctx.target.burn = { turns: 2, dmg: 6 };
             ctx.log(`${ctx.self.name} douses ${ctx.target.name} in napalm for ${dmg}!`, 'crit');
           }
         },
@@ -788,9 +798,9 @@
       moves: [
         {
           atkName: 'Double Blast', targetType: 'enemy',
-          desc: 'Two heavy blasts on one target (14-18 each).',
+          desc: 'Two heavy blasts on one target (12-15 each).',
           run(ctx) {
-            for (let i = 0; i < 2; i++) ctx.damageEnemy(ctx.target, rand(14, 18));
+            for (let i = 0; i < 2; i++) ctx.damageEnemy(ctx.target, rand(12, 15));
             ctx.log(`${ctx.self.name} unloads both barrels into ${ctx.target.name}.`);
           }
         },
@@ -1284,7 +1294,12 @@
     qa('.mode-btn').forEach(btn => btn.addEventListener('click', () => {
       state.mode = btn.dataset.mode;
       state.squadSize = state.mode === 'infinite' ? INFINITE_SQUAD_SIZE : STORY_SQUAD_SIZE;
-      qa('.mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+      qa('.mode-btn').forEach(b => {
+        const active = b === btn;
+        b.classList.toggle('active', active);
+        b.classList.toggle('secondary', !active);
+      });
+      state.startingAllyId = null;
       state.squad = buildStarterSquad();
       renderStart();
     }));
@@ -1746,7 +1761,8 @@
       { type: 'upgrade', kind: 'levelup' },
       { type: 'upgrade', kind: 'lvlup2' },
       { type: 'upgrade', kind: 'lvlup3' },
-      { type: 'upgrade', kind: 'hpcap' }
+      { type: 'upgrade', kind: 'hpcap' },
+      { type: 'upgrade', kind: 'revive' }
     ];
     while (segs.length < 14) segs.push(pick(upgrades));
     wheelSegments = shuffle(segs);
@@ -1764,12 +1780,12 @@
 
     const wheelLabels = {
       heal: 'Full Heal', maxhp: 'Max HP +20%', powerup: 'Power Boost', levelup: 'Level Up',
-      lvlup2: 'Upgrade +2', lvlup3: 'Upgrade +3', hpcap: 'Higher HP Cap'
+      lvlup2: 'Upgrade +2', lvlup3: 'Upgrade +3', hpcap: 'Higher HP Cap', revive: 'Revive Ally'
     };
     const radius = 118;
     wheelSegments.forEach((s, i) => {
       const segAngle = 360 / n;
-      const angle = -90 + (i * segAngle) + segAngle / 2;
+      const angle = (i * segAngle) + segAngle / 2;
       const label = document.createElement('div');
       label.className = 'wheel-seg-label';
       label.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px)`;
@@ -1798,7 +1814,7 @@
     const n = wheelSegments.length;
     const chosenIdx = rand(0, n - 1);
     const segAngle = 360 / n;
-    const targetAngle = 90 - ((chosenIdx + 0.5) * segAngle);
+    const targetAngle = -((chosenIdx + 0.5) * segAngle);
     const spins = 5;
     const finalRotation = spins * 360 + targetAngle;
     const wheel = q('#wheel');
@@ -1839,7 +1855,8 @@
       levelup: ['Level Up', 'Permanently levels up a random squad member, raising both HP and damage.'],
       lvlup2: ['Upgrade +2', 'Permanently levels up a random squad member twice.'],
       lvlup3: ['Upgrade +3', 'Permanently levels up a random squad member three times.'],
-      hpcap: ['Higher HP Cap', 'Permanently boosts a random squad member\'s max HP cap by 35%.']
+      hpcap: ['Higher HP Cap', 'Permanently boosts a random squad member\'s max HP cap by 35%.'],
+      revive: ['Revive Ally', 'Brings a fallen squad member back at 50% HP (or heals your squad if no one has fallen).']
     };
     const [title, desc] = labels[reward.kind];
     box.innerHTML = `
@@ -1907,6 +1924,16 @@
         levelUpUnit(u);
         levelUpUnit(u);
         log(`${u.name} leveled up three times to Lv.${u.level}!`, 'heal');
+      }
+    } else if (kind === 'revive') {
+      const fallen = state.squad.filter(u => u && u.hp <= 0);
+      if (fallen.length) {
+        const u = pick(fallen);
+        u.hp = Math.round(u.maxHp * 0.5);
+        log(`${u.name} has been revived!`, 'heal');
+      } else {
+        state.squad.forEach(u => { if (u) u.hp = u.maxHp; });
+        log('No one had fallen — the squad is fully healed instead.', 'heal');
       }
     }
     finishReward();
@@ -1991,7 +2018,7 @@
       box.innerHTML = `<h3>Empty Room</h3><p>Nothing but dust behind this door.</p>`;
       log('The door was empty.', 'sys');
     } else {
-      const kind = pick(['heal', 'maxhp', 'powerup', 'levelup', 'lvlup2', 'hpcap']);
+      const kind = pick(['heal', 'maxhp', 'powerup', 'levelup', 'lvlup2', 'hpcap', 'revive']);
       const alive = state.squad.filter(u => u);
       if (kind === 'powerup' && alive.length) {
         const u = pick(alive);
@@ -2024,6 +2051,16 @@
         u.hp = Math.min(u.hp + add, u.maxHp);
         u.bonusHp = (u.bonusHp || 0) + add;
         box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name}'s HP cap surges by 35% to ${u.maxHp}!</p>`;
+      } else if (kind === 'revive') {
+        const fallen = state.squad.filter(u => u && u.hp <= 0);
+        if (fallen.length) {
+          const u = pick(fallen);
+          u.hp = Math.round(u.maxHp * 0.5);
+          box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name} has been revived!</p>`;
+        } else {
+          state.squad.forEach(u => { if (u) u.hp = u.maxHp; });
+          box.innerHTML = `<h3>Hidden Cache!</h3><p>No one had fallen \u2014 your squad has been fully healed.</p>`;
+        }
       } else {
         state.squad.forEach(u => { if (u) u.hp = u.maxHp; });
         box.innerHTML = `<h3>Hidden Cache!</h3><p>Your squad has been fully healed.</p>`;
