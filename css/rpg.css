@@ -202,6 +202,9 @@ body {
 .unit-card.anim-attack { animation: anim-lunge 450ms ease; }
 .unit-card.anim-hit { animation: anim-shake 450ms ease; }
 .unit-card.anim-heal { animation: anim-glow 650ms ease; }
+.unit-card.anim-shield { animation: anim-shield-ring 650ms ease; }
+.unit-card.anim-crit { animation: anim-crit-flash 550ms ease; }
+#enemy-row.anim-aoe-flash { animation: anim-aoe-bg 500ms ease; }
 @keyframes anim-lunge {
     0% { transform: translateY(0); }
     35% { transform: translateY(-10px) scale(1.06); }
@@ -217,6 +220,20 @@ body {
 @keyframes anim-glow {
     0%, 100% { box-shadow: none; }
     50% { box-shadow: 0 0 16px 4px rgba(110, 203, 255, 0.8); }
+}
+@keyframes anim-shield-ring {
+    0% { box-shadow: 0 0 0 0 rgba(110, 203, 255, 0.9); }
+    60% { box-shadow: 0 0 0 8px rgba(110, 203, 255, 0.15); }
+    100% { box-shadow: 0 0 0 0 rgba(110, 203, 255, 0); }
+}
+@keyframes anim-crit-flash {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    30% { transform: scale(1.14); filter: brightness(2.4) saturate(3); }
+    55% { transform: scale(0.97); }
+}
+@keyframes anim-aoe-bg {
+    0%, 100% { background-color: transparent; }
+    40% { background-color: rgba(255, 209, 102, 0.18); }
 }
 
 .rpg-log {
@@ -256,6 +273,44 @@ body {
     margin: 6px 0;
 }
 .ability-panel .move-option .a-desc { margin: 0; text-align: left; flex: 1 1 220px; }
+.move-tag {
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border: 1px solid currentColor;
+}
+.move-tag-single { color: #ff8a8a; }
+.move-tag-aoe { color: #ffd166; }
+.move-tag-support { color: #6ecbff; }
+.a-name .move-tag { margin-left: 6px; vertical-align: middle; }
+
+/* ----- How to Play modal ----- */
+.help-modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.help-modal-overlay.show { display: flex; }
+.help-modal {
+    max-width: 560px;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: var(--rpg-panel);
+    border: 1px solid var(--rpg-border);
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.5);
+    padding: 18px 20px;
+}
+.help-modal h3 { color: var(--rpg-title); margin: 14px 0 6px; }
+.help-modal h3:first-child { margin-top: 0; }
+.help-modal p, .help-modal li { color: var(--rpg-text); font-size: 0.85rem; line-height: 1.5; }
+.help-modal ul { margin: 4px 0 0 18px; padding: 0; }
+.help-btn { position: fixed; top: 10px; right: 10px; z-index: 40; }
 
 /* ----- Squad build / start screen ----- */
 .roster-grid, .squad-slots {

@@ -6,11 +6,8 @@
   const ENEMY_DIR = 'Enemy/';
   const SAVE_KEY = 'fs_rpg_best_stage';
   const SAVE_KEY_INFINITE = 'fs_rpg_best_wave_infinite';
-  const LEADERBOARD_KEY = 'fs_rpg_leaderboard';
-  const PLAYER_NAME_KEY = 'fs_rpg_player_name';
-  const LEADERBOARD_API = '/api/rpg-leaderboard';
   const STORY_SQUAD_SIZE = 4;
-  const INFINITE_SQUAD_SIZE = 8;
+  const INFINITE_SQUAD_SIZE = 6;
   const THEME_TRACK_ID = '7gl7F2y7tiB9x8c3bdqwiu'; // "Main theme - Friendlyshooter" on Spotify
 
   const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -1189,77 +1186,6 @@
     q('#' + id).classList.add('active');
   }
 
-  function loadLeaderboard() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '[]');
-      return Array.isArray(saved) ? saved : [];
-    } catch (error) {
-      return [];
-    }
-  }
-
-  function renderLeaderboardList(listEl, entries) {
-    if (!listEl) return;
-    if (!entries || !entries.length) {
-      listEl.innerHTML = '<li>No runs yet</li>';
-      return;
-    }
-    listEl.innerHTML = entries.slice(0, 10).map((entry, index) => {
-      const label = entry.label || `${entry.name || 'Player'} \u2014 ${entry.score}`;
-      return `<li><span>#${index + 1}</span> ${entry.name ? `${entry.name}: ` : ''}${label}</li>`;
-    }).join('');
-  }
-
-  // Renders whatever is cached locally immediately, then refreshes from the
-  // online leaderboard API (falls back silently to local-only if offline).
-  function renderLeaderboard() {
-    const cached = loadLeaderboard();
-    renderLeaderboardList(q('#leaderboard-list-story'), cached.filter(e => (e.mode || 'story') === 'story'));
-    renderLeaderboardList(q('#leaderboard-list-infinite'), cached.filter(e => e.mode === 'infinite'));
-    fetchOnlineLeaderboard('story');
-    fetchOnlineLeaderboard('infinite');
-  }
-
-  async function fetchOnlineLeaderboard(mode) {
-    try {
-      const res = await fetch(`${LEADERBOARD_API}?mode=${mode}`);
-      if (!res.ok) return;
-      const entries = await res.json();
-      renderLeaderboardList(q(mode === 'infinite' ? '#leaderboard-list-infinite' : '#leaderboard-list-story'), entries);
-    } catch (error) {
-      // Offline or API unavailable — the locally cached list stays visible.
-    }
-  }
-
-  function getPlayerName() {
-    return (localStorage.getItem(PLAYER_NAME_KEY) || '').trim();
-  }
-
-  async function recordLeaderboardStage(stageReached, mode, label) {
-    // Keep a small local cache so the leaderboard still shows something offline.
-    const entries = loadLeaderboard();
-    const stamp = Date.now();
-    const name = getPlayerName() || 'Anonymous';
-    entries.push({ stage: stageReached, mode: mode || 'story', label, name, stamp });
-    entries.sort((a, b) => b.stage - a.stage || b.stamp - a.stamp);
-    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries.slice(0, 20)));
-    renderLeaderboard();
-
-    try {
-      const res = await fetch(LEADERBOARD_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, mode, score: stageReached, label })
-      });
-      if (res.ok) {
-        const entriesOnline = await res.json();
-        renderLeaderboardList(q(mode === 'infinite' ? '#leaderboard-list-infinite' : '#leaderboard-list-story'), entriesOnline);
-      }
-    } catch (error) {
-      // Offline or API unavailable — local cache above already covers this run.
-    }
-  }
-
   // Rare chance a newly recruited character starts at a higher level.
   function rollRecruitLevel() {
     const r = Math.random();
@@ -1351,19 +1277,15 @@
       renderStart();
     }));
 
+    const helpOverlay = q('#help-modal-overlay');
+    q('#btn-help').addEventListener('click', () => helpOverlay.classList.add('show'));
+    q('#btn-help-close').addEventListener('click', () => helpOverlay.classList.remove('show'));
+    helpOverlay.addEventListener('click', (e) => { if (e.target === helpOverlay) helpOverlay.classList.remove('show'); });
+
     const best = localStorage.getItem(SAVE_KEY);
     if (best) q('#best-level').textContent = best;
     const bestInfinite = localStorage.getItem(SAVE_KEY_INFINITE);
     if (bestInfinite) q('#best-level-infinite').textContent = bestInfinite;
-
-    const nameInput = q('#player-name-input');
-    if (nameInput) {
-      nameInput.value = getPlayerName();
-      nameInput.addEventListener('change', () => {
-        localStorage.setItem(PLAYER_NAME_KEY, nameInput.value.trim().slice(0, 20));
-      });
-    }
-    renderLeaderboard();
   }
 
   function toggleMusic() {
@@ -1500,6 +1422,7 @@
       if (anim && anim.attackerIdx === idx) card.classList.add('anim-attack');
       if (anim && anim.enemyAttackerHitIdxs && anim.enemyAttackerHitIdxs.includes(idx)) card.classList.add('anim-hit');
       if (anim && anim.healSquadIdxs && anim.healSquadIdxs.includes(idx)) card.classList.add('anim-heal');
+      if (anim && anim.shieldSquadIdxs && anim.shieldSquadIdxs.includes(idx)) card.classList.add('anim-shield');
       const pct = clamp(u.hp / u.maxHp * 100, 0, 100);
       card.innerHTML = `
         <div class="u-tag">Lv.${u.level || 1}</div>
@@ -1520,6 +1443,7 @@
 
     const enemyRow = q('#enemy-row');
     enemyRow.innerHTML = '';
+    enemyRow.classList.toggle('anim-aoe-flash', !!(anim && anim.aoe));
     state.enemies.forEach((e, idx) => {
       const card = document.createElement('div');
       card.className = 'unit-card';
@@ -1527,6 +1451,7 @@
       if (state.pendingAttacker !== null && e.hp > 0) card.classList.add('targetable');
       if (anim && anim.enemyAttackerIdx === idx) card.classList.add('anim-attack');
       if (anim && anim.hitEnemyIdxs && anim.hitEnemyIdxs.includes(idx)) card.classList.add('anim-hit');
+      if (anim && anim.critEnemyIdxs && anim.critEnemyIdxs.includes(idx)) card.classList.add('anim-crit');
       const pct = clamp(e.hp / e.maxHp * 100, 0, 100);
       card.innerHTML = `
         <img src="${imgSrc(ENEMY_DIR, e.img)}" alt="${e.name}">
@@ -1557,9 +1482,11 @@
       if (state.pendingMove === null) {
         ap.innerHTML = `<p style="color:#ffd166;font-size:0.8rem;">Choose a move for ${u.name}:</p>`;
         def.moves.forEach((mv, i) => {
+          const tag = classifyMove(mv);
           ap.innerHTML += `
             <div class="move-option">
               <button class="button" data-move="${i}">${mv.atkName}</button>
+              <span class="move-tag move-tag-${tag.cls}">${tag.label}</span>
               <span class="a-desc">${mv.desc}</span>
             </div>`;
         });
@@ -1574,7 +1501,8 @@
         });
       } else {
         const move = def.moves[state.pendingMove];
-        ap.innerHTML = `<div class="a-name">${move.atkName}</div><div class="a-desc">${move.desc}</div>`;
+        const tag = classifyMove(move);
+        ap.innerHTML = `<div class="a-name">${move.atkName} <span class="move-tag move-tag-${tag.cls}">${tag.label}</span></div><div class="a-desc">${move.desc}</div>`;
         if (move.targetType === 'enemy') {
           ap.innerHTML += `<p style="color:#ffd166;font-size:0.8rem;">Choose an enemy target.</p>`;
         } else {
@@ -1604,6 +1532,15 @@
     }
   }
 
+  // Heuristic move classification for the ability panel's tag badge.
+  function classifyMove(move) {
+    const d = move.desc.toLowerCase();
+    if (d.includes('heal') || d.includes('reviv') || d.includes('shield')) return { cls: 'support', label: 'Support' };
+    if (move.targetType === 'auto' && (d.includes('all enemies') || d.includes('enemies'))) return { cls: 'aoe', label: 'AoE' };
+    if (move.targetType === 'auto') return { cls: 'aoe', label: 'AoE' };
+    return { cls: 'single', label: 'Single Target' };
+  }
+
   function selectAttacker(idx) {
     state.pendingAttacker = idx;
     state.pendingMove = null;
@@ -1614,6 +1551,7 @@
     let amt = amount;
     if (enemy.defBuff && !ignoreShield) { amt = Math.round(amt * (1 - enemy.defBuff)); enemy.defBuff = 0; }
     enemy.hp = clamp(enemy.hp - amt, 0, enemy.maxHp);
+    enemy.lastCrit = !!crit;
   }
 
   function applyDamageToSquad(target, dmg, sourceName) {
@@ -1640,6 +1578,8 @@
 
     const beforeEnemyHp = state.enemies.map(e => e.hp);
     const beforeSquadHp = state.squad.map(u => u ? u.hp : null);
+    const beforeSquadShield = state.squad.map(u => u ? (u.shield || 0) : null);
+    state.enemies.forEach(e => { e.lastCrit = false; });
 
     const ctx = {
       self: unit, squad: state.squad, enemies: state.enemies, target,
@@ -1652,9 +1592,11 @@
     move.run(ctx);
 
     const hitEnemyIdxs = state.enemies.map((e, i) => (e.hp < beforeEnemyHp[i] ? i : -1)).filter(i => i >= 0);
+    const critEnemyIdxs = state.enemies.map((e, i) => (e.lastCrit && e.hp < beforeEnemyHp[i] ? i : -1)).filter(i => i >= 0);
     const healSquadIdxs = state.squad.map((u, i) => (u && beforeSquadHp[i] != null && u.hp > beforeSquadHp[i] ? i : -1)).filter(i => i >= 0);
+    const shieldSquadIdxs = state.squad.map((u, i) => (u && beforeSquadShield[i] != null && (u.shield || 0) > beforeSquadShield[i] ? i : -1)).filter(i => i >= 0);
     if (state.animTimer) clearTimeout(state.animTimer);
-    state.anim = { attackerIdx, hitEnemyIdxs, healSquadIdxs };
+    state.anim = { attackerIdx, hitEnemyIdxs, critEnemyIdxs, healSquadIdxs, shieldSquadIdxs, aoe: hitEnemyIdxs.length > 1 };
     state.animTimer = null;
 
     unit.acted = true;
@@ -1763,12 +1705,10 @@
       const best = parseInt(localStorage.getItem(SAVE_KEY_INFINITE) || '0', 10);
       const waveReached = Math.max(1, state.stageIndex);
       if (waveReached > best) localStorage.setItem(SAVE_KEY_INFINITE, String(waveReached));
-      recordLeaderboardStage(waveReached, 'infinite', `Infinite — Wave ${waveReached}`);
     } else {
       const best = parseInt(localStorage.getItem(SAVE_KEY) || '0', 10);
       const stageReached = Math.max(1, state.stageIndex);
       if (stageReached > best) localStorage.setItem(SAVE_KEY, String(stageReached));
-      recordLeaderboardStage(stageReached, 'story', `Story — Stage ${stageReached}`);
     }
     q('#gameover-level').textContent = `${stage.label} (${stage.waveLabel || ''})`;
     showScreen('screen-gameover');
@@ -1795,7 +1735,6 @@
   function onCampaignComplete() {
     const best = parseInt(localStorage.getItem(SAVE_KEY) || '0', 10);
     if (STAGES.length > best) localStorage.setItem(SAVE_KEY, String(STAGES.length));
-    recordLeaderboardStage(STAGES.length, 'story', `Story — Campaign Complete`);
     showScreen('screen-complete');
   }
 

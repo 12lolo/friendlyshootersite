@@ -6,10 +6,36 @@
         <title>World RPG — FriendlyShooter</title>
         <meta name="description" content="FriendlyShooter World RPG: build a squad of 4 characters, fight through roguelike levels, and spin the wheel for new abilities after every win."/>
         <link type="image/png" href="https://img.itch.zone/aW1nLzI1ODYyMDI3LnBuZw==/32x32%23/D5oY%2By.png" rel="icon" />
-        <link rel="stylesheet" href="css/site.css?v=20260909e">
-        <link rel="stylesheet" href="css/rpg.css?v=20260909e">
+        <link rel="stylesheet" href="css/site.css?v=20260909g">
+        <link rel="stylesheet" href="css/rpg.css?v=20260909g">
     </head>
     <body class="locale_en game_layout_widget layout_widget no_theme_toggle responsive" data-host="itch.io" data-page_name="view_game">
+        <button type="button" class="button secondary help-btn" id="btn-help">? How to Play</button>
+        <div class="help-modal-overlay" id="help-modal-overlay">
+            <div class="help-modal">
+                <h3>Squad &amp; Roster</h3>
+                <p>You always start with <strong>Pistol</strong> and one random ally. Win the reward wheel or hidden doors to recruit more characters, level them up, and boost their stats.</p>
+                <h3>Battle Turns</h3>
+                <ul>
+                    <li>Click a squad member, then pick one of its moves.</li>
+                    <li><strong>Single Target</strong> moves need you to click an enemy afterward.</li>
+                    <li><strong>AoE</strong> moves hit multiple enemies at once with no target needed.</li>
+                    <li><strong>Support</strong> moves heal, shield, or buff your squad instead of attacking.</li>
+                    <li>One enemy strikes back after each of your moves, cycling through the enemy line.</li>
+                    <li>Shield absorbs damage before HP; Burn and Suppressed are status effects shown under a unit's HP bar.</li>
+                </ul>
+                <h3>Wheel &amp; Doors</h3>
+                <p>After every wave you spin a reward wheel for a new recruit or a permanent upgrade (Max HP, Level Up, Revive, and more). Before the final boss you can also open one of three doors for a bonus.</p>
+                <h3>Game Modes</h3>
+                <ul>
+                    <li><strong>Story Mode</strong> — 6 hand-crafted stages with a proper ending.</li>
+                    <li><strong>Infinite Mode</strong> — endless escalating waves with a bigger 6-character squad; see how far you can push your best wave.</li>
+                </ul>
+                <div class="page-actions" style="justify-content:center;">
+                    <button type="button" class="button" id="btn-help-close">Got it</button>
+                </div>
+            </div>
+        </div>
         <div id="wrapper" class="main wrapper">
             <div class="inner_column size_large family_pixel" id="inner_column">
                 <div class="center">
@@ -27,26 +53,16 @@
                     <!-- START SCREEN -->
                     <section id="screen-start" class="rpg-screen active">
                         <h2>Your Squad</h2>
-                        <p>You begin every run with <strong>Pistol</strong> and one random common ally. Each stage is 3 waves — the last is always a boss wave — and you spin the reward wheel after every wave. Fight through the Forest, Desert, City, a Frobble boss, a door-lined corridor, and the Gable &amp; Goble final showdown. Choose <strong>Story Mode</strong> for the full campaign, or <strong>Infinite Mode</strong> for endless waves with a squad of up to 8.</p>
+                        <p>You begin every run with <strong>Pistol</strong> and one random common ally. Each stage is 3 waves — the last is always a boss wave — and you spin the reward wheel after every wave. Fight through the Forest, Desert, City, a Frobble boss, a door-lined corridor, and the Gable &amp; Goble final showdown. Choose <strong>Story Mode</strong> for the full campaign, or <strong>Infinite Mode</strong> for endless waves with a squad of up to 6. Tap <strong>? How to Play</strong> in the corner any time for a refresher.</p>
                         <div class="mode-select" id="mode-select">
                             <button type="button" class="button mode-btn active" id="btn-mode-story" data-mode="story">Story Mode<span class="mode-desc">6 stages, squad of 4, has an ending</span></button>
-                            <button type="button" class="button secondary mode-btn" id="btn-mode-infinite" data-mode="infinite">Infinite Mode<span class="mode-desc">Endless waves, squad of 8, no ending</span></button>
+                            <button type="button" class="button secondary mode-btn" id="btn-mode-infinite" data-mode="infinite">Infinite Mode<span class="mode-desc">Endless waves, squad of 6, no ending</span></button>
                         </div>
                         <div class="roster-grid" id="start-squad-preview"></div>
                         <div class="page-actions" style="justify-content:center;">
                             <button class="button secondary" id="btn-reroll-ally">Reroll Common Ally</button>
                         </div>
                         <p style="text-align:center;">Best story stage: <strong id="best-level">0</strong> &nbsp;|&nbsp; Best infinite wave: <strong id="best-level-infinite">0</strong></p>
-                        <div class="page-actions" style="justify-content:center;">
-                            <label for="player-name-input" style="align-self:center;">Player name:</label>
-                            <input type="text" id="player-name-input" maxlength="20" placeholder="Your name" class="player-name-input">
-                        </div>
-                        <div class="leaderboard-box">
-                            <h3>Top 10 &mdash; Story Mode</h3>
-                            <ol id="leaderboard-list-story"></ol>
-                            <h3>Top 10 &mdash; Infinite Mode</h3>
-                            <ol id="leaderboard-list-infinite"></ol>
-                        </div>
                         <div class="page-actions">
                             <button class="button" id="btn-start-run">Start Run</button>
                         </div>
@@ -124,6 +140,6 @@
                 </div>
             </div>
         </div>
-        <script src="js/rpg.js?v=20260909e"></script>
+        <script src="js/rpg.js?v=20260909g"></script>
     </body>
 </html>
