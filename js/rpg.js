@@ -5,6 +5,7 @@
   const CHAR_DIR = 'Charachters/';
   const ENEMY_DIR = 'Enemy/';
   const SAVE_KEY = 'fs_rpg_best_stage';
+  const LEADERBOARD_KEY = 'fs_rpg_leaderboard';
   const THEME_TRACK_ID = '7gl7F2y7tiB9x8c3bdqwiu'; // "Main theme - Friendlyshooter" on Spotify
 
   const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -879,6 +880,41 @@
     q('#' + id).classList.add('active');
   }
 
+  function loadLeaderboard() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '[]');
+      return Array.isArray(saved) ? saved : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function renderLeaderboard() {
+    const list = q('#leaderboard-list');
+    if (!list) return;
+
+    const entries = loadLeaderboard();
+    if (!entries.length) {
+      list.innerHTML = '<li>No runs yet</li>';
+      return;
+    }
+
+    list.innerHTML = entries.slice(0, 5).map((entry, index) => {
+      const label = entry.label || `Stage ${entry.stage}`;
+      return `<li><span>#${index + 1}</span> ${label}</li>`;
+    }).join('');
+  }
+
+  function recordLeaderboardStage(stageReached) {
+    const entries = loadLeaderboard();
+    const stamp = Date.now();
+    entries.push({ stage: stageReached, label: `Stage ${stageReached}`, stamp });
+    entries.sort((a, b) => b.stage - a.stage || b.stamp - a.stamp);
+    const trimmed = entries.slice(0, 5);
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(trimmed));
+    renderLeaderboard();
+  }
+
   // Rare chance a newly recruited character starts at a higher level.
   function rollRecruitLevel() {
     const r = Math.random();
@@ -955,6 +991,7 @@
 
     const best = localStorage.getItem(SAVE_KEY);
     if (best) q('#best-level').textContent = best;
+    renderLeaderboard();
   }
 
   function toggleMusic() {
@@ -1347,7 +1384,9 @@
 
   function onGameOver() {
     const best = parseInt(localStorage.getItem(SAVE_KEY) || '0', 10);
-    if (state.stageIndex > best) localStorage.setItem(SAVE_KEY, String(state.stageIndex));
+    const stageReached = Math.max(1, state.stageIndex);
+    if (stageReached > best) localStorage.setItem(SAVE_KEY, String(stageReached));
+    recordLeaderboardStage(stageReached);
     const stage = STAGES[state.stageIndex];
     q('#gameover-level').textContent = `Stage ${stage.stageNumber} (${stage.waveLabel || stage.label})`;
     showScreen('screen-gameover');
@@ -1374,6 +1413,7 @@
   function onCampaignComplete() {
     const best = parseInt(localStorage.getItem(SAVE_KEY) || '0', 10);
     if (STAGES.length > best) localStorage.setItem(SAVE_KEY, String(STAGES.length));
+    recordLeaderboardStage(STAGES.length);
     showScreen('screen-complete');
   }
 
@@ -1417,6 +1457,7 @@
       label.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px)`;
       const inner = document.createElement('div');
       inner.className = 'wheel-seg-inner';
+      inner.dataset.angle = String(-angle);
       inner.style.transform = `rotate(${-angle}deg)`;
       if (s.type === 'char') {
         const def = CHAR_BY_ID[s.id];
@@ -1448,7 +1489,8 @@
     const wheel = q('#wheel');
     wheel.style.transform = `rotate(${finalRotation}deg)`;
     qa('.wheel-seg-inner').forEach(inner => {
-      inner.style.transform = `rotate(${-finalRotation}deg)`;
+      const offset = Number(inner.dataset.angle || 0);
+      inner.style.transform = `rotate(${offset - finalRotation}deg)`;
     });
 
     setTimeout(() => {
