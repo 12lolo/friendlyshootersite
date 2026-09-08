@@ -858,7 +858,8 @@
     pendingMove: null,
     enemyCursor: 0,
     battleOver: false,
-    anim: null
+    anim: null,
+    animTimer: null
   };
   let doorsResolved = false;
   let musicOn = false;
@@ -1034,6 +1035,10 @@
     state.pendingMove = null;
     state.enemyCursor = 0;
     state.anim = null;
+    if (state.animTimer) {
+      clearTimeout(state.animTimer);
+      state.animTimer = null;
+    }
     state.squad.forEach(u => { if (u) { u.shield = 0; u.acted = false; u.burn = null; } });
     clearLog();
 
@@ -1127,8 +1132,13 @@
       }
       enemyRow.appendChild(card);
     });
-    state.anim = null;
-
+    if (anim && !state.animTimer) {
+      state.animTimer = setTimeout(() => {
+        state.animTimer = null;
+        state.anim = null;
+        renderBattle();
+      }, 500);
+    }
     const ap = q('#ability-panel');
     if (state.pendingAttacker !== null) {
       const u = state.squad[state.pendingAttacker];
@@ -1176,6 +1186,12 @@
     }
 
     q('#action-bar').textContent = 'Select a squad member to act.';
+    if (!state.pendingAttacker && state.anim) {
+      setTimeout(() => {
+        state.anim = null;
+        renderBattle();
+      }, 500);
+    }
   }
 
   function selectAttacker(idx) {
@@ -1227,7 +1243,9 @@
 
     const hitEnemyIdxs = state.enemies.map((e, i) => (e.hp < beforeEnemyHp[i] ? i : -1)).filter(i => i >= 0);
     const healSquadIdxs = state.squad.map((u, i) => (u && beforeSquadHp[i] != null && u.hp > beforeSquadHp[i] ? i : -1)).filter(i => i >= 0);
+    if (state.animTimer) clearTimeout(state.animTimer);
     state.anim = { attackerIdx, hitEnemyIdxs, healSquadIdxs };
+    state.animTimer = null;
 
     unit.acted = true;
     state.pendingAttacker = null;
@@ -1304,7 +1322,9 @@
     }
 
     const hitSquadIdxs = state.squad.map((u, i) => (u && beforeSquadHp[i] != null && u.hp < beforeSquadHp[i] ? i : -1)).filter(i => i >= 0);
+    if (state.animTimer) clearTimeout(state.animTimer);
     state.anim = { enemyAttackerIdx: idx, enemyAttackerHitIdxs: hitSquadIdxs };
+    state.animTimer = null;
 
     if (state.enemies.every(x => x.hp <= 0)) {
       state.battleOver = true;
@@ -1394,10 +1414,10 @@
       const mid = (360 / n) * i + (360 / n) / 2;
       const label = document.createElement('div');
       label.className = 'wheel-seg-label';
-      label.style.transform = `rotate(${mid}deg) translate(0, -110px) rotate(${-mid}deg)`;
+      label.style.transform = `translate(-50%, -50%) rotate(${mid}deg) translateY(-118px)`;
       const inner = document.createElement('div');
       inner.className = 'wheel-seg-inner';
-      inner.style.transform = 'rotate(0deg)';
+      inner.style.transform = `translate(-50%, -50%) rotate(${-mid}deg)`;
       if (s.type === 'char') {
         const def = CHAR_BY_ID[s.id];
         inner.innerHTML = `<img src="${imgSrc(CHAR_DIR, def.img)}" alt="${def.name}"><span>${def.name}</span>`;
