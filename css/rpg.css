@@ -157,6 +157,11 @@ body {
 .rpg-side h3 { color: var(--rpg-title); text-align: center; margin: 0 0 10px; }
 .rpg-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 
+.mode-select { display: flex; gap: 12px; justify-content: center; margin: 14px 0; flex-wrap: wrap; }
+.mode-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 18px; }
+.mode-btn .mode-desc { font-size: 0.65rem; color: var(--rpg-text); opacity: 0.85; }
+.mode-btn.active { border-color: var(--rpg-accent); box-shadow: 0 0 0 2px rgba(212,0,177,0.5); }
+
 .unit-card {
     width: 118px;
     background: linear-gradient(180deg, rgba(20, 60, 22, 0.65), var(--rpg-panel-2));
@@ -288,8 +293,6 @@ body {
     top: 50%;
     width: 66px; height: 66px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    transform-origin: center center;
-    transition: transform 4s cubic-bezier(0.15, 0.85, 0.25, 1);
     transform: translate(-50%, -50%);
 }
 .leaderboard-box {
@@ -317,8 +320,7 @@ body {
     color: var(--rpg-title);
     font-weight: 700;
 }
-.wheel-seg-inner img { width: 34px; height: 34px; object-fit: contain; image-rendering: pixelated; }
-.wheel-seg-inner span { font-size: 0.55rem; color: #fff; text-shadow: 1px 1px 0 #000; max-width: 60px; }
+.wheel-seg-inner span { font-size: 0.6rem; color: #fff; text-shadow: 1px 1px 0 #000; max-width: 62px; text-align: center; }
 .wheel-center-dot {
     position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px;
     background: var(--rpg-panel); border: 2px solid var(--rpg-accent); border-radius: 50%; z-index: 4;

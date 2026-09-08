@@ -5,7 +5,10 @@
   const CHAR_DIR = 'Charachters/';
   const ENEMY_DIR = 'Enemy/';
   const SAVE_KEY = 'fs_rpg_best_stage';
+  const SAVE_KEY_INFINITE = 'fs_rpg_best_wave_infinite';
   const LEADERBOARD_KEY = 'fs_rpg_leaderboard';
+  const STORY_SQUAD_SIZE = 4;
+  const INFINITE_SQUAD_SIZE = 8;
   const THEME_TRACK_ID = '7gl7F2y7tiB9x8c3bdqwiu'; // "Main theme - Friendlyshooter" on Spotify
 
   const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -40,6 +43,16 @@
             ctx.damageEnemy(ctx.target, dmg);
             ctx.log(`${ctx.self.name} lines up an aimed shot on ${ctx.target.name} for ${dmg}.`);
           }
+        },
+        {
+          atkName: 'Suppressing Rounds', targetType: 'enemy',
+          desc: 'Light damage (8-12) that rattles the target, weakening its next attack.',
+          run(ctx) {
+            const dmg = rand(8, 12);
+            ctx.damageEnemy(ctx.target, dmg);
+            ctx.target.suppressed = true;
+            ctx.log(`${ctx.self.name} peppers ${ctx.target.name} with suppressing rounds for ${dmg}.`);
+          }
         }
       ]
     },
@@ -61,6 +74,14 @@
             const dmg = rand(18, 24);
             ctx.damageEnemy(ctx.target, dmg);
             ctx.log(`${ctx.self.name} takes down ${ctx.target.name} for ${dmg}.`);
+          }
+        },
+        {
+          atkName: 'Adrenaline Rush', targetType: 'auto',
+          desc: 'Braces for impact, gaining 15 shield.',
+          run(ctx) {
+            ctx.self.shield = (ctx.self.shield || 0) + 15;
+            ctx.log(`${ctx.self.name} gets an adrenaline rush and braces for impact.`, 'heal');
           }
         }
       ]
@@ -85,6 +106,16 @@
             const dmg = win ? rand(40, 55) : rand(2, 6);
             ctx.damageEnemy(ctx.target, dmg, win);
             ctx.log(`${ctx.self.name} goes all in on ${ctx.target.name} for ${dmg}${win ? ' — jackpot!' : '.'}`, win ? 'crit' : '');
+          }
+        },
+        {
+          atkName: 'Bluff', targetType: 'auto',
+          desc: 'Rattles all enemies for light damage (5-8) and suppresses one at random.',
+          run(ctx) {
+            const alive = ctx.enemies.filter(e => e.hp > 0);
+            alive.forEach(e => ctx.damageEnemy(e, rand(5, 8)));
+            if (alive.length) pick(alive).suppressed = true;
+            ctx.log(`${ctx.self.name} calls a bluff, rattling the enemy line.`);
           }
         }
       ]
@@ -116,6 +147,16 @@
             ctx.target.suppressed = true;
             ctx.log(`${ctx.self.name} fires a warning shot at ${ctx.target.name} for ${dmg}.`);
           }
+        },
+        {
+          atkName: 'Quickdraw', targetType: 'enemy',
+          desc: 'A fast shot (16-20); deals 50% bonus if the target is already suppressed.',
+          run(ctx) {
+            let dmg = rand(16, 20);
+            if (ctx.target.suppressed) dmg = Math.round(dmg * 1.5);
+            ctx.damageEnemy(ctx.target, dmg);
+            ctx.log(`${ctx.self.name} quickdraws on ${ctx.target.name} for ${dmg}.`);
+          }
         }
       ]
     },
@@ -138,6 +179,14 @@
             ctx.damageEnemy(ctx.target, dmg);
             ctx.log(`${ctx.self.name} sticks a bomb to ${ctx.target.name} for ${dmg}!`, 'crit');
           }
+        },
+        {
+          atkName: 'Smoke Screen', targetType: 'auto',
+          desc: 'Deploys smoke, granting the whole squad 8 shield.',
+          run(ctx) {
+            ctx.squad.filter(u => u && u.hp > 0).forEach(u => u.shield = (u.shield || 0) + rand(6, 10));
+            ctx.log(`${ctx.self.name} lays down a smoke screen for cover.`, 'heal');
+          }
         }
       ]
     },
@@ -146,12 +195,12 @@
       moves: [
         {
           atkName: 'Rocket Barrage', targetType: 'enemy',
-          desc: 'Heavy rocket hit (35-50) with splash to others (8).',
+          desc: 'Heavy rocket hit (28-38) with splash to others (6).',
           run(ctx) {
-            const dmg = rand(35, 50);
+            const dmg = rand(28, 38);
             ctx.damageEnemy(ctx.target, dmg);
             ctx.log(`${ctx.self.name} launches a rocket at ${ctx.target.name} for ${dmg}!`, 'crit');
-            ctx.enemies.filter(e => e.hp > 0 && e !== ctx.target).forEach(e => ctx.damageEnemy(e, 8));
+            ctx.enemies.filter(e => e.hp > 0 && e !== ctx.target).forEach(e => ctx.damageEnemy(e, 6));
           }
         },
         {
@@ -161,6 +210,14 @@
             const dmg = rand(20, 28);
             ctx.damageEnemy(ctx.target, dmg, false, true);
             ctx.log(`${ctx.self.name} fires an anti-armor round into ${ctx.target.name} for ${dmg}.`);
+          }
+        },
+        {
+          atkName: 'Flare', targetType: 'auto',
+          desc: 'Fires a flare that suppresses every enemy, weakening their next attacks.',
+          run(ctx) {
+            ctx.enemies.filter(e => e.hp > 0).forEach(e => e.suppressed = true);
+            ctx.log(`${ctx.self.name} fires a flare, blinding the enemy line.`);
           }
         }
       ]
@@ -188,6 +245,14 @@
             ctx.target.suppressed = true;
             ctx.log(`${ctx.self.name} clips ${ctx.target.name} for ${dmg}, throwing off its aim.`);
           }
+        },
+        {
+          atkName: 'Camouflage', targetType: 'auto',
+          desc: 'Vanishes into cover, gaining 20 shield.',
+          run(ctx) {
+            ctx.self.shield = (ctx.self.shield || 0) + 20;
+            ctx.log(`${ctx.self.name} melts into camouflage.`, 'heal');
+          }
         }
       ]
     },
@@ -214,6 +279,16 @@
             ctx.damageEnemy(ctx.target, dmg, true);
             ctx.log(`${ctx.self.name} blasts ${ctx.target.name} point blank for ${dmg}!`, 'crit');
           }
+        },
+        {
+          atkName: 'Knockback Blast', targetType: 'enemy',
+          desc: 'Blasts a target back (12-16 dmg) and suppresses it.',
+          run(ctx) {
+            const dmg = rand(12, 16);
+            ctx.damageEnemy(ctx.target, dmg);
+            ctx.target.suppressed = true;
+            ctx.log(`${ctx.self.name} knocks ${ctx.target.name} back for ${dmg}.`);
+          }
         }
       ]
     },
@@ -222,25 +297,39 @@
       moves: [
         {
           atkName: 'Field Aid', targetType: 'auto',
-          desc: 'Heals the lowest-HP ally for 20-30.',
+          desc: 'Heals the lowest-HP ally for 20-30 (scales with level).',
           run(ctx) {
-            const alive = ctx.squad.filter(u => u.hp > 0);
+            const alive = ctx.squad.filter(u => u && u.hp > 0);
             if (!alive.length) return;
             const t = alive.reduce((a, b) => (a.hp / a.maxHp <= b.hp / b.maxHp ? a : b));
-            const heal = rand(20, 30);
+            const heal = Math.round(rand(20, 30) * (ctx.self.atkMult || 1));
             t.hp = clamp(t.hp + heal, 0, t.maxHp);
             ctx.log(`${ctx.self.name} patches up ${t.name} for ${heal} HP.`, 'heal');
           }
         },
         {
           atkName: 'Group Bandage', targetType: 'auto',
-          desc: 'Heals the whole squad a little (8-12 each).',
+          desc: 'Heals the whole squad a little (8-12 each, scales with level).',
           run(ctx) {
-            ctx.squad.filter(u => u.hp > 0).forEach(u => {
-              const heal = rand(8, 12);
+            ctx.squad.filter(u => u && u.hp > 0).forEach(u => {
+              const heal = Math.round(rand(8, 12) * (ctx.self.atkMult || 1));
               u.hp = clamp(u.hp + heal, 0, u.maxHp);
             });
             ctx.log(`${ctx.self.name} hands out bandages to the whole squad.`, 'heal');
+          }
+        },
+        {
+          atkName: 'Combat Stims', targetType: 'auto',
+          desc: 'Grants the squad shield (5-10 each) and gives the weakest ally a small heal.',
+          run(ctx) {
+            const alive = ctx.squad.filter(u => u && u.hp > 0);
+            alive.forEach(u => u.shield = (u.shield || 0) + rand(5, 10));
+            if (alive.length) {
+              const t = alive.reduce((a, b) => (a.hp / a.maxHp <= b.hp / b.maxHp ? a : b));
+              const heal = Math.round(rand(10, 15) * (ctx.self.atkMult || 1));
+              t.hp = clamp(t.hp + heal, 0, t.maxHp);
+            }
+            ctx.log(`${ctx.self.name} hands out combat stims to the squad.`, 'heal');
           }
         }
       ]
@@ -267,6 +356,14 @@
             ctx.target.suppressed = true;
             ctx.log(`${ctx.self.name} chills ${ctx.target.name} for ${dmg}.`);
           }
+        },
+        {
+          atkName: 'Mana Shield', targetType: 'auto',
+          desc: 'Conjures a protective ward, gaining 18 shield.',
+          run(ctx) {
+            ctx.self.shield = (ctx.self.shield || 0) + 18;
+            ctx.log(`${ctx.self.name} conjures a mana shield.`, 'heal');
+          }
         }
       ]
     },
@@ -274,14 +371,16 @@
       id: 'engineer', name: 'Engineer', img: 'ENgineerV2', maxHp: 65,
       moves: [
         {
-          atkName: 'Deploy Turret', targetType: 'auto',
-          desc: 'Summons a turret ally to fire on all enemies (6-10 dmg) and suppress them.',
+          atkName: 'Place Turret', targetType: 'auto',
+          desc: 'Deploys a turret ally to an empty squad slot and suppresses all enemies (6-10 dmg).',
           run(ctx) {
             const turretDef = ROSTER.find(c => c.id === 'turret');
             const emptySpot = ctx.squad.findIndex(u => !u);
             if (turretDef && emptySpot >= 0) {
               ctx.squad[emptySpot] = makeUnit(turretDef, 1);
-              ctx.log(`${ctx.self.name} deploys a turret ally to the squad!`);
+              ctx.log(`${ctx.self.name} places a turret in the squad!`, 'heal');
+            } else {
+              ctx.log(`${ctx.self.name} has no room to place a turret right now.`);
             }
             ctx.enemies.filter(e => e.hp > 0).forEach(e => {
               ctx.damageEnemy(e, rand(6, 10));
@@ -295,6 +394,18 @@
           run(ctx) {
             ctx.squad.filter(u => u && u.hp > 0).forEach(u => u.shield = (u.shield || 0) + rand(12, 16));
             ctx.log(`${ctx.self.name} launches a shield drone over the whole squad.`, 'heal');
+          }
+        },
+        {
+          atkName: 'Repair Drone', targetType: 'auto',
+          desc: 'Heals the weakest ally for 10-18 (scales with level).',
+          run(ctx) {
+            const alive = ctx.squad.filter(u => u && u.hp > 0);
+            if (!alive.length) return;
+            const t = alive.reduce((a, b) => (a.hp / a.maxHp <= b.hp / b.maxHp ? a : b));
+            const heal = Math.round(rand(10, 18) * (ctx.self.atkMult || 1));
+            t.hp = clamp(t.hp + heal, 0, t.maxHp);
+            ctx.log(`${ctx.self.name} sends a repair drone to ${t.name} for ${heal} HP.`, 'heal');
           }
         }
       ]
@@ -319,6 +430,15 @@
             ctx.target.suppressed = true;
             ctx.log(`${ctx.self.name} suppresses ${ctx.target.name} for ${dmg}.`);
           }
+        },
+        {
+          atkName: 'Overcharge', targetType: 'enemy',
+          desc: 'A focused overcharged shot that ignores shields (14-18).',
+          run(ctx) {
+            const dmg = rand(14, 18);
+            ctx.damageEnemy(ctx.target, dmg, false, true);
+            ctx.log(`${ctx.self.name} overcharges and fires on ${ctx.target.name} for ${dmg}.`);
+          }
         }
       ]
     },
@@ -341,6 +461,16 @@
             ctx.damageEnemy(ctx.target, dmg);
             ctx.self.shield = (ctx.self.shield || 0) + 10;
             ctx.log(`${ctx.self.name} braces behind cover and counters ${ctx.target.name} for ${dmg}.`);
+          }
+        },
+        {
+          atkName: 'Shield Bash', targetType: 'enemy',
+          desc: 'Bashes an enemy (8-12 dmg) and suppresses it.',
+          run(ctx) {
+            const dmg = rand(8, 12);
+            ctx.damageEnemy(ctx.target, dmg);
+            ctx.target.suppressed = true;
+            ctx.log(`${ctx.self.name} bashes ${ctx.target.name} with a shield for ${dmg}.`);
           }
         }
       ]
@@ -368,6 +498,15 @@
             ctx.target.burn = { turns: 3, dmg: 6 };
             ctx.log(`${ctx.self.name} douses ${ctx.target.name} in napalm for ${dmg}!`, 'crit');
           }
+        },
+        {
+          atkName: 'Firewall', targetType: 'auto',
+          desc: 'Raises a wall of fire, burning all enemies and shielding the user (+10).',
+          run(ctx) {
+            ctx.enemies.filter(e => e.hp > 0).forEach(e => e.burn = { turns: 2, dmg: 4 });
+            ctx.self.shield = (ctx.self.shield || 0) + 10;
+            ctx.log(`${ctx.self.name} raises a wall of fire.`, 'heal');
+          }
         }
       ]
     },
@@ -393,6 +532,15 @@
             for (let i = 0; i < 3; i++) ctx.damageEnemy(ctx.target, rand(6, 9));
             ctx.log(`${ctx.self.name} focuses the minigun on ${ctx.target.name}.`);
           }
+        },
+        {
+          atkName: 'Overheat', targetType: 'enemy',
+          desc: 'Overheats the barrel for a single heavy hit that ignores shields (16-20).',
+          run(ctx) {
+            const dmg = rand(16, 20);
+            ctx.damageEnemy(ctx.target, dmg, false, true);
+            ctx.log(`${ctx.self.name} overheats the minigun into ${ctx.target.name} for ${dmg}.`);
+          }
         }
       ]
     },
@@ -401,9 +549,9 @@
       moves: [
         {
           atkName: 'Haymaker', targetType: 'enemy',
-          desc: 'A single devastating punch (30-40 dmg).',
+          desc: 'A single devastating punch (26-34 dmg).',
           run(ctx) {
-            const dmg = rand(30, 40);
+            const dmg = rand(26, 34);
             ctx.damageEnemy(ctx.target, dmg, true);
             ctx.log(`${ctx.self.name} lands a haymaker on ${ctx.target.name} for ${dmg}!`, 'crit');
           }
@@ -414,6 +562,14 @@
           run(ctx) {
             for (let i = 0; i < 2; i++) ctx.damageEnemy(ctx.target, rand(10, 15));
             ctx.log(`${ctx.self.name} throws a flurry of punches at ${ctx.target.name}.`);
+          }
+        },
+        {
+          atkName: 'Iron Guard', targetType: 'auto',
+          desc: 'Tenses up, gaining 20 shield.',
+          run(ctx) {
+            ctx.self.shield = (ctx.self.shield || 0) + 20;
+            ctx.log(`${ctx.self.name} braces in an iron guard stance.`, 'heal');
           }
         }
       ]
@@ -447,6 +603,16 @@
             }
             ctx.log(`${ctx.self.name} looses a volley of arrows.`);
           }
+        },
+        {
+          atkName: 'Explosive Arrow', targetType: 'enemy',
+          desc: 'An arrow rigged to explode (14-18) that also burns the target.',
+          run(ctx) {
+            const dmg = rand(14, 18);
+            ctx.damageEnemy(ctx.target, dmg);
+            ctx.target.burn = { turns: 2, dmg: 4 };
+            ctx.log(`${ctx.self.name} fires an explosive arrow at ${ctx.target.name} for ${dmg}!`, 'crit');
+          }
         }
       ]
     },
@@ -473,6 +639,16 @@
             if (weakest) weakest.hp = clamp(weakest.hp + 8, 0, weakest.maxHp);
             ctx.log(`${ctx.self.name} presents the evidence and fortifies the squad.`, 'heal');
           }
+        },
+        {
+          atkName: 'Cross Examine', targetType: 'enemy',
+          desc: 'Grills the target (14-20 dmg) and suppresses it.',
+          run(ctx) {
+            const dmg = rand(14, 20);
+            ctx.damageEnemy(ctx.target, dmg);
+            ctx.target.suppressed = true;
+            ctx.log(`${ctx.self.name} cross-examines ${ctx.target.name} for ${dmg}.`);
+          }
         }
       ]
     },
@@ -481,9 +657,9 @@
       moves: [
         {
           atkName: 'Cannonball', targetType: 'enemy',
-          desc: 'A heavy cannonball strike (30-45 dmg).',
+          desc: 'A heavy cannonball strike (26-38 dmg).',
           run(ctx) {
-            const dmg = rand(30, 45);
+            const dmg = rand(26, 38);
             ctx.damageEnemy(ctx.target, dmg, dmg >= 40);
             ctx.log(`${ctx.self.name} fires a cannonball at ${ctx.target.name} for ${dmg}!`);
           }
@@ -494,6 +670,14 @@
           run(ctx) {
             ctx.enemies.filter(e => e.hp > 0).forEach(e => ctx.damageEnemy(e, rand(10, 14)));
             ctx.log(`${ctx.self.name} fires a grapeshot volley!`);
+          }
+        },
+        {
+          atkName: 'Overpressure', targetType: 'auto',
+          desc: 'A deafening blast that suppresses all enemies and deals light damage (4-8 each).',
+          run(ctx) {
+            ctx.enemies.filter(e => e.hp > 0).forEach(e => { ctx.damageEnemy(e, rand(4, 8)); e.suppressed = true; });
+            ctx.log(`${ctx.self.name} unleashes an overpressure blast.`);
           }
         }
       ]
@@ -516,6 +700,14 @@
           run(ctx) {
             for (let i = 0; i < 2; i++) ctx.damageEnemy(ctx.target, rand(10, 14));
             ctx.log(`${ctx.self.name} reloads fast and fires again at ${ctx.target.name}.`);
+          }
+        },
+        {
+          atkName: 'Marksman Stance', targetType: 'auto',
+          desc: 'Steadies the aim, gaining 12 shield.',
+          run(ctx) {
+            ctx.self.shield = (ctx.self.shield || 0) + 12;
+            ctx.log(`${ctx.self.name} settles into a marksman stance.`, 'heal');
           }
         }
       ]
@@ -541,6 +733,16 @@
           run(ctx) {
             for (let i = 0; i < 4; i++) ctx.damageEnemy(ctx.target, rand(4, 6));
             ctx.log(`${ctx.self.name} focuses fire on ${ctx.target.name}.`);
+          }
+        },
+        {
+          atkName: 'Suppressing Spray', targetType: 'auto',
+          desc: 'Sprays all enemies (3-5 each) and suppresses one at random.',
+          run(ctx) {
+            const alive = ctx.enemies.filter(e => e.hp > 0);
+            alive.forEach(e => ctx.damageEnemy(e, rand(3, 5)));
+            if (alive.length) pick(alive).suppressed = true;
+            ctx.log(`${ctx.self.name} sprays down the enemy line.`);
           }
         }
       ]
@@ -570,6 +772,14 @@
             targets.forEach(t => { for (let i = 0; i < 2; i++) ctx.damageEnemy(t, rand(4, 6)); });
             ctx.log(`${ctx.self.name} lays down a crossfire pattern.`);
           }
+        },
+        {
+          atkName: 'Overdrive', targetType: 'enemy',
+          desc: 'Dumps 5 rapid hits (3-5 each) into one target.',
+          run(ctx) {
+            for (let i = 0; i < 5; i++) ctx.damageEnemy(ctx.target, rand(3, 5));
+            ctx.log(`${ctx.self.name} goes into overdrive on ${ctx.target.name}.`);
+          }
         }
       ]
     },
@@ -590,6 +800,15 @@
           run(ctx) {
             ctx.enemies.filter(e => e.hp > 0).forEach(e => ctx.damageEnemy(e, rand(8, 12)));
             ctx.log(`${ctx.self.name} fires a wide double-barrel spread.`);
+          }
+        },
+        {
+          atkName: 'Point-Blank Barrage', targetType: 'enemy',
+          desc: 'Both barrels ignore shields on one target (18-22).',
+          run(ctx) {
+            const dmg = rand(18, 22);
+            ctx.damageEnemy(ctx.target, dmg, false, true);
+            ctx.log(`${ctx.self.name} unloads a point-blank barrage into ${ctx.target.name} for ${dmg}.`);
           }
         }
       ]
@@ -615,6 +834,14 @@
             const dmg = rand(20, 26);
             ctx.damageEnemy(ctx.target, dmg, false, true);
             ctx.log(`${ctx.self.name} burns through ${ctx.target.name} with a focused beam for ${dmg}.`);
+          }
+        },
+        {
+          atkName: 'Overload Beam', targetType: 'auto',
+          desc: 'Overloads both lasers, hitting all enemies while ignoring shields (8-12 each).',
+          run(ctx) {
+            ctx.enemies.filter(e => e.hp > 0).forEach(e => ctx.damageEnemy(e, rand(8, 12), false, true));
+            ctx.log(`${ctx.self.name} overloads both lasers across the enemy line.`);
           }
         }
       ]
@@ -642,6 +869,14 @@
             ctx.target.suppressed = true;
             ctx.log(`${ctx.self.name} pins down ${ctx.target.name} for ${dmg}.`);
           }
+        },
+        {
+          atkName: 'Barrage', targetType: 'enemy',
+          desc: 'Unloads 3 hits (6-9 each) into one enemy.',
+          run(ctx) {
+            for (let i = 0; i < 3; i++) ctx.damageEnemy(ctx.target, rand(6, 9));
+            ctx.log(`${ctx.self.name} unloads a barrage on ${ctx.target.name}.`);
+          }
         }
       ]
     },
@@ -662,6 +897,15 @@
           run(ctx) {
             for (let i = 0; i < 5; i++) ctx.damageEnemy(ctx.target, rand(3, 5));
             ctx.log(`${ctx.self.name} goes full auto on ${ctx.target.name}.`);
+          }
+        },
+        {
+          atkName: 'Grenade Attachment', targetType: 'enemy',
+          desc: 'Fires an under-barrel grenade for heavy single-target damage (20-26).',
+          run(ctx) {
+            const dmg = rand(20, 26);
+            ctx.damageEnemy(ctx.target, dmg, true);
+            ctx.log(`${ctx.self.name} fires an under-barrel grenade at ${ctx.target.name} for ${dmg}!`, 'crit');
           }
         }
       ]
@@ -735,15 +979,6 @@
       abilities: [{
         name: 'Boom Blast', chance: 0.35,
         run(ctx) { ctx.squad.forEach(t => ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.7), `${ctx.self.name}'s Boom Blast`)); }
-      }]
-    },
-    {
-      id: 'frobble', name: 'Frobble', img: 'Frobble', baseHp: 22, baseAtk: 5,
-      abilities: [{
-        name: 'Quick Strike', chance: 1,
-        run(ctx) {
-          for (let i = 0; i < 2; i++) ctx.applyDamageToSquad(pick(ctx.squad), Math.round(ctx.self.atk * 0.65), `${ctx.self.name}'s Quick Strike`);
-        }
       }]
     },
     {
@@ -839,7 +1074,7 @@
   // Each arena pool only contains that arena's own non-boss enemies — no
   // boss (wave 3) enemy type ever appears in that arena's earlier waves.
   const STAGE_POOLS = {
-    forest: ['weak', 'burst', 'frobble', 'spawner'],
+    forest: ['weak', 'burst', 'spawner'],
     desert: ['boomshooter', 'grenande', 'rocketeer', 'tank'],
     city: ['machinegunner', 'spreadshooter', 'homing', 'burst', 'sniper'],
     quick: ['weak', 'burst']
@@ -862,20 +1097,48 @@
 
     { stageNumber: 4, arena: 'quick', type: 'fight', count: 1, waveLabel: 'Wave 1/3', label: 'Quick Level 5 — Wave 1/3' },
     { stageNumber: 4, arena: 'quick', type: 'fight', count: 2, waveLabel: 'Wave 2/3', label: 'Quick Level 5 — Wave 2/3' },
-    { stageNumber: 4, arena: 'quick', type: 'boss', bossIds: ['frobble', 'frobble', 'frobble'], waveLabel: 'Boss Wave 3/3', label: 'Quick Level 5 Boss: Frobble Swarm', bossScale: 1.2 },
+    { stageNumber: 4, arena: 'quick', type: 'boss', bossIds: ['burst'], waveLabel: 'Boss Wave 3/3', label: 'Quick Level 5 Boss: Elite Burst', bossScale: 1.8 },
 
     { stageNumber: 5, arena: 'doors', type: 'doors', label: 'The Final Corridor' },
     { stageNumber: 6, arena: 'final', type: 'boss', bossIds: ['gable', 'goble'], waveLabel: 'Final Boss', label: 'Final Showdown: Gable & Goble', bossScale: 2 }
   ];
 
+  // Infinite mode cycles through these arenas forever, escalating difficulty each loop.
+  const INFINITE_ARENAS = ['forest', 'desert', 'city'];
+  const INFINITE_BOSS_BY_ARENA = { forest: 'spawnerbig', desert: 'tankdessert', city: 'cannontower' };
+
+  function genInfiniteStageDef(idx) {
+    const cyclePos = idx % 3;
+    const loop = Math.floor(idx / 3);
+    const arena = INFINITE_ARENAS[loop % INFINITE_ARENAS.length];
+    const waveInCycle = cyclePos + 1;
+    if (cyclePos < 2) {
+      return {
+        stageNumber: idx + 1, arena, type: 'fight', count: 2 + Math.min(3, loop) + cyclePos,
+        waveLabel: `Wave ${waveInCycle}/3`, label: `${ARENAS[arena].label} — Wave ${waveInCycle}/3 (Loop ${loop + 1})`
+      };
+    }
+    return {
+      stageNumber: idx + 1, arena, type: 'boss', bossIds: [INFINITE_BOSS_BY_ARENA[arena]],
+      waveLabel: 'Boss Wave 3/3', label: `${ARENAS[arena].label} Boss (Loop ${loop + 1})`, bossScale: 1.4 + loop * 0.2
+    };
+  }
+
+  function getStageDef(idx) {
+    if (state.mode === 'infinite') return genInfiniteStageDef(idx);
+    return STAGES[idx];
+  }
+
   // ---------------------------------------------------------------
   // Game state
   // ---------------------------------------------------------------
   const state = {
-    squad: [],       // up to 4 { id, name, img, level, maxHp, hp, shield, burn, atkMult, acted }
+    squad: [],       // up to squadSize { id, name, img, level, maxHp, hp, shield, burn, atkMult, acted }
     enemies: [],
     startingAllyId: null,
     unlocked: new Set(['pistol', 'melee']),
+    mode: 'story',
+    squadSize: STORY_SQUAD_SIZE,
     stageIndex: 0,
     round: 1,
     pendingAttacker: null,
@@ -930,10 +1193,10 @@
     }).join('');
   }
 
-  function recordLeaderboardStage(stageReached) {
+  function recordLeaderboardStage(stageReached, mode, label) {
     const entries = loadLeaderboard();
     const stamp = Date.now();
-    entries.push({ stage: stageReached, label: `Stage ${stageReached}`, stamp });
+    entries.push({ stage: stageReached, mode: mode || 'story', label: label || `Stage ${stageReached}`, stamp });
     entries.sort((a, b) => b.stage - a.stage || b.stamp - a.stamp);
     const trimmed = entries.slice(0, 5);
     localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(trimmed));
@@ -953,8 +1216,13 @@
     const maxHp = def.maxHp + (level - 1) * 12;
     return {
       id: def.id, name: def.name, img: def.img, level, maxHp,
-      hp: maxHp, shield: 0, burn: null, acted: false, atkMult: 1 + (level - 1) * 0.15
+      hp: maxHp, shield: 0, burn: null, acted: false, atkMult: 1 + (level - 1) * 0.15, bonusHp: 0
     };
+  }
+
+  // HP a unit has gained purely from wheel/door upgrades, on top of its normal level growth.
+  function bonusHpOf(u) {
+    return u.bonusHp || 0;
   }
 
   function levelUpUnit(u) {
@@ -1013,9 +1281,18 @@
     q('#btn-doors-continue').addEventListener('click', nextStage);
     q('#btn-play-again').addEventListener('click', startRun);
     q('#btn-music-toggle').addEventListener('click', toggleMusic);
+    qa('.mode-btn').forEach(btn => btn.addEventListener('click', () => {
+      state.mode = btn.dataset.mode;
+      state.squadSize = state.mode === 'infinite' ? INFINITE_SQUAD_SIZE : STORY_SQUAD_SIZE;
+      qa('.mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+      state.squad = buildStarterSquad();
+      renderStart();
+    }));
 
     const best = localStorage.getItem(SAVE_KEY);
     if (best) q('#best-level').textContent = best;
+    const bestInfinite = localStorage.getItem(SAVE_KEY_INFINITE);
+    if (bestInfinite) q('#best-level-infinite').textContent = bestInfinite;
     renderLeaderboard();
   }
 
@@ -1042,7 +1319,7 @@
     const allyDef = CHAR_BY_ID[state.startingAllyId] || getStarterAlly();
     state.startingAllyId = allyDef.id;
     const squad = [makeUnit(pistol), makeUnit(allyDef)];
-    while (squad.length < 4) squad.push(null);
+    while (squad.length < state.squadSize) squad.push(null);
     return squad;
   }
 
@@ -1053,7 +1330,8 @@
     const pistol = CHAR_BY_ID.pistol || ROSTER.find(c => c.id === 'pistol');
     const allyDef = CHAR_BY_ID[state.startingAllyId] || getStarterAlly();
     state.startingAllyId = allyDef.id;
-    const cards = [pistol, allyDef, null, null].slice(0, 4);
+    const cards = [pistol, allyDef];
+    while (cards.length < state.squadSize) cards.push(null);
 
     wrap.innerHTML = '';
     cards.forEach(u => {
@@ -1088,7 +1366,7 @@
   }
 
   function beginStage() {
-    const stage = STAGES[state.stageIndex];
+    const stage = getStageDef(state.stageIndex);
     state.round = 1;
     state.battleOver = false;
     state.pendingAttacker = null;
@@ -1130,7 +1408,7 @@
   // Battle rendering
   // ---------------------------------------------------------------
   function renderBattle() {
-    const stage = STAGES[state.stageIndex];
+    const stage = getStageDef(state.stageIndex);
     q('#hud-level').textContent = `Stage ${stage.stageNumber}: ${ARENAS[stage.arena].label} — ${stage.waveLabel || ''}`;
     q('#hud-round').textContent = state.round;
     q('#hud-alive').textContent = state.squad.filter(u => u && u.hp > 0).length;
@@ -1159,6 +1437,7 @@
         <div class="u-name">${u.name}</div>
         <div class="u-hpbar"><div class="u-hpfill ${pct <= 30 ? 'low' : ''}" style="width:${pct}%"></div></div>
         <div class="u-hptext">${Math.max(0, u.hp)}/${u.maxHp}</div>
+        ${bonusHpOf(u) > 0 ? `<div class="u-shield">+${bonusHpOf(u)} HP</div>` : ''}
         ${u.shield > 0 ? `<div class="u-shield">Shield ${u.shield}</div>` : ''}
         ${u.atkMult > 1 ? `<div class="u-burn">ATK x${u.atkMult.toFixed(2)}</div>` : ''}
       `;
@@ -1409,12 +1688,19 @@
   }
 
   function onGameOver() {
-    const best = parseInt(localStorage.getItem(SAVE_KEY) || '0', 10);
-    const stageReached = Math.max(1, state.stageIndex);
-    if (stageReached > best) localStorage.setItem(SAVE_KEY, String(stageReached));
-    recordLeaderboardStage(stageReached);
-    const stage = STAGES[state.stageIndex];
-    q('#gameover-level').textContent = `Stage ${stage.stageNumber} (${stage.waveLabel || stage.label})`;
+    const stage = getStageDef(state.stageIndex);
+    if (state.mode === 'infinite') {
+      const best = parseInt(localStorage.getItem(SAVE_KEY_INFINITE) || '0', 10);
+      const waveReached = Math.max(1, state.stageIndex);
+      if (waveReached > best) localStorage.setItem(SAVE_KEY_INFINITE, String(waveReached));
+      recordLeaderboardStage(waveReached, 'infinite', `Infinite — Wave ${waveReached}`);
+    } else {
+      const best = parseInt(localStorage.getItem(SAVE_KEY) || '0', 10);
+      const stageReached = Math.max(1, state.stageIndex);
+      if (stageReached > best) localStorage.setItem(SAVE_KEY, String(stageReached));
+      recordLeaderboardStage(stageReached, 'story', `Story — Stage ${stageReached}`);
+    }
+    q('#gameover-level').textContent = `${stage.label} (${stage.waveLabel || ''})`;
     showScreen('screen-gameover');
   }
 
@@ -1425,9 +1711,9 @@
   let wheelSegments = [];
 
   function onVictory() {
-    const stage = STAGES[state.stageIndex];
+    const stage = getStageDef(state.stageIndex);
     log(`${stage.label} cleared!`, 'sys');
-    if (state.stageIndex >= STAGES.length - 1) {
+    if (state.mode === 'story' && state.stageIndex >= STAGES.length - 1) {
       onCampaignComplete();
       return;
     }
@@ -1439,7 +1725,7 @@
   function onCampaignComplete() {
     const best = parseInt(localStorage.getItem(SAVE_KEY) || '0', 10);
     if (STAGES.length > best) localStorage.setItem(SAVE_KEY, String(STAGES.length));
-    recordLeaderboardStage(STAGES.length);
+    recordLeaderboardStage(STAGES.length, 'story', `Story — Campaign Complete`);
     showScreen('screen-complete');
   }
 
@@ -1451,15 +1737,18 @@
   function buildWheel() {
     const lockedIds = ROSTER.map(c => c.id).filter(id => !state.unlocked.has(id));
     const segs = [];
-    const shuffledLocked = shuffle(lockedIds).slice(0, 5);
+    const shuffledLocked = shuffle(lockedIds).slice(0, 6);
     shuffledLocked.forEach(id => segs.push({ type: 'char', id }));
     const upgrades = [
       { type: 'upgrade', kind: 'heal' },
       { type: 'upgrade', kind: 'maxhp' },
       { type: 'upgrade', kind: 'powerup' },
-      { type: 'upgrade', kind: 'levelup' }
+      { type: 'upgrade', kind: 'levelup' },
+      { type: 'upgrade', kind: 'lvlup2' },
+      { type: 'upgrade', kind: 'lvlup3' },
+      { type: 'upgrade', kind: 'hpcap' }
     ];
-    while (segs.length < 8) segs.push(pick(upgrades));
+    while (segs.length < 14) segs.push(pick(upgrades));
     wheelSegments = shuffle(segs);
 
     const wheel = q('#wheel');
@@ -1473,7 +1762,10 @@
     });
     wheel.style.background = `conic-gradient(${gradientParts.join(',')})`;
 
-    const wheelLabels = { heal: 'Full Heal', maxhp: 'Max HP Up', powerup: 'Power Boost', levelup: 'Level Up' };
+    const wheelLabels = {
+      heal: 'Full Heal', maxhp: 'Max HP +20%', powerup: 'Power Boost', levelup: 'Level Up',
+      lvlup2: 'Upgrade +2', lvlup3: 'Upgrade +3', hpcap: 'Higher HP Cap'
+    };
     const radius = 118;
     wheelSegments.forEach((s, i) => {
       const segAngle = 360 / n;
@@ -1483,11 +1775,9 @@
       label.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px)`;
       const inner = document.createElement('div');
       inner.className = 'wheel-seg-inner';
-      inner.dataset.angle = String(angle);
       if (s.type === 'char') {
         const def = CHAR_BY_ID[s.id];
-        inner.innerHTML = `<img src="${imgSrc(CHAR_DIR, def.img)}" alt="${def.name}"><span>${def.name}</span>`;
-        imgFallback(inner.querySelector('img'), CHAR_DIR, def.img);
+        inner.innerHTML = `<span>${def.name}</span>`;
       } else {
         inner.innerHTML = `<span>${wheelLabels[s.kind]}</span>`;
       }
@@ -1513,11 +1803,6 @@
     const finalRotation = spins * 360 + targetAngle;
     const wheel = q('#wheel');
     wheel.style.transform = `rotate(${finalRotation}deg)`;
-
-    qa('.wheel-seg-inner').forEach(inner => {
-      const base = Number(inner.dataset.angle || 0);
-      inner.style.transform = `rotate(${360 - (base + finalRotation)}deg)`;
-    });
 
     setTimeout(() => {
       currentReward = wheelSegments[chosenIdx];
@@ -1549,9 +1834,12 @@
     }
     const labels = {
       heal: ['Full Heal', 'Fully restores your squad\'s HP for the next fight.'],
-      maxhp: ['Max HP Up', 'Permanently boosts a random squad member\'s max HP by 15.'],
-      powerup: ['Power Boost', 'Permanently boosts a random squad member\'s max HP (+15) and damage (+25%).'],
-      levelup: ['Level Up', 'Permanently levels up a random squad member, raising both HP and damage.']
+      maxhp: ['Max HP +20%', 'Permanently boosts a random squad member\'s max HP by 20%.'],
+      powerup: ['Power Boost', 'Permanently boosts a random squad member\'s max HP (+20%) and damage (+25%).'],
+      levelup: ['Level Up', 'Permanently levels up a random squad member, raising both HP and damage.'],
+      lvlup2: ['Upgrade +2', 'Permanently levels up a random squad member twice.'],
+      lvlup3: ['Upgrade +3', 'Permanently levels up a random squad member three times.'],
+      hpcap: ['Higher HP Cap', 'Permanently boosts a random squad member\'s max HP cap by 35%.']
     };
     const [title, desc] = labels[reward.kind];
     box.innerHTML = `
@@ -1574,15 +1862,28 @@
     } else if (kind === 'maxhp') {
       if (alive.length) {
         const u = pick(alive);
-        u.maxHp += 15;
-        u.hp = Math.min(u.hp + 15, u.maxHp);
-        log(`${u.name}'s max HP increased to ${u.maxHp}!`, 'heal');
+        const add = Math.round(u.maxHp * 0.2);
+        u.maxHp += add;
+        u.hp = Math.min(u.hp + add, u.maxHp);
+        u.bonusHp = (u.bonusHp || 0) + add;
+        log(`${u.name}'s max HP increased by 20% to ${u.maxHp}!`, 'heal');
+      }
+    } else if (kind === 'hpcap') {
+      if (alive.length) {
+        const u = pick(alive);
+        const add = Math.round(u.maxHp * 0.35);
+        u.maxHp += add;
+        u.hp = Math.min(u.hp + add, u.maxHp);
+        u.bonusHp = (u.bonusHp || 0) + add;
+        log(`${u.name}'s HP cap surges by 35% to ${u.maxHp}!`, 'heal');
       }
     } else if (kind === 'powerup') {
       if (alive.length) {
         const u = pick(alive);
-        u.maxHp += 15;
-        u.hp = Math.min(u.hp + 15, u.maxHp);
+        const add = Math.round(u.maxHp * 0.2);
+        u.maxHp += add;
+        u.hp = Math.min(u.hp + add, u.maxHp);
+        u.bonusHp = (u.bonusHp || 0) + add;
         u.atkMult = Math.round((u.atkMult + 0.25) * 100) / 100;
         log(`${u.name} got stronger! Max HP ${u.maxHp}, ATK x${u.atkMult}.`, 'heal');
       }
@@ -1591,6 +1892,21 @@
         const u = pick(alive);
         levelUpUnit(u);
         log(`${u.name} leveled up to Lv.${u.level}!`, 'heal');
+      }
+    } else if (kind === 'lvlup2') {
+      if (alive.length) {
+        const u = pick(alive);
+        levelUpUnit(u);
+        levelUpUnit(u);
+        log(`${u.name} leveled up twice to Lv.${u.level}!`, 'heal');
+      }
+    } else if (kind === 'lvlup3') {
+      if (alive.length) {
+        const u = pick(alive);
+        levelUpUnit(u);
+        levelUpUnit(u);
+        levelUpUnit(u);
+        log(`${u.name} leveled up three times to Lv.${u.level}!`, 'heal');
       }
     }
     finishReward();
@@ -1675,23 +1991,39 @@
       box.innerHTML = `<h3>Empty Room</h3><p>Nothing but dust behind this door.</p>`;
       log('The door was empty.', 'sys');
     } else {
-      const kind = pick(['heal', 'maxhp', 'powerup', 'levelup']);
+      const kind = pick(['heal', 'maxhp', 'powerup', 'levelup', 'lvlup2', 'hpcap']);
       const alive = state.squad.filter(u => u);
       if (kind === 'powerup' && alive.length) {
         const u = pick(alive);
-        u.maxHp += 15;
-        u.hp = Math.min(u.hp + 15, u.maxHp);
+        const add = Math.round(u.maxHp * 0.2);
+        u.maxHp += add;
+        u.hp = Math.min(u.hp + add, u.maxHp);
+        u.bonusHp = (u.bonusHp || 0) + add;
         u.atkMult = Math.round((u.atkMult + 0.25) * 100) / 100;
         box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name} got stronger! Max HP ${u.maxHp}, ATK x${u.atkMult}.</p>`;
       } else if (kind === 'levelup' && alive.length) {
         const u = pick(alive);
         levelUpUnit(u);
         box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name} leveled up to Lv.${u.level}!</p>`;
+      } else if (kind === 'lvlup2' && alive.length) {
+        const u = pick(alive);
+        levelUpUnit(u);
+        levelUpUnit(u);
+        box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name} leveled up twice to Lv.${u.level}!</p>`;
       } else if (kind === 'maxhp' && alive.length) {
         const u = pick(alive);
-        u.maxHp += 15;
-        u.hp = Math.min(u.hp + 15, u.maxHp);
-        box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name}'s max HP increased to ${u.maxHp}!</p>`;
+        const add = Math.round(u.maxHp * 0.2);
+        u.maxHp += add;
+        u.hp = Math.min(u.hp + add, u.maxHp);
+        u.bonusHp = (u.bonusHp || 0) + add;
+        box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name}'s max HP increased by 20% to ${u.maxHp}!</p>`;
+      } else if (kind === 'hpcap' && alive.length) {
+        const u = pick(alive);
+        const add = Math.round(u.maxHp * 0.35);
+        u.maxHp += add;
+        u.hp = Math.min(u.hp + add, u.maxHp);
+        u.bonusHp = (u.bonusHp || 0) + add;
+        box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name}'s HP cap surges by 35% to ${u.maxHp}!</p>`;
       } else {
         state.squad.forEach(u => { if (u) u.hp = u.maxHp; });
         box.innerHTML = `<h3>Hidden Cache!</h3><p>Your squad has been fully healed.</p>`;
