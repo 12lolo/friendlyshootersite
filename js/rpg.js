@@ -275,24 +275,49 @@
       moves: [
         {
           atkName: 'Deploy Turret', targetType: 'auto',
-          desc: 'Damages all enemies (6-10) and weakens their next attack.',
+          desc: 'Summons a turret ally to fire on all enemies (6-10 dmg) and suppress them.',
           run(ctx) {
+            const turretDef = ROSTER.find(c => c.id === 'turret');
+            const emptySpot = ctx.squad.findIndex(u => !u);
+            if (turretDef && emptySpot >= 0) {
+              ctx.squad[emptySpot] = makeUnit(turretDef, 1);
+              ctx.log(`${ctx.self.name} deploys a turret ally to the squad!`);
+            }
             ctx.enemies.filter(e => e.hp > 0).forEach(e => {
               ctx.damageEnemy(e, rand(6, 10));
               e.suppressed = true;
             });
-            ctx.log(`${ctx.self.name} deploys an auto-turret, suppressing the enemy.`);
           }
         },
         {
-          atkName: 'Repair Bot', targetType: 'auto',
-          desc: 'Repairs the whole squad a little (6-10 each).',
+          atkName: 'Shield Drone', targetType: 'auto',
+          desc: 'Creates a protective shield barrier over the whole squad (12-16 shield each).',
           run(ctx) {
-            ctx.squad.filter(u => u.hp > 0).forEach(u => {
-              const heal = rand(6, 10);
-              u.hp = clamp(u.hp + heal, 0, u.maxHp);
-            });
-            ctx.log(`${ctx.self.name} deploys a repair bot to patch up the squad.`, 'heal');
+            ctx.squad.filter(u => u && u.hp > 0).forEach(u => u.shield = (u.shield || 0) + rand(12, 16));
+            ctx.log(`${ctx.self.name} launches a shield drone over the whole squad.`, 'heal');
+          }
+        }
+      ]
+    },
+    {
+      id: 'turret', name: 'Turret', img: 'ShieldV2', maxHp: 45,
+      moves: [
+        {
+          atkName: 'Auto Fire', targetType: 'auto',
+          desc: 'Fires at all enemies for 4-8 damage each.',
+          run(ctx) {
+            ctx.enemies.filter(e => e.hp > 0).forEach(e => ctx.damageEnemy(e, rand(4, 8)));
+            ctx.log(`${ctx.self.name} keeps firing at the enemy line.`);
+          }
+        },
+        {
+          atkName: 'Suppressive Burst', targetType: 'enemy',
+          desc: 'Pins one enemy with 8-12 damage and suppresses it.',
+          run(ctx) {
+            const dmg = rand(8, 12);
+            ctx.damageEnemy(ctx.target, dmg);
+            ctx.target.suppressed = true;
+            ctx.log(`${ctx.self.name} suppresses ${ctx.target.name} for ${dmg}.`);
           }
         }
       ]
@@ -1458,8 +1483,7 @@
       label.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px)`;
       const inner = document.createElement('div');
       inner.className = 'wheel-seg-inner';
-      inner.dataset.angle = String(-angle);
-      inner.style.transform = `rotate(${-angle}deg)`;
+      inner.dataset.angle = String(angle);
       if (s.type === 'char') {
         const def = CHAR_BY_ID[s.id];
         inner.innerHTML = `<img src="${imgSrc(CHAR_DIR, def.img)}" alt="${def.name}"><span>${def.name}</span>`;
@@ -1484,14 +1508,15 @@
     const n = wheelSegments.length;
     const chosenIdx = rand(0, n - 1);
     const segAngle = 360 / n;
-    const targetCenter = -90 + (chosenIdx + 0.5) * segAngle;
+    const targetAngle = 90 - ((chosenIdx + 0.5) * segAngle);
     const spins = 5;
-    const finalRotation = spins * 360 - targetCenter;
+    const finalRotation = spins * 360 + targetAngle;
     const wheel = q('#wheel');
     wheel.style.transform = `rotate(${finalRotation}deg)`;
+
     qa('.wheel-seg-inner').forEach(inner => {
-      const offset = Number(inner.dataset.angle || 0);
-      inner.style.transform = `rotate(${offset - finalRotation}deg)`;
+      const base = Number(inner.dataset.angle || 0);
+      inner.style.transform = `rotate(${360 - (base + finalRotation)}deg)`;
     });
 
     setTimeout(() => {
