@@ -994,6 +994,15 @@
       }]
     },
     {
+      id: 'frobble', name: 'Frobble', img: 'Frobble', baseHp: 22, baseAtk: 5,
+      abilities: [{
+        name: 'Quick Strike', chance: 1,
+        run(ctx) {
+          for (let i = 0; i < 2; i++) ctx.applyDamageToSquad(pick(ctx.squad), Math.round(ctx.self.atk * 0.65), `${ctx.self.name}'s Quick Strike`);
+        }
+      }]
+    },
+    {
       id: 'gable', name: 'Gable', img: 'Gable', baseHp: 26, baseAtk: 6,
       abilities: [{
         name: 'Rally Cry', chance: 0.4,
@@ -1109,7 +1118,7 @@
 
     { stageNumber: 4, arena: 'quick', type: 'fight', count: 1, waveLabel: 'Wave 1/3', label: 'Quick Level 5 — Wave 1/3' },
     { stageNumber: 4, arena: 'quick', type: 'fight', count: 2, waveLabel: 'Wave 2/3', label: 'Quick Level 5 — Wave 2/3' },
-    { stageNumber: 4, arena: 'quick', type: 'boss', bossIds: ['burst'], waveLabel: 'Boss Wave 3/3', label: 'Quick Level 5 Boss: Elite Burst', bossScale: 1.8 },
+    { stageNumber: 4, arena: 'quick', type: 'boss', bossIds: ['frobble'], waveLabel: 'Boss Wave 3/3', label: 'Quick Level 5 Boss: Frobble', bossScale: 1.8 },
 
     { stageNumber: 5, arena: 'doors', type: 'doors', label: 'The Final Corridor' },
     { stageNumber: 6, arena: 'final', type: 'boss', bossIds: ['gable', 'goble'], waveLabel: 'Final Boss', label: 'Final Showdown: Gable & Goble', bossScale: 2 }
