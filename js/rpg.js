@@ -850,6 +850,7 @@
   const state = {
     squad: [],       // up to 4 { id, name, img, level, maxHp, hp, shield, burn, atkMult, acted }
     enemies: [],
+    startingAllyId: null,
     unlocked: new Set(['pistol', 'melee']),
     stageIndex: 0,
     round: 1,
@@ -936,11 +937,15 @@
   // ---------------------------------------------------------------
   function init() {
     els.log = q('#battle-log');
-    state.squad = ROSTER.filter(c => c.starter).map(c => makeUnit(c));
-    while (state.squad.length < 4) state.squad.push(null);
+    state.startingAllyId = null;
+    state.squad = buildStarterSquad();
     renderStart();
     showScreen('screen-start');
 
+    q('#btn-reroll-ally').addEventListener('click', () => {
+      state.startingAllyId = null;
+      renderStart();
+    });
     q('#btn-start-run').addEventListener('click', startRun);
     q('#btn-restart').addEventListener('click', startRun);
     q('#btn-next-level').addEventListener('click', nextStage);
@@ -966,10 +971,31 @@
     }
   }
 
+  function getStarterAlly() {
+    const pool = ROSTER.filter(c => c.id !== 'pistol' && !c.starter);
+    return pick(pool.length ? pool : ROSTER.filter(c => c.id !== 'pistol'));
+  }
+
+  function buildStarterSquad() {
+    const pistol = CHAR_BY_ID.pistol || ROSTER.find(c => c.id === 'pistol');
+    const allyDef = CHAR_BY_ID[state.startingAllyId] || getStarterAlly();
+    state.startingAllyId = allyDef.id;
+    const squad = [makeUnit(pistol), makeUnit(allyDef)];
+    while (squad.length < 4) squad.push(null);
+    return squad;
+  }
+
   function renderStart() {
     const wrap = q('#start-squad-preview');
+    if (!wrap) return;
+
+    const pistol = CHAR_BY_ID.pistol || ROSTER.find(c => c.id === 'pistol');
+    const allyDef = CHAR_BY_ID[state.startingAllyId] || getStarterAlly();
+    state.startingAllyId = allyDef.id;
+    const cards = [pistol, allyDef, null, null].slice(0, 4);
+
     wrap.innerHTML = '';
-    state.squad.forEach(u => {
+    cards.forEach(u => {
       const div = document.createElement('div');
       div.className = 'unit-card';
       if (u) {
@@ -984,9 +1010,10 @@
   }
 
   function startRun() {
-    state.squad = ROSTER.filter(c => c.starter).map(c => makeUnit(c));
-    while (state.squad.length < 4) state.squad.push(null);
-    state.unlocked = new Set(['pistol', 'melee']);
+    const starterAlly = CHAR_BY_ID[state.startingAllyId] || getStarterAlly();
+    state.startingAllyId = starterAlly.id;
+    state.squad = buildStarterSquad();
+    state.unlocked = new Set(['pistol', starterAlly.id]);
     state.stageIndex = 0;
     beginStage();
   }

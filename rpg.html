@@ -27,8 +27,11 @@
                     <!-- START SCREEN -->
                     <section id="screen-start" class="rpg-screen active">
                         <h2>Your Squad</h2>
-                        <p>You begin every run with <strong>Pistol</strong> and <strong>Melee</strong>. Each stage is 3 waves — the last is always a boss wave — and you spin the reward wheel after every wave. Fight through the Forest, Desert, City, a Frobble swarm, a door-lined corridor, and the Gable &amp; Goble final showdown.</p>
+                        <p>You begin every run with <strong>Pistol</strong> and one random common ally. Each stage is 3 waves — the last is always a boss wave — and you spin the reward wheel after every wave. Fight through the Forest, Desert, City, a Frobble swarm, a door-lined corridor, and the Gable &amp; Goble final showdown.</p>
                         <div class="roster-grid" id="start-squad-preview"></div>
+                        <div class="page-actions" style="justify-content:center;">
+                            <button class="button secondary" id="btn-reroll-ally">Reroll Common Ally</button>
+                        </div>
                         <p style="text-align:center;">Best stage reached: <strong id="best-level">0</strong></p>
                         <div class="page-actions">
                             <button class="button" id="btn-start-run">Start Run</button>
