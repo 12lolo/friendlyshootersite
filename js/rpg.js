@@ -7,6 +7,8 @@
   const SAVE_KEY = 'fs_rpg_best_stage';
   const SAVE_KEY_INFINITE = 'fs_rpg_best_wave_infinite';
   const LEADERBOARD_KEY = 'fs_rpg_leaderboard';
+  const PLAYER_NAME_KEY = 'fs_rpg_player_name';
+  const LEADERBOARD_API = '/api/rpg-leaderboard';
   const STORY_SQUAD_SIZE = 4;
   const INFINITE_SQUAD_SIZE = 8;
   const THEME_TRACK_ID = '7gl7F2y7tiB9x8c3bdqwiu'; // "Main theme - Friendlyshooter" on Spotify
@@ -1187,30 +1189,66 @@
     }
   }
 
-  function renderLeaderboard() {
-    const list = q('#leaderboard-list');
-    if (!list) return;
-
-    const entries = loadLeaderboard();
-    if (!entries.length) {
-      list.innerHTML = '<li>No runs yet</li>';
+  function renderLeaderboardList(listEl, entries) {
+    if (!listEl) return;
+    if (!entries || !entries.length) {
+      listEl.innerHTML = '<li>No runs yet</li>';
       return;
     }
-
-    list.innerHTML = entries.slice(0, 5).map((entry, index) => {
-      const label = entry.label || `Stage ${entry.stage}`;
-      return `<li><span>#${index + 1}</span> ${label}</li>`;
+    listEl.innerHTML = entries.slice(0, 10).map((entry, index) => {
+      const label = entry.label || `${entry.name || 'Player'} \u2014 ${entry.score}`;
+      return `<li><span>#${index + 1}</span> ${entry.name ? `${entry.name}: ` : ''}${label}</li>`;
     }).join('');
   }
 
-  function recordLeaderboardStage(stageReached, mode, label) {
+  // Renders whatever is cached locally immediately, then refreshes from the
+  // online leaderboard API (falls back silently to local-only if offline).
+  function renderLeaderboard() {
+    const cached = loadLeaderboard();
+    renderLeaderboardList(q('#leaderboard-list-story'), cached.filter(e => (e.mode || 'story') === 'story'));
+    renderLeaderboardList(q('#leaderboard-list-infinite'), cached.filter(e => e.mode === 'infinite'));
+    fetchOnlineLeaderboard('story');
+    fetchOnlineLeaderboard('infinite');
+  }
+
+  async function fetchOnlineLeaderboard(mode) {
+    try {
+      const res = await fetch(`${LEADERBOARD_API}?mode=${mode}`);
+      if (!res.ok) return;
+      const entries = await res.json();
+      renderLeaderboardList(q(mode === 'infinite' ? '#leaderboard-list-infinite' : '#leaderboard-list-story'), entries);
+    } catch (error) {
+      // Offline or API unavailable — the locally cached list stays visible.
+    }
+  }
+
+  function getPlayerName() {
+    return (localStorage.getItem(PLAYER_NAME_KEY) || '').trim();
+  }
+
+  async function recordLeaderboardStage(stageReached, mode, label) {
+    // Keep a small local cache so the leaderboard still shows something offline.
     const entries = loadLeaderboard();
     const stamp = Date.now();
-    entries.push({ stage: stageReached, mode: mode || 'story', label: label || `Stage ${stageReached}`, stamp });
+    const name = getPlayerName() || 'Anonymous';
+    entries.push({ stage: stageReached, mode: mode || 'story', label, name, stamp });
     entries.sort((a, b) => b.stage - a.stage || b.stamp - a.stamp);
-    const trimmed = entries.slice(0, 5);
-    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(trimmed));
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries.slice(0, 20)));
     renderLeaderboard();
+
+    try {
+      const res = await fetch(LEADERBOARD_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, mode, score: stageReached, label })
+      });
+      if (res.ok) {
+        const entriesOnline = await res.json();
+        renderLeaderboardList(q(mode === 'infinite' ? '#leaderboard-list-infinite' : '#leaderboard-list-story'), entriesOnline);
+      }
+    } catch (error) {
+      // Offline or API unavailable — local cache above already covers this run.
+    }
   }
 
   // Rare chance a newly recruited character starts at a higher level.
@@ -1308,6 +1346,14 @@
     if (best) q('#best-level').textContent = best;
     const bestInfinite = localStorage.getItem(SAVE_KEY_INFINITE);
     if (bestInfinite) q('#best-level-infinite').textContent = bestInfinite;
+
+    const nameInput = q('#player-name-input');
+    if (nameInput) {
+      nameInput.value = getPlayerName();
+      nameInput.addEventListener('change', () => {
+        localStorage.setItem(PLAYER_NAME_KEY, nameInput.value.trim().slice(0, 20));
+      });
+    }
     renderLeaderboard();
   }
 

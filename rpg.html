@@ -6,8 +6,8 @@
         <title>World RPG — FriendlyShooter</title>
         <meta name="description" content="FriendlyShooter World RPG: build a squad of 4 characters, fight through roguelike levels, and spin the wheel for new abilities after every win."/>
         <link type="image/png" href="https://img.itch.zone/aW1nLzI1ODYyMDI3LnBuZw==/32x32%23/D5oY%2By.png" rel="icon" />
-        <link rel="stylesheet" href="css/site.css?v=20260909c">
-        <link rel="stylesheet" href="css/rpg.css?v=20260909c">
+        <link rel="stylesheet" href="css/site.css?v=20260909d">
+        <link rel="stylesheet" href="css/rpg.css?v=20260909d">
     </head>
     <body class="locale_en game_layout_widget layout_widget no_theme_toggle responsive" data-host="itch.io" data-page_name="view_game">
         <div id="wrapper" class="main wrapper">
@@ -37,9 +37,15 @@
                             <button class="button secondary" id="btn-reroll-ally">Reroll Common Ally</button>
                         </div>
                         <p style="text-align:center;">Best story stage: <strong id="best-level">0</strong> &nbsp;|&nbsp; Best infinite wave: <strong id="best-level-infinite">0</strong></p>
+                        <div class="page-actions" style="justify-content:center;">
+                            <label for="player-name-input" style="align-self:center;">Player name:</label>
+                            <input type="text" id="player-name-input" maxlength="20" placeholder="Your name" class="player-name-input">
+                        </div>
                         <div class="leaderboard-box">
-                            <h3>Leaderboard</h3>
-                            <ol id="leaderboard-list"></ol>
+                            <h3>Top 10 &mdash; Story Mode</h3>
+                            <ol id="leaderboard-list-story"></ol>
+                            <h3>Top 10 &mdash; Infinite Mode</h3>
+                            <ol id="leaderboard-list-infinite"></ol>
                         </div>
                         <div class="page-actions">
                             <button class="button" id="btn-start-run">Start Run</button>
@@ -118,6 +124,6 @@
                 </div>
             </div>
         </div>
-        <script src="js/rpg.js?v=20260909c"></script>
+        <script src="js/rpg.js?v=20260909d"></script>
     </body>
 </html>

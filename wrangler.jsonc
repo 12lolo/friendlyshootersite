@@ -2,12 +2,20 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "friendlyshootersite",
   "compatibility_date": "2025-09-27",
+  "main": "worker.js",
   "observability": {
     "enabled": true
   },
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "binding": "ASSETS"
   },
+  "kv_namespaces": [
+    {
+      "binding": "RPG_LEADERBOARD",
+      "id": "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+    }
+  ],
   "compatibility_flags": [
     "nodejs_compat"
   ]

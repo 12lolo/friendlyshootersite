@@ -298,7 +298,7 @@ body {
 .leaderboard-box {
     margin: 16px auto 10px;
     padding: 12px 16px;
-    max-width: 280px;
+    max-width: 320px;
     border: 1px solid var(--rpg-border);
     background: rgba(0,0,0,0.2);
 }
@@ -307,18 +307,27 @@ body {
     color: var(--rpg-title);
     text-align: center;
 }
-#leaderboard-list {
+.leaderboard-box h3 + h3 { margin-top: 14px; }
+#leaderboard-list-story, #leaderboard-list-infinite {
     margin: 0;
     padding-left: 18px;
     color: var(--rpg-text);
     font-size: 0.85rem;
 }
-#leaderboard-list li {
+#leaderboard-list-story li, #leaderboard-list-infinite li {
     margin: 4px 0;
 }
-#leaderboard-list li span {
+#leaderboard-list-story li span, #leaderboard-list-infinite li span {
     color: var(--rpg-title);
     font-weight: 700;
+}
+.player-name-input {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--rpg-border);
+    color: var(--rpg-text);
+    font-family: inherit;
+    padding: 7px 10px;
+    max-width: 200px;
 }
 .wheel-seg-inner span { font-size: 0.6rem; color: #fff; text-shadow: 1px 1px 0 #000; max-width: 62px; text-align: center; }
 .wheel-center-dot {
