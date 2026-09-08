@@ -428,26 +428,24 @@
       id: 'justice', name: 'Justice', img: 'PhoenixV2', maxHp: 60,
       moves: [
         {
-          atkName: 'Rebirth', targetType: 'auto',
-          desc: 'Revives a fallen ally, or heals the squad if none have fallen.',
+          atkName: 'Objection!', targetType: 'enemy',
+          desc: 'A courtroom slam: 18-26 damage and a little shield for Justice.',
           run(ctx) {
-            const fallen = ctx.squad.filter(u => u.hp <= 0);
-            if (fallen.length) {
-              const t = pick(fallen);
-              t.hp = Math.floor(t.maxHp * 0.5);
-              ctx.log(`${ctx.self.name} revives ${t.name} in a burst of flame!`, 'heal');
-            } else {
-              ctx.squad.filter(u => u.hp > 0).forEach(u => u.hp = clamp(u.hp + 10, 0, u.maxHp));
-              ctx.log(`${ctx.self.name} radiates warmth, healing the squad for 10.`, 'heal');
-            }
+            const dmg = rand(18, 26);
+            ctx.damageEnemy(ctx.target, dmg);
+            ctx.self.shield = (ctx.self.shield || 0) + 8;
+            ctx.log(`${ctx.self.name} shouts "Objection!" at ${ctx.target.name} for ${dmg}.`, 'heal');
           }
         },
         {
-          atkName: 'Guardian Light', targetType: 'auto',
-          desc: 'Shields the whole squad (10 each).',
+          atkName: 'Present Evidence', targetType: 'auto',
+          desc: 'Grants the whole squad 12-18 shield and patches up the weakest ally.',
           run(ctx) {
-            ctx.squad.filter(u => u.hp > 0).forEach(u => u.shield = (u.shield || 0) + 10);
-            ctx.log(`${ctx.self.name} wraps the squad in guardian light.`, 'heal');
+            const allies = ctx.squad.filter(u => u && u.hp > 0);
+            allies.forEach(u => u.shield = (u.shield || 0) + rand(12, 18));
+            const weakest = allies.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0];
+            if (weakest) weakest.hp = clamp(weakest.hp + 8, 0, weakest.maxHp);
+            ctx.log(`${ctx.self.name} presents the evidence and fortifies the squad.`, 'heal');
           }
         }
       ]
