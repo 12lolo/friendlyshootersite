@@ -1410,14 +1410,16 @@
     wheel.style.background = `conic-gradient(${gradientParts.join(',')})`;
 
     const wheelLabels = { heal: 'Full Heal', maxhp: 'Max HP Up', powerup: 'Power Boost', levelup: 'Level Up' };
+    const radius = 118;
     wheelSegments.forEach((s, i) => {
-      const mid = (360 / n) * i + (360 / n) / 2;
+      const segAngle = 360 / n;
+      const angle = -90 + (i * segAngle) + segAngle / 2;
       const label = document.createElement('div');
       label.className = 'wheel-seg-label';
-      label.style.transform = `translate(-50%, -50%) rotate(${mid}deg) translateY(-118px)`;
+      label.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px)`;
       const inner = document.createElement('div');
       inner.className = 'wheel-seg-inner';
-      inner.style.transform = `translate(-50%, -50%) rotate(${-mid}deg)`;
+      inner.style.transform = `rotate(${-angle}deg)`;
       if (s.type === 'char') {
         const def = CHAR_BY_ID[s.id];
         inner.innerHTML = `<img src="${imgSrc(CHAR_DIR, def.img)}" alt="${def.name}"><span>${def.name}</span>`;
@@ -1442,14 +1444,14 @@
     const n = wheelSegments.length;
     const chosenIdx = rand(0, n - 1);
     const segAngle = 360 / n;
-    // land so the chosen segment center sits at top (0deg / pointer)
-    const targetCenter = segAngle * chosenIdx + segAngle / 2;
+    const targetCenter = -90 + (chosenIdx + 0.5) * segAngle;
     const spins = 5;
-    const finalRotation = spins * 360 + (360 - targetCenter);
+    const finalRotation = spins * 360 - targetCenter;
     const wheel = q('#wheel');
     wheel.style.transform = `rotate(${finalRotation}deg)`;
-    // counter-rotate every icon by the same amount so they stay upright
-    qa('.wheel-seg-inner').forEach(inner => { inner.style.transform = `rotate(${-finalRotation}deg)`; });
+    qa('.wheel-seg-inner').forEach(inner => {
+      inner.style.transform = `rotate(${-finalRotation}deg)`;
+    });
 
     setTimeout(() => {
       currentReward = wheelSegments[chosenIdx];
