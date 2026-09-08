@@ -166,6 +166,15 @@ body {
     position: relative;
     transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
 }
+.unit-card.shielded::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border: 2px solid rgba(120, 210, 255, 0.95);
+    box-shadow: 0 0 0 3px rgba(120, 210, 255, 0.25), 0 0 18px rgba(120, 210, 255, 0.7);
+    border-radius: 18px;
+    pointer-events: none;
+}
 .unit-card img { width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; }
 .unit-card .u-name { font-size: 0.78rem; color: var(--rpg-title); margin-top: 4px; min-height: 1.4em; }
 .unit-card .u-hpbar { height: 8px; background: rgba(0,0,0,0.4); margin-top: 5px; border: 1px solid rgba(2,255,119,0.3); }

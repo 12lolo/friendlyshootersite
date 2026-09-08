@@ -301,21 +301,21 @@
       id: 'shield', name: 'Shield', img: 'ShieldV2', maxHp: 85,
       moves: [
         {
-          atkName: 'Bulwark', targetType: 'auto',
-          desc: 'Grants the whole squad a shield that absorbs the next hit.',
+          atkName: 'Cover Team', targetType: 'auto',
+          desc: 'Creates a physical cover barrier for the entire squad, granting each ally 20 shield.',
           run(ctx) {
-            ctx.squad.filter(u => u.hp > 0).forEach(u => u.shield = (u.shield || 0) + 15);
-            ctx.log(`${ctx.self.name} raises a bulwark protecting the squad.`, 'heal');
+            ctx.squad.filter(u => u && u.hp > 0).forEach(u => u.shield = (u.shield || 0) + 20);
+            ctx.log(`${ctx.self.name} slams a massive cover shield over the whole squad.`, 'heal');
           }
         },
         {
-          atkName: 'Shield Bash', targetType: 'enemy',
-          desc: 'Bashes an enemy (10-14 dmg) while reinforcing your own shield.',
+          atkName: 'Brace & Counter', targetType: 'enemy',
+          desc: 'Strikes an enemy (10-14 dmg) while reinforcing the user with a personal shield.',
           run(ctx) {
             const dmg = rand(10, 14);
             ctx.damageEnemy(ctx.target, dmg);
             ctx.self.shield = (ctx.self.shield || 0) + 10;
-            ctx.log(`${ctx.self.name} bashes ${ctx.target.name} for ${dmg} and braces up.`);
+            ctx.log(`${ctx.self.name} braces behind cover and counters ${ctx.target.name} for ${dmg}.`);
           }
         }
       ]
@@ -1120,6 +1120,7 @@
       if (!u) { card.classList.add('empty-slot'); card.textContent = 'Empty'; squadRow.appendChild(card); return; }
       const dead = u.hp <= 0;
       if (dead) card.classList.add('dead');
+      if (u.shield > 0) card.classList.add('shielded');
       if (u.acted && !dead) card.classList.add('acted');
       if (state.pendingAttacker === idx) card.classList.add('active-turn');
       if (!dead && !u.acted && state.pendingAttacker === null) card.classList.add('selectable');
