@@ -152,31 +152,31 @@
       ]
     },
     {
-      id: 'melee', name: 'Melee', img: 'MeleeV2', maxHp: 75, starter: true,
+      id: 'melee', name: 'Melee', img: 'MeleeV2', maxHp: 82, starter: true,
       moves: [
         {
           atkName: 'Cleave', targetType: 'auto',
-          desc: 'Swings at all enemies (6-10 dmg each).',
+          desc: 'Swings at all enemies (9-13 dmg each).',
           run(ctx) {
-            ctx.enemies.filter(e => e.hp > 0).forEach(e => ctx.damageEnemy(e, rand(6, 10)));
+            ctx.enemies.filter(e => e.hp > 0).forEach(e => ctx.damageEnemy(e, rand(9, 13)));
             ctx.log(`${ctx.self.name} cleaves through the enemy line.`);
           }
         },
         {
           atkName: 'Takedown', targetType: 'enemy',
-          desc: 'A brutal single-target strike (18-24 dmg).',
+          desc: 'A brutal single-target strike (23-31 dmg).',
           run(ctx) {
-            const dmg = rand(18, 24);
+            const dmg = rand(23, 31);
             ctx.damageEnemy(ctx.target, dmg);
             ctx.log(`${ctx.self.name} takes down ${ctx.target.name} for ${dmg}.`);
           }
         },
         {
           atkName: 'Adrenaline Rush', targetType: 'auto',
-          desc: 'Gains 15 shield and Attack Up (25% more damage, 2 turns).',
+          desc: 'Gains 20 shield and Attack Up (25% more damage, 3 turns).',
           run(ctx) {
-            addShield(ctx.self, 15);
-            addBuff(ctx.self, 'atkUp', 2);
+            addShield(ctx.self, 20);
+            addBuff(ctx.self, 'atkUp', 3);
             ctx.log(`${ctx.self.name} gets an adrenaline rush and braces for impact.`, 'heal');
           }
         }
@@ -327,14 +327,14 @@
       ]
     },
     {
-      id: 'sniper', name: 'Sniper', img: 'SniperV2', maxHp: 50,
+      id: 'sniper', name: 'Sniper', img: 'SniperV2', maxHp: 58,
       moves: [
         {
           atkName: 'Headshot', targetType: 'enemy',
-          desc: 'Precise shot (18-24), 30% chance to critical for double.',
+          desc: 'Precise shot (18-24), 35% chance to critical for double.',
           run(ctx) {
             let dmg = rand(18, 24);
-            const crit = Math.random() < 0.3;
+            const crit = Math.random() < 0.35;
             if (crit) dmg *= 2;
             ctx.damageEnemy(ctx.target, dmg, crit);
             ctx.log(`${ctx.self.name} snipes ${ctx.target.name} for ${dmg}${crit ? ' (CRIT!)' : ''}.`, crit ? 'crit' : '');
@@ -342,11 +342,11 @@
         },
         {
           atkName: 'Suppressing Shot', targetType: 'enemy',
-          desc: 'Lighter damage (10-14) that weakens the target\'s next attack.',
+          desc: 'Lighter damage (12-16) that applies Attack Down (25% weaker attacks, 2 turns).',
           run(ctx) {
-            const dmg = rand(10, 14);
+            const dmg = rand(12, 16);
             ctx.damageEnemy(ctx.target, dmg);
-            ctx.target.suppressed = true;
+            addBuff(ctx.target, 'atkDown', 2);
             ctx.log(`${ctx.self.name} clips ${ctx.target.name} for ${dmg}, throwing off its aim.`);
           }
         },
@@ -378,9 +378,9 @@
         },
         {
           atkName: 'Point Blank', targetType: 'enemy',
-          desc: 'A devastating close-range blast (20-26 dmg).',
+          desc: 'A devastating close-range blast (22-28 dmg).',
           run(ctx) {
-            const dmg = rand(20, 26);
+            const dmg = rand(22, 28);
             ctx.damageEnemy(ctx.target, dmg, true);
             ctx.log(`${ctx.self.name} blasts ${ctx.target.name} point blank for ${dmg}!`, 'crit');
           }
@@ -446,23 +446,23 @@
       ]
     },
     {
-      id: 'wizard', name: 'Wizard', img: 'WizardV2', maxHp: 55,
+      id: 'wizard', name: 'Wizard', img: 'WizardV2', maxHp: 64,
       moves: [
         {
           atkName: 'Arcane Bolt', targetType: 'enemy',
-          desc: 'Magic damage (14-20) and burns the target for 2 turns.',
+          desc: 'Magic damage (17-23) and burns the target for 2 turns.',
           run(ctx) {
-            const dmg = rand(14, 20);
+            const dmg = rand(17, 23);
             ctx.damageEnemy(ctx.target, dmg);
-            ctx.target.burn = { turns: 2, dmg: 5 };
+            ctx.target.burn = { turns: 2, dmg: 6 };
             ctx.log(`${ctx.self.name} scorches ${ctx.target.name} with arcane fire for ${dmg}.`);
           }
         },
         {
           atkName: 'Frost Bolt', targetType: 'enemy',
-          desc: 'Chilling damage (10-16) that freezes the target: Attack Down (25% weaker attacks, 2 turns).',
+          desc: 'Chilling damage (13-19) that freezes the target: Attack Down (25% weaker attacks, 2 turns).',
           run(ctx) {
-            const dmg = rand(10, 16);
+            const dmg = rand(13, 19);
             ctx.damageEnemy(ctx.target, dmg);
             addBuff(ctx.target, 'atkDown', 2);
             ctx.log(`${ctx.self.name} chills ${ctx.target.name} for ${dmg}.`);
@@ -470,9 +470,9 @@
         },
         {
           atkName: 'Mana Shield', targetType: 'auto',
-          desc: 'Conjures a protective ward, gaining 18 shield and Defense Up (20% less damage, 2 turns).',
+          desc: 'Conjures a protective ward, gaining 24 shield and Defense Up (20% less damage, 2 turns).',
           run(ctx) {
-            addShield(ctx.self, 18);
+            addShield(ctx.self, 24);
             addBuff(ctx.self, 'defUp', 2);
             ctx.log(`${ctx.self.name} conjures a mana shield.`, 'heal');
           }
@@ -802,22 +802,22 @@
       ]
     },
     {
-      id: 'rifle', name: 'Rifle', img: 'Riflev2', maxHp: 62,
+      id: 'rifle', name: 'Rifle', img: 'Riflev2', maxHp: 68,
       moves: [
         {
           atkName: 'Focused Fire', targetType: 'enemy',
-          desc: 'Steady, reliable damage (16-22) that ignores shields.',
+          desc: 'Steady, reliable damage (19-25) that ignores shields.',
           run(ctx) {
-            const dmg = rand(16, 22);
+            const dmg = rand(19, 25);
             ctx.damageEnemy(ctx.target, dmg, false, true);
             ctx.log(`${ctx.self.name} lands focused fire on ${ctx.target.name} for ${dmg}.`);
           }
         },
         {
           atkName: 'Rapid Reload', targetType: 'enemy',
-          desc: 'Two quick follow-up shots (10-14 each).',
+          desc: 'Two quick follow-up shots (12-16 each).',
           run(ctx) {
-            for (let i = 0; i < 2; i++) ctx.damageEnemy(ctx.target, rand(10, 14));
+            for (let i = 0; i < 2; i++) ctx.damageEnemy(ctx.target, rand(12, 16));
             ctx.log(`${ctx.self.name} reloads fast and fires again at ${ctx.target.name}.`);
           }
         },
@@ -849,9 +849,9 @@
         },
         {
           atkName: 'Focus Fire', targetType: 'enemy',
-          desc: 'Dumps 4 hits (4-6 each) into one target.',
+          desc: 'Dumps 4 hits (5-7 each) into one target.',
           run(ctx) {
-            for (let i = 0; i < 4; i++) ctx.damageEnemy(ctx.target, rand(4, 6));
+            for (let i = 0; i < 4; i++) ctx.damageEnemy(ctx.target, rand(5, 7));
             ctx.log(`${ctx.self.name} focuses fire on ${ctx.target.name}.`);
           }
         },
@@ -868,29 +868,29 @@
       ]
     },
     {
-      id: 'dualsmg', name: 'Dual SMG', img: 'DualSMG', maxHp: 56,
+      id: 'dualsmg', name: 'Dual SMG', img: 'DualSMG', maxHp: 62,
       moves: [
         {
           atkName: 'Twin Spray', targetType: 'auto',
-          desc: 'Fires 4 hits at random enemies (4-6 each).',
+          desc: 'Fires 4 hits at random enemies (5-8 each).',
           run(ctx) {
             for (let i = 0; i < 4; i++) {
               const alive = ctx.enemies.filter(e => e.hp > 0);
               if (!alive.length) break;
-              ctx.damageEnemy(pick(alive), rand(4, 6));
+              ctx.damageEnemy(pick(alive), rand(5, 8));
             }
             ctx.log(`${ctx.self.name} unloads twin SMGs.`);
           }
         },
         {
           atkName: 'Crossfire', targetType: 'auto',
-          desc: 'Hits two different enemies twice each (4-6 each) and applies Defense Down (20% more damage taken, 1 turn).',
+          desc: 'Hits two different enemies twice each (5-8 each) and applies Defense Down (20% more damage taken, 1 turn).',
           run(ctx) {
             const alive = ctx.enemies.filter(e => e.hp > 0);
             if (!alive.length) return;
             const targets = shuffle(alive).slice(0, 2);
             targets.forEach(t => {
-              for (let i = 0; i < 2; i++) ctx.damageEnemy(t, rand(4, 6));
+              for (let i = 0; i < 2; i++) ctx.damageEnemy(t, rand(5, 8));
               addBuff(t, 'defDown', 1);
             });
             ctx.log(`${ctx.self.name} lays down a crossfire pattern.`);
@@ -898,9 +898,9 @@
         },
         {
           atkName: 'Overdrive', targetType: 'enemy',
-          desc: 'Dumps 5 rapid hits (3-5 each) into one target.',
+          desc: 'Dumps 5 rapid hits (4-6 each) into one target.',
           run(ctx) {
-            for (let i = 0; i < 5; i++) ctx.damageEnemy(ctx.target, rand(3, 5));
+            for (let i = 0; i < 5; i++) ctx.damageEnemy(ctx.target, rand(4, 6));
             ctx.log(`${ctx.self.name} goes into overdrive on ${ctx.target.name}.`);
           }
         }
@@ -911,18 +911,18 @@
       moves: [
         {
           atkName: 'Double Blast', targetType: 'enemy',
-          desc: 'Two heavy blasts on one target (12-15 each).',
+          desc: 'Two heavy blasts on one target (14-17 each).',
           run(ctx) {
-            for (let i = 0; i < 2; i++) ctx.damageEnemy(ctx.target, rand(12, 15));
+            for (let i = 0; i < 2; i++) ctx.damageEnemy(ctx.target, rand(14, 17));
             ctx.log(`${ctx.self.name} unloads both barrels into ${ctx.target.name}.`);
           }
         },
         {
           atkName: 'Wide Blast', targetType: 'auto',
-          desc: 'A wide spread that hits all enemies (8-12 each) and applies Defense Down (20% more damage taken, 1 turn).',
+          desc: 'A wide spread that hits all enemies (10-14 each) and applies Defense Down (20% more damage taken, 1 turn).',
           run(ctx) {
             ctx.enemies.filter(e => e.hp > 0).forEach(e => {
-              ctx.damageEnemy(e, rand(8, 12));
+              ctx.damageEnemy(e, rand(10, 14));
               addBuff(e, 'defDown', 1);
             });
             ctx.log(`${ctx.self.name} fires a wide double-barrel spread.`);
@@ -930,9 +930,9 @@
         },
         {
           atkName: 'Point-Blank Barrage', targetType: 'enemy',
-          desc: 'Both barrels ignore shields on one target (18-22).',
+          desc: 'Both barrels ignore shields on one target (21-26).',
           run(ctx) {
-            const dmg = rand(18, 22);
+            const dmg = rand(21, 26);
             ctx.damageEnemy(ctx.target, dmg, false, true);
             ctx.log(`${ctx.self.name} unloads a point-blank barrage into ${ctx.target.name} for ${dmg}.`);
           }
@@ -955,9 +955,9 @@
         },
         {
           atkName: 'Focused Beam', targetType: 'enemy',
-          desc: 'A concentrated beam that ignores damage reduction (20-26).',
+          desc: 'A concentrated beam that ignores damage reduction (22-28).',
           run(ctx) {
-            const dmg = rand(20, 26);
+            const dmg = rand(22, 28);
             ctx.damageEnemy(ctx.target, dmg, false, true);
             ctx.log(`${ctx.self.name} burns through ${ctx.target.name} with a focused beam for ${dmg}.`);
           }
@@ -1007,13 +1007,13 @@
       ]
     },
     {
-      id: 'ar', name: 'AR', img: 'ARv2', maxHp: 66,
+      id: 'ar', name: 'AR', img: 'ARv2', maxHp: 72,
       moves: [
         {
           atkName: 'Suppressing Burst', targetType: 'enemy',
-          desc: 'Fires a burst at one target (10-14 dmg) and rattles it: Attack Down (25% weaker attacks, 2 turns).',
+          desc: 'Fires a burst at one target (12-16 dmg) and rattles it: Attack Down (25% weaker attacks, 2 turns).',
           run(ctx) {
-            const dmg = rand(10, 14);
+            const dmg = rand(12, 16);
             ctx.damageEnemy(ctx.target, dmg);
             addBuff(ctx.target, 'atkDown', 2);
             ctx.log(`${ctx.self.name} suppresses ${ctx.target.name} with a burst for ${dmg}.`);
@@ -1021,17 +1021,17 @@
         },
         {
           atkName: 'Full Auto', targetType: 'enemy',
-          desc: 'Empties the mag: 5 hits (3-5 each) on one target.',
+          desc: 'Empties the mag: 5 hits (4-6 each) on one target.',
           run(ctx) {
-            for (let i = 0; i < 5; i++) ctx.damageEnemy(ctx.target, rand(3, 5));
+            for (let i = 0; i < 5; i++) ctx.damageEnemy(ctx.target, rand(4, 6));
             ctx.log(`${ctx.self.name} goes full auto on ${ctx.target.name}.`);
           }
         },
         {
           atkName: 'Grenade Attachment', targetType: 'enemy',
-          desc: 'Fires an under-barrel grenade for heavy single-target damage (20-26).',
+          desc: 'Fires an under-barrel grenade for heavy single-target damage (23-30).',
           run(ctx) {
-            const dmg = rand(20, 26);
+            const dmg = rand(23, 30);
             ctx.damageEnemy(ctx.target, dmg, true);
             ctx.log(`${ctx.self.name} fires an under-barrel grenade at ${ctx.target.name} for ${dmg}!`, 'crit');
           }
