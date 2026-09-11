@@ -130,11 +130,13 @@
         },
         {
           atkName: 'Aimed Shot', targetType: 'enemy',
-          desc: 'A slower but harder-hitting shot (14-18 dmg).',
+          desc: 'A careful shot (14-18 dmg); 25% chance to land a perfect hit for double damage.',
           run(ctx) {
-            const dmg = rand(14, 18);
-            ctx.damageEnemy(ctx.target, dmg);
-            ctx.log(`${ctx.self.name} lines up an aimed shot on ${ctx.target.name} for ${dmg}.`);
+            let dmg = rand(14, 18);
+            const crit = Math.random() < 0.25;
+            if (crit) dmg *= 2;
+            ctx.damageEnemy(ctx.target, dmg, crit);
+            ctx.log(`${ctx.self.name} lines up an aimed shot on ${ctx.target.name} for ${dmg}${crit ? ' (CRIT!)' : ''}.`, crit ? 'crit' : '');
           }
         },
         {
@@ -350,9 +352,10 @@
         },
         {
           atkName: 'Camouflage', targetType: 'auto',
-          desc: 'Vanishes into cover, gaining 20 shield.',
+          desc: 'Vanishes into cover, gaining 20 shield and Attack Up (25% more damage, 2 turns) for the ambush.',
           run(ctx) {
-            ctx.self.shield = (ctx.self.shield || 0) + 20;
+            addShield(ctx.self, 20);
+            addBuff(ctx.self, 'atkUp', 2);
             ctx.log(`${ctx.self.name} melts into camouflage.`, 'heal');
           }
         }
@@ -467,9 +470,10 @@
         },
         {
           atkName: 'Mana Shield', targetType: 'auto',
-          desc: 'Conjures a protective ward, gaining 18 shield.',
+          desc: 'Conjures a protective ward, gaining 18 shield and Defense Up (20% less damage, 2 turns).',
           run(ctx) {
             addShield(ctx.self, 18);
+            addBuff(ctx.self, 'defUp', 2);
             ctx.log(`${ctx.self.name} conjures a mana shield.`, 'heal');
           }
         }
@@ -531,19 +535,19 @@
         },
         {
           atkName: 'Suppressive Burst', targetType: 'enemy',
-          desc: 'Pins one enemy with 8-12 damage and suppresses it.',
+          desc: 'Pins one enemy with 8-12 damage and applies Attack Down (25% weaker attacks, 2 turns).',
           run(ctx) {
             const dmg = rand(8, 12);
             ctx.damageEnemy(ctx.target, dmg);
-            ctx.target.suppressed = true;
+            addBuff(ctx.target, 'atkDown', 2);
             ctx.log(`${ctx.self.name} suppresses ${ctx.target.name} for ${dmg}.`);
           }
         },
         {
           atkName: 'Overcharge', targetType: 'enemy',
-          desc: 'A focused overcharged shot that ignores shields (14-18).',
+          desc: 'A focused overcharged shot that ignores shields (16-20).',
           run(ctx) {
-            const dmg = rand(14, 18);
+            const dmg = rand(16, 20);
             ctx.damageEnemy(ctx.target, dmg, false, true);
             ctx.log(`${ctx.self.name} overcharges and fires on ${ctx.target.name} for ${dmg}.`);
           }
@@ -648,9 +652,9 @@
         },
         {
           atkName: 'Overheat', targetType: 'enemy',
-          desc: 'Overheats the barrel for a single heavy hit that ignores shields (16-20).',
+          desc: 'Overheats the barrel for a single heavy hit that ignores shields (18-24).',
           run(ctx) {
-            const dmg = rand(16, 20);
+            const dmg = rand(18, 24);
             ctx.damageEnemy(ctx.target, dmg, false, true);
             ctx.log(`${ctx.self.name} overheats the minigun into ${ctx.target.name} for ${dmg}.`);
           }
@@ -679,9 +683,10 @@
         },
         {
           atkName: 'Iron Guard', targetType: 'auto',
-          desc: 'Tenses up, gaining 20 shield.',
+          desc: 'Tenses up, gaining 20 shield and Defense Up (20% less damage, 2 turns).',
           run(ctx) {
-            ctx.self.shield = (ctx.self.shield || 0) + 20;
+            addShield(ctx.self, 20);
+            addBuff(ctx.self, 'defUp', 2);
             ctx.log(`${ctx.self.name} braces in an iron guard stance.`, 'heal');
           }
         }
@@ -774,7 +779,7 @@
           desc: 'A heavy cannonball strike (26-38 dmg).',
           run(ctx) {
             const dmg = rand(26, 38);
-            ctx.damageEnemy(ctx.target, dmg, dmg >= 40);
+            ctx.damageEnemy(ctx.target, dmg, dmg >= 35);
             ctx.log(`${ctx.self.name} fires a cannonball at ${ctx.target.name} for ${dmg}!`);
           }
         },
@@ -818,9 +823,10 @@
         },
         {
           atkName: 'Marksman Stance', targetType: 'auto',
-          desc: 'Steadies the aim, gaining 12 shield.',
+          desc: 'Steadies the aim, gaining 12 shield and Attack Up (25% more damage, 2 turns).',
           run(ctx) {
-            ctx.self.shield = (ctx.self.shield || 0) + 12;
+            addShield(ctx.self, 12);
+            addBuff(ctx.self, 'atkUp', 2);
             ctx.log(`${ctx.self.name} settles into a marksman stance.`, 'heal');
           }
         }
@@ -878,12 +884,15 @@
         },
         {
           atkName: 'Crossfire', targetType: 'auto',
-          desc: 'Hits two different enemies twice each (4-6 each).',
+          desc: 'Hits two different enemies twice each (4-6 each) and applies Defense Down (20% more damage taken, 1 turn).',
           run(ctx) {
             const alive = ctx.enemies.filter(e => e.hp > 0);
             if (!alive.length) return;
             const targets = shuffle(alive).slice(0, 2);
-            targets.forEach(t => { for (let i = 0; i < 2; i++) ctx.damageEnemy(t, rand(4, 6)); });
+            targets.forEach(t => {
+              for (let i = 0; i < 2; i++) ctx.damageEnemy(t, rand(4, 6));
+              addBuff(t, 'defDown', 1);
+            });
             ctx.log(`${ctx.self.name} lays down a crossfire pattern.`);
           }
         },
@@ -910,9 +919,12 @@
         },
         {
           atkName: 'Wide Blast', targetType: 'auto',
-          desc: 'A wide spread that hits all enemies (8-12 each).',
+          desc: 'A wide spread that hits all enemies (8-12 each) and applies Defense Down (20% more damage taken, 1 turn).',
           run(ctx) {
-            ctx.enemies.filter(e => e.hp > 0).forEach(e => ctx.damageEnemy(e, rand(8, 12)));
+            ctx.enemies.filter(e => e.hp > 0).forEach(e => {
+              ctx.damageEnemy(e, rand(8, 12));
+              addBuff(e, 'defDown', 1);
+            });
             ctx.log(`${ctx.self.name} fires a wide double-barrel spread.`);
           }
         },
@@ -1042,8 +1054,10 @@
       abilities: [{
         name: 'Rapid Burst', chance: 0.35,
         run(ctx) {
-          shuffle(ctx.squad).slice(0, 2).forEach(t =>
-            ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.6) + rand(-1, 2), `${ctx.self.name}'s Rapid Burst`));
+          shuffle(ctx.squad).slice(0, 2).forEach(t => {
+            ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.6) + rand(-1, 2), `${ctx.self.name}'s Rapid Burst`);
+            addBuff(t, 'atkDown', 1);
+          });
         }
       }]
     },
@@ -1054,6 +1068,7 @@
         run(ctx) {
           const t = pick(ctx.squad);
           for (let i = 0; i < 3; i++) ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.4), `${ctx.self.name}'s Suppressive Fire`);
+          addBuff(t, 'atkDown', 2);
         }
       }]
     },
@@ -1062,7 +1077,10 @@
       abilities: [{
         name: 'Spread Shot', chance: 0.45,
         run(ctx) {
-          shuffle(ctx.squad).slice(0, 2).forEach(t => ctx.applyDamageToSquad(t, ctx.self.atk, `${ctx.self.name}'s Spread Shot`));
+          shuffle(ctx.squad).slice(0, 2).forEach(t => {
+            ctx.applyDamageToSquad(t, ctx.self.atk, `${ctx.self.name}'s Spread Shot`);
+            addBuff(t, 'defDown', 1);
+          });
         }
       }]
     },
@@ -1073,6 +1091,7 @@
         run(ctx) {
           const t = ctx.squad.reduce((a, b) => (a.hp < b.hp ? a : b));
           ctx.applyDamageToSquad(t, ctx.self.atk * 2, `${ctx.self.name}'s Deadeye`);
+          addBuff(t, 'atkDown', 2);
         }
       }]
     },
@@ -1080,21 +1099,36 @@
       id: 'rocketeer', name: 'Rocketeer', img: 'Rocketeer', baseHp: 34, baseAtk: 9,
       abilities: [{
         name: 'Rocket Volley', chance: 0.3,
-        run(ctx) { ctx.squad.forEach(t => ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.5), `${ctx.self.name}'s Rocket Volley`)); }
+        run(ctx) {
+          ctx.squad.forEach(t => {
+            ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.5), `${ctx.self.name}'s Rocket Volley`);
+            addBuff(t, 'defDown', 1);
+          });
+        }
       }]
     },
     {
       id: 'grenande', name: 'Grenadier', img: 'Grenande', baseHp: 36, baseAtk: 8,
       abilities: [{
         name: 'Grenade Toss', chance: 0.4,
-        run(ctx) { ctx.squad.forEach(t => ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.6), `${ctx.self.name}'s Grenade Toss`)); }
+        run(ctx) {
+          ctx.squad.forEach(t => {
+            ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.6), `${ctx.self.name}'s Grenade Toss`);
+            addBuff(t, 'defDown', 1);
+          });
+        }
       }]
     },
     {
       id: 'boomshooter', name: 'Boom Shooter', img: 'BoomShooter', baseHp: 30, baseAtk: 9,
       abilities: [{
         name: 'Boom Blast', chance: 0.35,
-        run(ctx) { ctx.squad.forEach(t => ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.7), `${ctx.self.name}'s Boom Blast`)); }
+        run(ctx) {
+          ctx.squad.forEach(t => {
+            ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 0.7), `${ctx.self.name}'s Boom Blast`);
+            addBuff(t, 'atkDown', 1);
+          });
+        }
       }]
     },
     {
@@ -1121,21 +1155,33 @@
       id: 'goble', name: 'Goble', img: 'Goble', baseHp: 26, baseAtk: 6,
       abilities: [{
         name: 'Heavy Slam', chance: 0.4,
-        run(ctx) { ctx.applyDamageToSquad(pick(ctx.squad), Math.round(ctx.self.atk * 1.6), `${ctx.self.name}'s Heavy Slam`); }
+        run(ctx) {
+          const t = pick(ctx.squad);
+          ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 1.6), `${ctx.self.name}'s Heavy Slam`);
+          if (Math.random() < 0.5) { addBuff(t, 'stunned', 1); ctx.log(`${t.name} is left reeling, stunned!`); }
+        }
       }]
     },
     {
       id: 'cannontower', name: 'Cannon Tower', img: 'CannonTower', baseHp: 46, baseAtk: 11,
       abilities: [{
         name: 'Cannon Blast', chance: 0.5,
-        run(ctx) { ctx.applyDamageToSquad(pick(ctx.squad), Math.round(ctx.self.atk * 1.5), `${ctx.self.name}'s Cannon Blast`); }
+        run(ctx) {
+          const t = pick(ctx.squad);
+          ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 1.5), `${ctx.self.name}'s Cannon Blast`);
+          addBuff(t, 'defDown', 2);
+        }
       }]
     },
     {
       id: 'dosserttower', name: 'Desert Tower', img: 'DessertTower', baseHp: 44, baseAtk: 10,
       abilities: [{
         name: 'Cannon Blast', chance: 0.5,
-        run(ctx) { ctx.applyDamageToSquad(pick(ctx.squad), Math.round(ctx.self.atk * 1.5), `${ctx.self.name}'s Cannon Blast`); }
+        run(ctx) {
+          const t = pick(ctx.squad);
+          ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 1.5), `${ctx.self.name}'s Cannon Blast`);
+          addBuff(t, 'defDown', 2);
+        }
       }]
     },
     {
@@ -1536,11 +1582,13 @@
       card.className = 'unit-card';
       if (!u) { card.classList.add('empty-slot'); card.textContent = 'Empty'; squadRow.appendChild(card); return; }
       const dead = u.hp <= 0;
+      const stunned = hasBuff(u, 'stunned');
+      const canAct = !dead && !u.acted && !stunned;
       if (dead) card.classList.add('dead');
       if (u.shield > 0) card.classList.add('shielded');
-      if (u.acted && !dead) card.classList.add('acted');
+      if ((u.acted || stunned) && !dead) card.classList.add('acted');
       if (state.pendingAttacker === idx) card.classList.add('active-turn');
-      if (!dead && !u.acted && state.pendingAttacker === null) card.classList.add('selectable');
+      if (canAct && state.pendingAttacker === null) card.classList.add('selectable');
       if (anim && anim.attackerIdx === idx) card.classList.add('anim-attack');
       if (anim && anim.enemyAttackerHitIdxs && anim.enemyAttackerHitIdxs.includes(idx)) card.classList.add('anim-hit');
       if (anim && anim.healSquadIdxs && anim.healSquadIdxs.includes(idx)) card.classList.add('anim-heal');
@@ -1560,7 +1608,7 @@
       `;
       imgFallback(card.querySelector('img'), CHAR_DIR, u.img);
       renderFloats(card, squadFloats);
-      if (!dead && !u.acted && state.pendingAttacker === null) {
+      if (canAct && state.pendingAttacker === null) {
         card.addEventListener('click', () => selectAttacker(idx));
       }
       squadRow.appendChild(card);
@@ -1869,10 +1917,17 @@
       return;
     }
 
-    const allActed = state.squad.every(u => !u || u.hp <= 0 || u.acted);
+    const allActed = state.squad.every(u => !u || u.hp <= 0 || u.acted || hasBuff(u, 'stunned'));
     if (allActed) {
       state.round++;
-      state.squad.forEach(u => { if (u && u.hp > 0) u.acted = false; });
+      state.squad.forEach(u => {
+        if (!u || u.hp <= 0) return;
+        if (hasBuff(u, 'stunned')) {
+          u.buffs.stunned = 0;
+          log(`${u.name} was stunned and missed their turn!`, 'sys');
+        }
+        u.acted = false;
+      });
     }
     renderBattle();
   }
