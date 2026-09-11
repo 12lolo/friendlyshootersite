@@ -1322,9 +1322,9 @@
     { stageNumber: 6, arena: 'final', type: 'boss', bossIds: ['gable', 'goble'], waveLabel: 'Final Boss', label: 'Final Showdown: Gable & Goble', bossScale: 2 }
   ];
 
-  // Infinite mode cycles through these arenas forever, escalating difficulty each loop.
-  const INFINITE_ARENAS = ['forest', 'desert', 'city'];
-  const INFINITE_BOSS_BY_ARENA = { forest: 'spawnerbig', desert: 'tankdessert', city: 'cannontower' };
+  // Infinite mode cycles through every fightable arena forever, escalating difficulty each loop.
+  const INFINITE_ARENAS = ['forest', 'desert', 'city', 'quick'];
+  const INFINITE_BOSS_BY_ARENA = { forest: 'spawnerbig', desert: 'tankdessert', city: 'cannontower', quick: 'frobble' };
 
   function genInfiniteStageDef(idx) {
     const cyclePos = idx % 3;
@@ -1346,6 +1346,13 @@
   function getStageDef(idx) {
     if (state.mode === 'infinite') return genInfiniteStageDef(idx);
     return STAGES[idx];
+  }
+
+  // Wheel/door upgrades get a bigger payout the deeper into a run you are —
+  // capped so late-game numbers stay sane rather than spiraling forever.
+  function rewardScale() {
+    const depth = state.mode === 'infinite' ? Math.floor(state.stageIndex / 3) : state.stageIndex;
+    return 1 + Math.min(1.5, depth * 0.08);
   }
 
   // ---------------------------------------------------------------
@@ -2179,35 +2186,38 @@
 
   function applyUpgrade(kind) {
     const alive = state.squad.filter(u => u);
+    const scale = rewardScale();
     if (kind === 'heal') {
       state.squad.forEach(u => { if (u) u.hp = u.maxHp; });
       log('Squad fully healed!', 'heal');
     } else if (kind === 'maxhp') {
       if (alive.length) {
         const u = pick(alive);
-        const add = Math.round(u.maxHp * 0.2);
+        const pct = 0.2 * scale;
+        const add = Math.round(u.maxHp * pct);
         u.maxHp += add;
         u.hp = Math.min(u.hp + add, u.maxHp);
         u.bonusHp = (u.bonusHp || 0) + add;
-        log(`${u.name}'s max HP increased by 20% to ${u.maxHp}!`, 'heal');
+        log(`${u.name}'s max HP increased by ${Math.round(pct * 100)}% to ${u.maxHp}!`, 'heal');
       }
     } else if (kind === 'hpcap') {
       if (alive.length) {
         const u = pick(alive);
-        const add = Math.round(u.maxHp * 0.35);
+        const pct = 0.35 * scale;
+        const add = Math.round(u.maxHp * pct);
         u.maxHp += add;
         u.hp = Math.min(u.hp + add, u.maxHp);
         u.bonusHp = (u.bonusHp || 0) + add;
-        log(`${u.name}'s HP cap surges by 35% to ${u.maxHp}!`, 'heal');
+        log(`${u.name}'s HP cap surges by ${Math.round(pct * 100)}% to ${u.maxHp}!`, 'heal');
       }
     } else if (kind === 'powerup') {
       if (alive.length) {
         const u = pick(alive);
-        const add = Math.round(u.maxHp * 0.2);
+        const add = Math.round(u.maxHp * 0.2 * scale);
         u.maxHp += add;
         u.hp = Math.min(u.hp + add, u.maxHp);
         u.bonusHp = (u.bonusHp || 0) + add;
-        u.atkMult = Math.round((u.atkMult + 0.25) * 100) / 100;
+        u.atkMult = Math.round((u.atkMult + 0.25 * scale) * 100) / 100;
         log(`${u.name} got stronger! Max HP ${u.maxHp}, ATK x${u.atkMult}.`, 'heal');
       }
     } else if (kind === 'levelup') {
@@ -2235,7 +2245,7 @@
       const fallen = state.squad.filter(u => u && u.hp <= 0);
       if (fallen.length) {
         const u = pick(fallen);
-        u.hp = Math.round(u.maxHp * 0.5);
+        u.hp = Math.round(u.maxHp * Math.min(0.9, 0.5 * scale));
         log(`${u.name} has been revived!`, 'heal');
       } else {
         state.squad.forEach(u => { if (u) u.hp = u.maxHp; });
@@ -2348,13 +2358,14 @@
     } else {
       const kind = pick(['heal', 'maxhp', 'powerup', 'levelup', 'lvlup2', 'hpcap', 'revive']);
       const alive = state.squad.filter(u => u);
+      const scale = rewardScale();
       if (kind === 'powerup' && alive.length) {
         const u = pick(alive);
-        const add = Math.round(u.maxHp * 0.2);
+        const add = Math.round(u.maxHp * 0.2 * scale);
         u.maxHp += add;
         u.hp = Math.min(u.hp + add, u.maxHp);
         u.bonusHp = (u.bonusHp || 0) + add;
-        u.atkMult = Math.round((u.atkMult + 0.25) * 100) / 100;
+        u.atkMult = Math.round((u.atkMult + 0.25 * scale) * 100) / 100;
         box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name} got stronger! Max HP ${u.maxHp}, ATK x${u.atkMult}.</p>`;
       } else if (kind === 'levelup' && alive.length) {
         const u = pick(alive);
@@ -2367,23 +2378,25 @@
         box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name} leveled up twice to Lv.${u.level}!</p>`;
       } else if (kind === 'maxhp' && alive.length) {
         const u = pick(alive);
-        const add = Math.round(u.maxHp * 0.2);
+        const pct = 0.2 * scale;
+        const add = Math.round(u.maxHp * pct);
         u.maxHp += add;
         u.hp = Math.min(u.hp + add, u.maxHp);
         u.bonusHp = (u.bonusHp || 0) + add;
-        box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name}'s max HP increased by 20% to ${u.maxHp}!</p>`;
+        box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name}'s max HP increased by ${Math.round(pct * 100)}% to ${u.maxHp}!</p>`;
       } else if (kind === 'hpcap' && alive.length) {
         const u = pick(alive);
-        const add = Math.round(u.maxHp * 0.35);
+        const pct = 0.35 * scale;
+        const add = Math.round(u.maxHp * pct);
         u.maxHp += add;
         u.hp = Math.min(u.hp + add, u.maxHp);
         u.bonusHp = (u.bonusHp || 0) + add;
-        box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name}'s HP cap surges by 35% to ${u.maxHp}!</p>`;
+        box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name}'s HP cap surges by ${Math.round(pct * 100)}% to ${u.maxHp}!</p>`;
       } else if (kind === 'revive') {
         const fallen = state.squad.filter(u => u && u.hp <= 0);
         if (fallen.length) {
           const u = pick(fallen);
-          u.hp = Math.round(u.maxHp * 0.5);
+          u.hp = Math.round(u.maxHp * Math.min(0.9, 0.5 * scale));
           box.innerHTML = `<h3>Hidden Cache!</h3><p>${u.name} has been revived!</p>`;
         } else {
           state.squad.forEach(u => { if (u) u.hp = u.maxHp; });

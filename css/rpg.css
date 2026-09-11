@@ -139,12 +139,12 @@ body {
     background-position: center;
     transition: background 300ms ease;
 }
-.battlefield.arena-forest { background: radial-gradient(circle at 50% 0%, #1d4a24, #09280f 75%); }
-.battlefield.arena-desert { background: radial-gradient(circle at 50% 0%, #6b5223, #2a1f0c 75%); }
-.battlefield.arena-city { background: radial-gradient(circle at 50% 0%, #3a3f47, #131519 75%); }
-.battlefield.arena-quick { background: radial-gradient(circle at 50% 0%, #4a3a1d, #1c1409 75%); }
-.battlefield.arena-doors { background: radial-gradient(circle at 50% 0%, #241a2e, #0c0810 75%); }
-.battlefield.arena-final { background: radial-gradient(circle at 50% 0%, #5c1414, #1a0505 75%); }
+.battlefield.arena-forest { background-image: radial-gradient(circle at 50% 0%, rgba(29,74,36,0.55), rgba(9,40,15,0.8) 75%), url('../maps/World1.webp'); }
+.battlefield.arena-desert { background-image: radial-gradient(circle at 50% 0%, rgba(107,82,35,0.55), rgba(42,31,12,0.8) 75%), url('../maps/World2.webp'); }
+.battlefield.arena-city { background-image: radial-gradient(circle at 50% 0%, rgba(58,63,71,0.55), rgba(19,21,25,0.8) 75%), url('../maps/Citynew.webp'); }
+.battlefield.arena-quick { background-image: radial-gradient(circle at 50% 0%, rgba(74,58,29,0.55), rgba(28,20,9,0.8) 75%), url('../maps/QuickLevels.webp'); }
+.battlefield.arena-doors { background-image: radial-gradient(circle at 50% 0%, rgba(36,26,46,0.6), rgba(12,8,16,0.85) 75%), url('../maps/Pre-final.webp'); }
+.battlefield.arena-final { background-image: radial-gradient(circle at 50% 0%, rgba(92,20,20,0.55), rgba(26,5,5,0.8) 75%), url('../maps/finalShowdown.webp'); }
 
 .ground-line {
     height: 3px;
@@ -474,7 +474,9 @@ body {
 .door-face { color: #d9b98a; font-size: 0.85rem; text-shadow: 1px 1px 0 #000; }
 
 #screen-doors.active {
-    background: radial-gradient(circle at 50% 0%, #241a2e, #0c0810 75%);
+    background-image: radial-gradient(circle at 50% 0%, rgba(36,26,46,0.6), rgba(12,8,16,0.85) 75%), url('../maps/Pre-final.webp');
+    background-size: cover;
+    background-position: center;
     padding: 10px;
     border: 1px solid var(--rpg-border);
 }
