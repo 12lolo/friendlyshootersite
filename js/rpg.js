@@ -96,10 +96,11 @@
     if (healed > 0) pushFloat(target, '+' + healed, 'float-heal');
     return healed;
   }
-  function addShield(target, amount) {
+  function addShield(target, amount, scale) {
     if (!target) return;
-    target.shield = (target.shield || 0) + amount;
-    pushFloat(target, '+' + amount + ' SH', 'float-shield');
+    const amt = Math.round(amount * (scale || 1));
+    target.shield = (target.shield || 0) + amt;
+    pushFloat(target, '+' + amt + ' SH', 'float-shield');
   }
   function nextEnemyIdx() {
     for (let i = 0; i < state.enemies.length; i++) {
@@ -175,7 +176,7 @@
           atkName: 'Adrenaline Rush', targetType: 'auto',
           desc: 'Gains 20 shield and Attack Up (25% more damage, 3 turns).',
           run(ctx) {
-            addShield(ctx.self, 20);
+            addShield(ctx.self, 20, ctx.self.atkMult);
             addBuff(ctx.self, 'atkUp', 3);
             ctx.log(`${ctx.self.name} gets an adrenaline rush and braces for impact.`, 'heal');
           }
@@ -286,7 +287,7 @@
           desc: 'Deploys smoke, granting the whole squad shield and Defense Up (20% less damage, 1 turn).',
           run(ctx) {
             ctx.squad.filter(u => u && u.hp > 0).forEach(u => {
-              addShield(u, rand(6, 10));
+              addShield(u, rand(6, 10), ctx.self.atkMult);
               addBuff(u, 'defUp', 1);
             });
             ctx.log(`${ctx.self.name} lays down a smoke screen for cover.`, 'heal');
@@ -354,7 +355,7 @@
           atkName: 'Camouflage', targetType: 'auto',
           desc: 'Vanishes into cover, gaining 20 shield and Attack Up (25% more damage, 2 turns) for the ambush.',
           run(ctx) {
-            addShield(ctx.self, 20);
+            addShield(ctx.self, 20, ctx.self.atkMult);
             addBuff(ctx.self, 'atkUp', 2);
             ctx.log(`${ctx.self.name} melts into camouflage.`, 'heal');
           }
@@ -472,7 +473,7 @@
           atkName: 'Mana Shield', targetType: 'auto',
           desc: 'Conjures a protective ward, gaining 24 shield and Defense Up (20% less damage, 2 turns).',
           run(ctx) {
-            addShield(ctx.self, 24);
+            addShield(ctx.self, 24, ctx.self.atkMult);
             addBuff(ctx.self, 'defUp', 2);
             ctx.log(`${ctx.self.name} conjures a mana shield.`, 'heal');
           }
@@ -504,7 +505,7 @@
           atkName: 'Shield Drone', targetType: 'auto',
           desc: 'Creates a protective shield barrier over the whole squad (12-16 shield each).',
           run(ctx) {
-            ctx.squad.filter(u => u && u.hp > 0).forEach(u => addShield(u, rand(12, 16)));
+            ctx.squad.filter(u => u && u.hp > 0).forEach(u => addShield(u, rand(12, 16), ctx.self.atkMult));
             ctx.log(`${ctx.self.name} launches a shield drone over the whole squad.`, 'heal');
           }
         },
@@ -561,7 +562,7 @@
           atkName: 'Cover Team', targetType: 'auto',
           desc: 'Creates a physical cover barrier for the entire squad, granting each ally 20 shield.',
           run(ctx) {
-            ctx.squad.filter(u => u && u.hp > 0).forEach(u => addShield(u, 20));
+            ctx.squad.filter(u => u && u.hp > 0).forEach(u => addShield(u, 20, ctx.self.atkMult));
             ctx.log(`${ctx.self.name} slams a massive cover shield over the whole squad.`, 'heal');
           }
         },
@@ -571,7 +572,7 @@
           run(ctx) {
             const dmg = rand(10, 14);
             ctx.damageEnemy(ctx.target, dmg);
-            addShield(ctx.self, 18);
+            addShield(ctx.self, 18, ctx.self.atkMult);
             addBuff(ctx.self, 'defUp', 2);
             ctx.log(`${ctx.self.name} braces behind cover and counters ${ctx.target.name} for ${dmg}.`);
           }
@@ -580,7 +581,7 @@
           atkName: 'Taunt', targetType: 'auto',
           desc: 'Slams the ground for 35 shield and draws the next enemy attack onto Shield.',
           run(ctx) {
-            addShield(ctx.self, 35);
+            addShield(ctx.self, 35, ctx.self.atkMult);
             addBuff(ctx.self, 'taunt', 1);
             ctx.log(`${ctx.self.name} taunts the enemy line, daring them to attack!`, 'heal');
           }
@@ -616,7 +617,7 @@
           desc: 'Raises a wall of fire, burning all enemies and shielding the user (+10).',
           run(ctx) {
             ctx.enemies.filter(e => e.hp > 0).forEach(e => e.burn = { turns: 2, dmg: 4 });
-            ctx.self.shield = (ctx.self.shield || 0) + 10;
+            addShield(ctx.self, 10, ctx.self.atkMult);
             ctx.log(`${ctx.self.name} raises a wall of fire.`, 'heal');
           }
         }
@@ -685,7 +686,7 @@
           atkName: 'Iron Guard', targetType: 'auto',
           desc: 'Tenses up, gaining 20 shield and Defense Up (20% less damage, 2 turns).',
           run(ctx) {
-            addShield(ctx.self, 20);
+            addShield(ctx.self, 20, ctx.self.atkMult);
             addBuff(ctx.self, 'defUp', 2);
             ctx.log(`${ctx.self.name} braces in an iron guard stance.`, 'heal');
           }
@@ -743,7 +744,7 @@
           run(ctx) {
             const dmg = rand(18, 26);
             ctx.damageEnemy(ctx.target, dmg);
-            addShield(ctx.self, 16);
+            addShield(ctx.self, 16, ctx.self.atkMult);
             addBuff(ctx.self, 'defUp', 2);
             ctx.log(`${ctx.self.name} shouts "Objection!" at ${ctx.target.name} for ${dmg}.`, 'heal');
           }
@@ -753,7 +754,7 @@
           desc: 'Grants the whole squad 12-18 shield and patches up the weakest ally.',
           run(ctx) {
             const allies = ctx.squad.filter(u => u && u.hp > 0);
-            allies.forEach(u => addShield(u, rand(12, 18)));
+            allies.forEach(u => addShield(u, rand(12, 18), ctx.self.atkMult));
             const weakest = allies.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0];
             if (weakest) healUnit(weakest, 8);
             ctx.log(`${ctx.self.name} presents the evidence and fortifies the squad.`, 'heal');
@@ -825,7 +826,7 @@
           atkName: 'Marksman Stance', targetType: 'auto',
           desc: 'Steadies the aim, gaining 12 shield and Attack Up (25% more damage, 2 turns).',
           run(ctx) {
-            addShield(ctx.self, 12);
+            addShield(ctx.self, 12, ctx.self.atkMult);
             addBuff(ctx.self, 'atkUp', 2);
             ctx.log(`${ctx.self.name} settles into a marksman stance.`, 'heal');
           }
@@ -1727,7 +1728,7 @@
             <div class="move-option">
               <button class="button" data-move="${i}">${mv.atkName}</button>
               <span class="move-tag move-tag-${tag.cls}">${tag.label}</span>
-              <span class="a-desc">${mv.desc}</span>
+              <span class="a-desc">${scaledDesc(u, mv)}</span>
             </div>`;
         });
         ap.innerHTML += `<div><button class="button secondary" id="btn-cancel-attack" style="margin-top:8px;">Cancel</button></div>`;
@@ -1750,7 +1751,7 @@
       } else {
         const move = def.moves[state.pendingMove];
         const tag = classifyMove(move);
-        ap.innerHTML = `<div class="a-name">${move.atkName} <span class="move-tag move-tag-${tag.cls}">${tag.label}</span></div><div class="a-desc">${move.desc}</div>`;
+        ap.innerHTML = `<div class="a-name">${move.atkName} <span class="move-tag move-tag-${tag.cls}">${tag.label}</span></div><div class="a-desc">${scaledDesc(u, move)}</div>`;
         if (move.targetType === 'enemy') {
           ap.innerHTML += `<p style="color:#ffd166;font-size:0.8rem;">Choose an enemy target.</p>`;
         } else {
@@ -1778,6 +1779,27 @@
         renderBattle();
       }, 500);
     }
+  }
+
+  // Rewrites a move's static desc numbers into the unit's actual current
+  // output, factoring in level growth (atkMult) and temporary atk buffs/
+  // debuffs. Hyphenated ranges ("14-18") are treated as damage unless the
+  // text right after them says "heal"/"shield" (then level-only scaling
+  // applies, matching how heals/shields are computed); flat "N shield"
+  // numbers always use level-only scaling. Turn counts and percentages
+  // are never hyphenated ranges or "N shield" so they're left untouched.
+  function scaledDesc(unit, move) {
+    const dmgMult = (unit.atkMult || 1) * outgoingDamageMult(unit);
+    const utilMult = unit.atkMult || 1;
+    if (Math.abs(dmgMult - 1) < 0.01 && Math.abs(utilMult - 1) < 0.01) return move.desc;
+    const supportDefault = /heal|shield/i.test(move.desc) ? utilMult : dmgMult;
+    let desc = move.desc.replace(/(\d+)-(\d+)/g, (m, a, b, offset, str) => {
+      const after = str.slice(offset + m.length, offset + m.length + 12).toLowerCase();
+      const mult = /dmg|damage/.test(after) ? dmgMult : supportDefault;
+      return `${Math.round(parseInt(a, 10) * mult)}-${Math.round(parseInt(b, 10) * mult)}`;
+    });
+    desc = desc.replace(/(?<![-\d])(\d+)(?=\s*shield)/gi, (m) => String(Math.round(parseInt(m, 10) * utilMult)));
+    return desc;
   }
 
   // Heuristic move classification for the ability panel's tag badge.
