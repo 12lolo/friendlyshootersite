@@ -183,6 +183,8 @@ body {
 .unit-card .u-hptext { font-size: 0.68rem; color: var(--rpg-text); margin-top: 2px; }
 .unit-card .u-shield { font-size: 0.65rem; color: #6ecbff; }
 .unit-card .u-burn { font-size: 0.65rem; color: #ff8a4a; }
+.unit-card .u-buff { font-size: 0.65rem; color: #6effa0; }
+.unit-card .u-debuff { font-size: 0.65rem; color: #ff6e6e; }
 .unit-card .u-tag { position: absolute; top: 2px; right: 2px; font-size: 0.6rem; background: var(--rpg-accent); color: #fff; padding: 1px 4px; }
 
 .unit-card.selectable { cursor: pointer; }
@@ -194,9 +196,16 @@ body {
 .unit-card.targetable:hover { box-shadow: 3px 3px 0 rgba(255,209,102,0.5); }
 .unit-card.empty-slot { opacity: 0.3; border-style: dashed; display: flex; align-items: center; justify-content: center; }
 
+.unit-card { animation: card-pop 180ms ease; }
+@keyframes card-pop {
+    from { opacity: 0.6; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+}
+
 .unit-card.anim-attack { animation: anim-lunge 450ms ease; }
 .unit-card.anim-hit { animation: anim-shake 450ms ease; }
 .unit-card.anim-heal { animation: anim-glow 650ms ease; }
+.unit-card.anim-crit { animation: anim-crit-shake 460ms ease; }
 @keyframes anim-lunge {
     0% { transform: translateY(0); }
     35% { transform: translateY(-10px) scale(1.06); }
@@ -209,9 +218,54 @@ body {
     60% { transform: translateX(-4px); }
     80% { transform: translateX(4px); }
 }
+@keyframes anim-crit-shake {
+    0%, 100% { transform: translateX(0) scale(1); filter: brightness(1); box-shadow: none; }
+    15% { transform: translateX(-9px) scale(1.08); filter: brightness(2.2) saturate(3); box-shadow: 0 0 20px 6px rgba(255, 209, 102, 0.85); }
+    35% { transform: translateX(8px) scale(1.05); }
+    55% { transform: translateX(-6px) scale(1.03); }
+    75% { transform: translateX(5px) scale(1.01); }
+}
 @keyframes anim-glow {
     0%, 100% { box-shadow: none; }
     50% { box-shadow: 0 0 16px 4px rgba(110, 203, 255, 0.8); }
+}
+
+/* ----- Floating combat numbers ----- */
+.float-num {
+    position: absolute;
+    left: 50%;
+    top: 14px;
+    transform: translate(-50%, 0);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-shadow: 1px 1px 0 #000;
+    pointer-events: none;
+    opacity: 0;
+    animation: float-up 460ms ease-out forwards;
+    animation-delay: calc(var(--fi, 0) * 90ms);
+    z-index: 6;
+}
+@keyframes float-up {
+    0% { opacity: 0; transform: translate(-50%, 0) scale(0.8); }
+    20% { opacity: 1; transform: translate(-50%, -8px) scale(1.08); }
+    100% { opacity: 0; transform: translate(-50%, -30px) scale(1); }
+}
+.float-num.float-dmg { color: #ff6e6e; }
+.float-num.float-crit { color: #ffd166; font-size: 1rem; }
+.float-num.float-heal { color: #6ecbff; }
+.float-num.float-shield { color: #6effa0; }
+.float-num.float-block { color: #9fd8ff; font-size: 0.68rem; }
+
+/* ----- Next-to-act enemy indicator ----- */
+.unit-card.next-turn { border-color: var(--rpg-gold); box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.45); }
+.unit-card .next-badge {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    font-size: 0.58rem;
+    background: var(--rpg-gold);
+    color: #000;
+    padding: 1px 4px;
 }
 
 .rpg-log {
