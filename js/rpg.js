@@ -1323,24 +1323,40 @@
     { stageNumber: 6, arena: 'final', type: 'boss', bossIds: ['gable', 'goble'], waveLabel: 'Final Boss', label: 'Final Showdown: Gable & Goble', bossScale: 2 }
   ];
 
-  // Infinite mode cycles through every fightable arena forever, escalating difficulty each loop.
+  // Infinite mode cycles through every fightable arena forever, escalating difficulty
+  // each loop. After every full rotation through all four arenas, a bonus Gable &
+  // Goble showdown appears before the cycle starts over — so infinite runs eventually
+  // touch every level in the game, including the story finale.
   const INFINITE_ARENAS = ['forest', 'desert', 'city', 'quick'];
   const INFINITE_BOSS_BY_ARENA = { forest: 'spawnerbig', desert: 'tankdessert', city: 'cannontower', quick: 'frobble' };
+  const INFINITE_CYCLE_LEN = INFINITE_ARENAS.length * 3 + 1; // 4 arenas x 3 waves + 1 bonus finale wave
 
   function genInfiniteStageDef(idx) {
-    const cyclePos = idx % 3;
-    const loop = Math.floor(idx / 3);
-    const arena = INFINITE_ARENAS[loop % INFINITE_ARENAS.length];
+    const grandLoop = Math.floor(idx / INFINITE_CYCLE_LEN);
+    const posInCycle = idx % INFINITE_CYCLE_LEN;
+
+    if (posInCycle === INFINITE_CYCLE_LEN - 1) {
+      return {
+        stageNumber: idx + 1, arena: 'final', type: 'boss', bossIds: ['gable', 'goble'],
+        waveLabel: 'Elite Boss', label: `Final Showdown: Gable & Goble (Rotation ${grandLoop + 1})`,
+        bossScale: 1.6 + grandLoop * 0.3
+      };
+    }
+
+    const arenaLoop = Math.floor(posInCycle / 3);
+    const cyclePos = posInCycle % 3;
+    const arena = INFINITE_ARENAS[arenaLoop % INFINITE_ARENAS.length];
     const waveInCycle = cyclePos + 1;
+    const totalLoop = grandLoop * INFINITE_ARENAS.length + arenaLoop;
     if (cyclePos < 2) {
       return {
-        stageNumber: idx + 1, arena, type: 'fight', count: 2 + Math.min(3, loop) + cyclePos,
-        waveLabel: `Wave ${waveInCycle}/3`, label: `${ARENAS[arena].label} — Wave ${waveInCycle}/3 (Loop ${loop + 1})`
+        stageNumber: idx + 1, arena, type: 'fight', count: 2 + Math.min(3, totalLoop) + cyclePos,
+        waveLabel: `Wave ${waveInCycle}/3`, label: `${ARENAS[arena].label} — Wave ${waveInCycle}/3 (Loop ${totalLoop + 1})`
       };
     }
     return {
       stageNumber: idx + 1, arena, type: 'boss', bossIds: [INFINITE_BOSS_BY_ARENA[arena]],
-      waveLabel: 'Boss Wave 3/3', label: `${ARENAS[arena].label} Boss (Loop ${loop + 1})`, bossScale: 1.4 + loop * 0.2
+      waveLabel: 'Boss Wave 3/3', label: `${ARENAS[arena].label} Boss (Loop ${totalLoop + 1})`, bossScale: 1.4 + totalLoop * 0.2
     };
   }
 
@@ -1488,6 +1504,7 @@
     q('#btn-spin').addEventListener('click', spinWheel);
     q('#btn-doors-continue').addEventListener('click', nextStage);
     q('#btn-play-again').addEventListener('click', startRun);
+    q('#btn-continue-infinite').addEventListener('click', continueAsInfinite);
     q('#btn-music-toggle').addEventListener('click', toggleMusic);
     qa('.mode-btn').forEach(btn => btn.addEventListener('click', () => {
       state.mode = btn.dataset.mode;
@@ -2054,6 +2071,16 @@
     const best = parseInt(localStorage.getItem(SAVE_KEY) || '0', 10);
     if (STAGES.length > best) localStorage.setItem(SAVE_KEY, String(STAGES.length));
     showScreen('screen-complete');
+  }
+
+  // Carries the current squad and unlocked roster over into an Infinite run
+  // instead of starting fresh, picking up right where Story Mode left off.
+  function continueAsInfinite() {
+    state.mode = 'infinite';
+    state.squadSize = INFINITE_SQUAD_SIZE;
+    while (state.squad.length < state.squadSize) state.squad.push(null);
+    state.stageIndex = 0;
+    beginStage();
   }
 
   function nextStage() {
