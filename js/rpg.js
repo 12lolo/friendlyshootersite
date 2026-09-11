@@ -1048,9 +1048,9 @@
   // If none trigger, the enemy falls back to a basic attack.
   // ---------------------------------------------------------------
   const ENEMY_TYPES = [
-    { id: 'weak', name: 'Weak', img: 'Weak', baseHp: 20, baseAtk: 4 },
+    { id: 'weak', name: 'Weak', img: 'Weak', baseHp: 22, baseAtk: 5 },
     {
-      id: 'burst', name: 'Burst', img: 'Burst', baseHp: 26, baseAtk: 6,
+      id: 'burst', name: 'Burst', img: 'Burst', baseHp: 28, baseAtk: 7,
       abilities: [{
         name: 'Rapid Burst', chance: 0.35,
         run(ctx) {
@@ -1062,7 +1062,7 @@
       }]
     },
     {
-      id: 'machinegunner', name: 'Machine Gunner', img: 'MachineGunner', baseHp: 32, baseAtk: 7,
+      id: 'machinegunner', name: 'Machine Gunner', img: 'MachineGunner', baseHp: 35, baseAtk: 8,
       abilities: [{
         name: 'Suppressive Fire', chance: 0.4,
         run(ctx) {
@@ -1073,7 +1073,7 @@
       }]
     },
     {
-      id: 'spreadshooter', name: 'Spread Shooter', img: 'SpreadShooter', baseHp: 30, baseAtk: 6,
+      id: 'spreadshooter', name: 'Spread Shooter', img: 'SpreadShooter', baseHp: 32, baseAtk: 7,
       abilities: [{
         name: 'Spread Shot', chance: 0.45,
         run(ctx) {
@@ -1085,7 +1085,7 @@
       }]
     },
     {
-      id: 'sniper', name: 'Sniper', img: 'Sniper', baseHp: 24, baseAtk: 10,
+      id: 'sniper', name: 'Sniper', img: 'Sniper', baseHp: 26, baseAtk: 12,
       abilities: [{
         name: 'Deadeye', chance: 0.35,
         run(ctx) {
@@ -1096,7 +1096,7 @@
       }]
     },
     {
-      id: 'rocketeer', name: 'Rocketeer', img: 'Rocketeer', baseHp: 34, baseAtk: 9,
+      id: 'rocketeer', name: 'Rocketeer', img: 'Rocketeer', baseHp: 36, baseAtk: 11,
       abilities: [{
         name: 'Rocket Volley', chance: 0.3,
         run(ctx) {
@@ -1108,7 +1108,7 @@
       }]
     },
     {
-      id: 'grenande', name: 'Grenadier', img: 'Grenande', baseHp: 36, baseAtk: 8,
+      id: 'grenande', name: 'Grenadier', img: 'Grenande', baseHp: 38, baseAtk: 10,
       abilities: [{
         name: 'Grenade Toss', chance: 0.4,
         run(ctx) {
@@ -1120,7 +1120,7 @@
       }]
     },
     {
-      id: 'boomshooter', name: 'Boom Shooter', img: 'BoomShooter', baseHp: 30, baseAtk: 9,
+      id: 'boomshooter', name: 'Boom Shooter', img: 'BoomShooter', baseHp: 32, baseAtk: 11,
       abilities: [{
         name: 'Boom Blast', chance: 0.35,
         run(ctx) {
@@ -1132,7 +1132,7 @@
       }]
     },
     {
-      id: 'frobble', name: 'Frobble', img: 'Frobble', baseHp: 22, baseAtk: 5,
+      id: 'frobble', name: 'Frobble', img: 'Frobble', baseHp: 24, baseAtk: 6,
       abilities: [{
         name: 'Quick Strike', chance: 1,
         run(ctx) {
@@ -1141,18 +1141,18 @@
       }]
     },
     {
-      id: 'gable', name: 'Gable', img: 'Gable', baseHp: 26, baseAtk: 6,
+      id: 'gable', name: 'Gable', img: 'Gable', baseHp: 30, baseAtk: 7,
       abilities: [{
         name: 'Rally Cry', chance: 0.4,
         run(ctx) {
           const ally = ctx.enemies.find(e => e.hp > 0 && e !== ctx.self);
-          if (ally) { ally.atkBuff = 1.5; ctx.log(`${ctx.self.name} rallies ${ally.name}, boosting its attack!`); }
+          if (ally) { addBuff(ally, 'atkUp', 2); ctx.log(`${ctx.self.name} rallies ${ally.name}, boosting its attack!`); }
           else { healUnit(ctx.self, Math.round(ctx.self.maxHp * 0.15)); ctx.log(`${ctx.self.name} rallies itself and recovers HP.`); }
         }
       }]
     },
     {
-      id: 'goble', name: 'Goble', img: 'Goble', baseHp: 26, baseAtk: 6,
+      id: 'goble', name: 'Goble', img: 'Goble', baseHp: 30, baseAtk: 8,
       abilities: [{
         name: 'Heavy Slam', chance: 0.4,
         run(ctx) {
@@ -1163,44 +1163,92 @@
       }]
     },
     {
-      id: 'cannontower', name: 'Cannon Tower', img: 'CannonTower', baseHp: 46, baseAtk: 11,
+      id: 'cannontower', name: 'Cannon Tower', img: 'CannonTower', baseHp: 52, baseAtk: 13,
+      abilities: [
+        {
+          name: 'Cannon Blast', chance: 0.5,
+          run(ctx) {
+            const t = pick(ctx.squad);
+            ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 1.5), `${ctx.self.name}'s Cannon Blast`);
+            addBuff(t, 'defDown', 2);
+          }
+        },
+        {
+          name: 'Fire Support', chance: 0.3,
+          run(ctx) {
+            ctx.enemies.filter(e => e.hp > 0).forEach(e => addBuff(e, 'atkUp', 2));
+            ctx.log(`${ctx.self.name} calls in fire support, boosting the whole line!`);
+          }
+        }
+      ]
+    },
+    {
+      id: 'dosserttower', name: 'Desert Tower', img: 'DessertTower', baseHp: 50, baseAtk: 12,
+      abilities: [
+        {
+          name: 'Cannon Blast', chance: 0.5,
+          run(ctx) {
+            const t = pick(ctx.squad);
+            ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 1.5), `${ctx.self.name}'s Cannon Blast`);
+            addBuff(t, 'defDown', 2);
+          }
+        },
+        {
+          name: 'Fire Support', chance: 0.3,
+          run(ctx) {
+            ctx.enemies.filter(e => e.hp > 0).forEach(e => addBuff(e, 'atkUp', 2));
+            ctx.log(`${ctx.self.name} calls in fire support, boosting the whole line!`);
+          }
+        }
+      ]
+    },
+    {
+      id: 'tank', name: 'Tank', img: 'Tank', baseHp: 66, baseAtk: 11,
+      abilities: [
+        {
+          name: 'Fortify', chance: 0.3,
+          run(ctx) { ctx.self.defBuff = 0.4; ctx.log(`${ctx.self.name} hunkers down, bracing for the next attack.`); }
+        },
+        {
+          name: 'Rally the Line', chance: 0.25,
+          run(ctx) {
+            const ally = ctx.enemies.find(e => e.hp > 0 && e !== ctx.self) || ctx.self;
+            addBuff(ally, 'defUp', 2);
+            ctx.log(`${ctx.self.name} rallies ${ally.name}, hardening its defenses!`);
+          }
+        }
+      ]
+    },
+    {
+      id: 'tankdessert', name: 'Desert Tank', img: 'Tankdessert', baseHp: 70, baseAtk: 12,
+      abilities: [
+        {
+          name: 'Fortify', chance: 0.3,
+          run(ctx) { ctx.self.defBuff = 0.4; ctx.log(`${ctx.self.name} hunkers down, bracing for the next attack.`); }
+        },
+        {
+          name: 'Rally the Line', chance: 0.25,
+          run(ctx) {
+            const ally = ctx.enemies.find(e => e.hp > 0 && e !== ctx.self) || ctx.self;
+            addBuff(ally, 'defUp', 2);
+            ctx.log(`${ctx.self.name} rallies ${ally.name}, hardening its defenses!`);
+          }
+        }
+      ]
+    },
+    {
+      id: 'homing', name: 'The Homing', img: 'The homing', baseHp: 30, baseAtk: 10, homing: true,
       abilities: [{
-        name: 'Cannon Blast', chance: 0.5,
+        name: 'Predator Strike', chance: 0.5,
         run(ctx) {
-          const t = pick(ctx.squad);
-          ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 1.5), `${ctx.self.name}'s Cannon Blast`);
+          const t = ctx.squad.reduce((a, b) => (a.hp < b.hp ? a : b));
+          ctx.applyDamageToSquad(t, ctx.self.atk, `${ctx.self.name}'s Predator Strike`);
           addBuff(t, 'defDown', 2);
         }
       }]
     },
     {
-      id: 'dosserttower', name: 'Desert Tower', img: 'DessertTower', baseHp: 44, baseAtk: 10,
-      abilities: [{
-        name: 'Cannon Blast', chance: 0.5,
-        run(ctx) {
-          const t = pick(ctx.squad);
-          ctx.applyDamageToSquad(t, Math.round(ctx.self.atk * 1.5), `${ctx.self.name}'s Cannon Blast`);
-          addBuff(t, 'defDown', 2);
-        }
-      }]
-    },
-    {
-      id: 'tank', name: 'Tank', img: 'Tank', baseHp: 60, baseAtk: 9,
-      abilities: [{
-        name: 'Fortify', chance: 0.3,
-        run(ctx) { ctx.self.defBuff = 0.4; ctx.log(`${ctx.self.name} hunkers down, bracing for the next attack.`); }
-      }]
-    },
-    {
-      id: 'tankdessert', name: 'Desert Tank', img: 'Tankdessert', baseHp: 64, baseAtk: 10,
-      abilities: [{
-        name: 'Fortify', chance: 0.3,
-        run(ctx) { ctx.self.defBuff = 0.4; ctx.log(`${ctx.self.name} hunkers down, bracing for the next attack.`); }
-      }]
-    },
-    { id: 'homing', name: 'The Homing', img: 'The homing', baseHp: 28, baseAtk: 8, homing: true },
-    {
-      id: 'spawner', name: 'Spawner', img: 'Spawner', baseHp: 24, baseAtk: 5,
+      id: 'spawner', name: 'Spawner', img: 'Spawner', baseHp: 26, baseAtk: 6,
       abilities: [{
         name: 'Spawn Minion', chance: 0.3,
         run(ctx) {
@@ -1214,7 +1262,7 @@
       }]
     },
     {
-      id: 'spawnerbig', name: 'Big Spawner', img: 'Spawnerbig', baseHp: 90, baseAtk: 10,
+      id: 'spawnerbig', name: 'Big Spawner', img: 'Spawnerbig', baseHp: 100, baseAtk: 12,
       abilities: [{
         name: 'Mass Spawn', chance: 0.4,
         run(ctx) {
@@ -1349,11 +1397,17 @@
     q('#' + id).classList.add('active');
   }
 
-  // Rare chance a newly recruited character starts at a higher level.
+  // Rare chance a newly recruited character starts at a higher level,
+  // with a steep drop-off up to a jackpot level 8.
   function rollRecruitLevel() {
     const r = Math.random();
-    if (r < 0.03) return 3;
-    if (r < 0.15) return 2;
+    if (r < 0.005) return 8;
+    if (r < 0.012) return 7;
+    if (r < 0.025) return 6;
+    if (r < 0.045) return 5;
+    if (r < 0.08) return 4;
+    if (r < 0.14) return 3;
+    if (r < 0.28) return 2;
     return 1;
   }
 
@@ -1380,8 +1434,8 @@
 
   function makeEnemy(type, stageIndex, scaleMult) {
     scaleMult = scaleMult || 1;
-    const hpMul = (1 + (stageIndex || 0) * 0.12) * scaleMult;
-    const atkMul = (1 + (stageIndex || 0) * 0.08) * scaleMult;
+    const hpMul = (1 + (stageIndex || 0) * 0.15) * scaleMult;
+    const atkMul = (1 + (stageIndex || 0) * 0.12) * scaleMult;
     return {
       id: type.id + '_' + Math.random().toString(36).slice(2, 7),
       typeId: type.id, name: type.name, img: type.img,
