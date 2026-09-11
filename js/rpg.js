@@ -26,7 +26,8 @@
   const BUFF_ATK_DOWN_MULT = 0.75;
   const BUFF_DEF_UP_REDUCE = 0.20;
   const BUFF_DEF_DOWN_BONUS = 0.20;
-  const BUFF_LABELS = { atkUp: 'ATK Up', defUp: 'DEF Up', atkDown: 'ATK Down', defDown: 'DEF Down', speedUp: 'Haste' };
+  const BUFF_LABELS = { atkUp: 'ATK Up', defUp: 'DEF Up', atkDown: 'ATK Down', defDown: 'DEF Down', speedUp: 'Haste', stunned: 'Stunned', taunt: 'Taunting' };
+  const BUFF_DEBUFF_KEYS = new Set(['atkDown', 'defDown', 'stunned']);
   const BUFF_PERMANENT = Infinity;
 
   function addBuff(unit, key, turns) {
@@ -61,7 +62,7 @@
   function buffBadges(u) {
     if (!u || !u.buffs) return '';
     return Object.keys(u.buffs).filter(k => u.buffs[k] > 0).map(k => {
-      const cls = (k === 'atkDown' || k === 'defDown') ? 'u-debuff' : 'u-buff';
+      const cls = BUFF_DEBUFF_KEYS.has(k) ? 'u-debuff' : 'u-buff';
       const label = (BUFF_LABELS[k] || k) + (u.buffs[k] === BUFF_PERMANENT ? ' (Perm)' : '');
       return `<div class="${cls}">${label}</div>`;
     }).join('');
@@ -170,9 +171,10 @@
         },
         {
           atkName: 'Adrenaline Rush', targetType: 'auto',
-          desc: 'Braces for impact, gaining 15 shield.',
+          desc: 'Gains 15 shield and Attack Up (25% more damage, 2 turns).',
           run(ctx) {
-            ctx.self.shield = (ctx.self.shield || 0) + 15;
+            addShield(ctx.self, 15);
+            addBuff(ctx.self, 'atkUp', 2);
             ctx.log(`${ctx.self.name} gets an adrenaline rush and braces for impact.`, 'heal');
           }
         }
@@ -236,21 +238,21 @@
           }
         },
         {
-          atkName: 'Warning Shot', targetType: 'enemy',
-          desc: 'Light damage (8-12) that rattles the target, weakening its next attack.',
+          atkName: 'Flashbang', targetType: 'enemy',
+          desc: 'Light damage (4-8) and stuns the target, skipping its next turn entirely.',
           run(ctx) {
-            const dmg = rand(8, 12);
+            const dmg = rand(4, 8);
             ctx.damageEnemy(ctx.target, dmg);
-            ctx.target.suppressed = true;
-            ctx.log(`${ctx.self.name} fires a warning shot at ${ctx.target.name} for ${dmg}.`);
+            addBuff(ctx.target, 'stunned', 1);
+            ctx.log(`${ctx.self.name} pops a flashbang in ${ctx.target.name}'s face for ${dmg}!`, 'crit');
           }
         },
         {
           atkName: 'Quickdraw', targetType: 'enemy',
-          desc: 'A fast shot (16-20); deals 50% bonus if the target is already suppressed.',
+          desc: 'A fast shot (16-20); deals 50% bonus if the target is suppressed or stunned.',
           run(ctx) {
             let dmg = rand(16, 20);
-            if (ctx.target.suppressed) dmg = Math.round(dmg * 1.5);
+            if (ctx.target.suppressed || hasBuff(ctx.target, 'stunned')) dmg = Math.round(dmg * 1.5);
             ctx.damageEnemy(ctx.target, dmg);
             ctx.log(`${ctx.self.name} quickdraws on ${ctx.target.name} for ${dmg}.`);
           }
@@ -279,9 +281,12 @@
         },
         {
           atkName: 'Smoke Screen', targetType: 'auto',
-          desc: 'Deploys smoke, granting the whole squad 8 shield.',
+          desc: 'Deploys smoke, granting the whole squad shield and Defense Up (20% less damage, 1 turn).',
           run(ctx) {
-            ctx.squad.filter(u => u && u.hp > 0).forEach(u => u.shield = (u.shield || 0) + rand(6, 10));
+            ctx.squad.filter(u => u && u.hp > 0).forEach(u => {
+              addShield(u, rand(6, 10));
+              addBuff(u, 'defUp', 1);
+            });
             ctx.log(`${ctx.self.name} lays down a smoke screen for cover.`, 'heal');
           }
         }
@@ -378,13 +383,13 @@
           }
         },
         {
-          atkName: 'Knockback Blast', targetType: 'enemy',
-          desc: 'Blasts a target back (12-16 dmg) and suppresses it.',
+          atkName: 'Flashbang', targetType: 'enemy',
+          desc: 'Light damage (4-8) and stuns the target, skipping its next turn entirely.',
           run(ctx) {
-            const dmg = rand(12, 16);
+            const dmg = rand(4, 8);
             ctx.damageEnemy(ctx.target, dmg);
-            ctx.target.suppressed = true;
-            ctx.log(`${ctx.self.name} knocks ${ctx.target.name} back for ${dmg}.`);
+            addBuff(ctx.target, 'stunned', 1);
+            ctx.log(`${ctx.self.name} pops a flashbang in ${ctx.target.name}'s face for ${dmg}!`, 'crit');
           }
         }
       ]
@@ -452,11 +457,11 @@
         },
         {
           atkName: 'Frost Bolt', targetType: 'enemy',
-          desc: 'Chilling damage (10-16) that freezes the target, weakening its next attack.',
+          desc: 'Chilling damage (10-16) that freezes the target: Attack Down (25% weaker attacks, 2 turns).',
           run(ctx) {
             const dmg = rand(10, 16);
             ctx.damageEnemy(ctx.target, dmg);
-            ctx.target.suppressed = true;
+            addBuff(ctx.target, 'atkDown', 2);
             ctx.log(`${ctx.self.name} chills ${ctx.target.name} for ${dmg}.`);
           }
         },
@@ -464,7 +469,7 @@
           atkName: 'Mana Shield', targetType: 'auto',
           desc: 'Conjures a protective ward, gaining 18 shield.',
           run(ctx) {
-            ctx.self.shield = (ctx.self.shield || 0) + 18;
+            addShield(ctx.self, 18);
             ctx.log(`${ctx.self.name} conjures a mana shield.`, 'heal');
           }
         }
@@ -568,16 +573,12 @@
           }
         },
         {
-          atkName: 'Guardian Light', targetType: 'auto',
-          desc: 'Bathes the squad in protective light, granting 10 shield each and healing the weakest ally.',
+          atkName: 'Taunt', targetType: 'auto',
+          desc: 'Slams the ground for 35 shield and draws the next enemy attack onto Shield.',
           run(ctx) {
-            const alive = ctx.squad.filter(u => u && u.hp > 0);
-            alive.forEach(u => u.shield = (u.shield || 0) + 10);
-            if (alive.length) {
-              const t = alive.reduce((a, b) => (a.hp / a.maxHp <= b.hp / b.maxHp ? a : b));
-              t.hp = clamp(t.hp + rand(10, 15), 0, t.maxHp);
-            }
-            ctx.log(`${ctx.self.name} calls down a guardian light over the squad.`, 'heal');
+            addShield(ctx.self, 35);
+            addBuff(ctx.self, 'taunt', 1);
+            ctx.log(`${ctx.self.name} taunts the enemy line, daring them to attack!`, 'heal');
           }
         }
       ]
@@ -787,9 +788,9 @@
         },
         {
           atkName: 'Overpressure', targetType: 'auto',
-          desc: 'A deafening blast that suppresses all enemies and deals light damage (4-8 each).',
+          desc: 'A deafening blast that deals light damage (4-8 each) and applies Attack Down (25% weaker attacks, 2 turns) to every enemy.',
           run(ctx) {
-            ctx.enemies.filter(e => e.hp > 0).forEach(e => { ctx.damageEnemy(e, rand(4, 8)); e.suppressed = true; });
+            ctx.enemies.filter(e => e.hp > 0).forEach(e => { ctx.damageEnemy(e, rand(4, 8)); addBuff(e, 'atkDown', 2); });
             ctx.log(`${ctx.self.name} unleashes an overpressure blast.`);
           }
         }
@@ -849,13 +850,13 @@
           }
         },
         {
-          atkName: 'Suppressing Spray', targetType: 'auto',
-          desc: 'Sprays all enemies (3-5 each) and suppresses one at random.',
+          atkName: 'Flashbang', targetType: 'enemy',
+          desc: 'Light damage (4-8) and stuns the target, skipping its next turn entirely.',
           run(ctx) {
-            const alive = ctx.enemies.filter(e => e.hp > 0);
-            alive.forEach(e => ctx.damageEnemy(e, rand(3, 5)));
-            if (alive.length) pick(alive).suppressed = true;
-            ctx.log(`${ctx.self.name} sprays down the enemy line.`);
+            const dmg = rand(4, 8);
+            ctx.damageEnemy(ctx.target, dmg);
+            addBuff(ctx.target, 'stunned', 1);
+            ctx.log(`${ctx.self.name} pops a flashbang in ${ctx.target.name}'s face for ${dmg}!`, 'crit');
           }
         }
       ]
@@ -964,11 +965,11 @@
       moves: [
         {
           atkName: 'Suppressing Fire', targetType: 'auto',
-          desc: 'Damages all enemies (8-12) and suppresses them.',
+          desc: 'Damages all enemies (8-12) and applies Attack Down (25% weaker attacks, 2 turns) to each.',
           run(ctx) {
             ctx.enemies.filter(e => e.hp > 0).forEach(e => {
               ctx.damageEnemy(e, rand(8, 12));
-              e.suppressed = true;
+              addBuff(e, 'atkDown', 2);
             });
             ctx.log(`${ctx.self.name} pins down the enemy with suppressing fire.`);
           }
@@ -1790,7 +1791,14 @@
       }
     }
     if (!used) {
-      const target = e.homing ? aliveSquad.reduce((a, b) => (a.hp < b.hp ? a : b)) : pick(aliveSquad);
+      const taunters = aliveSquad.filter(u => hasBuff(u, 'taunt'));
+      let target;
+      if (taunters.length) {
+        target = pick(taunters);
+        target.buffs.taunt = 0;
+      } else {
+        target = e.homing ? aliveSquad.reduce((a, b) => (a.hp < b.hp ? a : b)) : pick(aliveSquad);
+      }
       let dmg = e.atk + rand(-2, 3);
       if (e.suppressed) { dmg = Math.round(dmg * 0.7); e.suppressed = false; }
       applyDamageToSquad(target, dmg, e.name, e);
@@ -1827,13 +1835,17 @@
     }
 
     if (e.hp > 0) {
-      const aliveSquad = state.squad.filter(u => u && u.hp > 0);
-      if (aliveSquad.length) {
-        performEnemyAction(e, aliveSquad);
-        if (hasBuff(e, 'speedUp') && e.hp > 0) {
-          e.buffs.speedUp--;
-          const aliveSquad2 = state.squad.filter(u => u && u.hp > 0);
-          if (aliveSquad2.length) performEnemyAction(e, aliveSquad2);
+      if (hasBuff(e, 'stunned')) {
+        log(`${e.name} is stunned and can't act!`, 'sys');
+      } else {
+        const aliveSquad = state.squad.filter(u => u && u.hp > 0);
+        if (aliveSquad.length) {
+          performEnemyAction(e, aliveSquad);
+          if (hasBuff(e, 'speedUp') && e.hp > 0) {
+            e.buffs.speedUp--;
+            const aliveSquad2 = state.squad.filter(u => u && u.hp > 0);
+            if (aliveSquad2.length) performEnemyAction(e, aliveSquad2);
+          }
         }
       }
       tickBuffs(e, 'speedUp');
@@ -1974,7 +1986,8 @@
       inner.className = 'wheel-seg-inner';
       if (s.type === 'char') {
         const def = CHAR_BY_ID[s.id];
-        inner.innerHTML = `<span>${def.name}</span>`;
+        inner.innerHTML = `<img src="${imgSrc(CHAR_DIR, def.img)}" alt="${def.name}"><span>${def.name}</span>`;
+        imgFallback(inner.querySelector('img'), CHAR_DIR, def.img);
       } else {
         inner.innerHTML = `<span>${wheelLabels[s.kind]}</span>`;
       }

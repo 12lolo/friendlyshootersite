@@ -201,12 +201,6 @@ body {
 .unit-card.targetable:hover { box-shadow: 3px 3px 0 rgba(255,209,102,0.5); }
 .unit-card.empty-slot { opacity: 0.3; border-style: dashed; display: flex; align-items: center; justify-content: center; }
 
-.unit-card { animation: card-pop 180ms ease; }
-@keyframes card-pop {
-    from { opacity: 0.6; transform: scale(0.97); }
-    to { opacity: 1; transform: scale(1); }
-}
-
 .unit-card.anim-attack { animation: anim-lunge 450ms ease; }
 .unit-card.anim-hit { animation: anim-shake 450ms ease; }
 .unit-card.anim-heal { animation: anim-glow 650ms ease; }
@@ -430,6 +424,7 @@ body {
     padding: 7px 10px;
     max-width: 200px;
 }
+.wheel-seg-inner img { width: 32px; height: 32px; object-fit: contain; image-rendering: pixelated; }
 .wheel-seg-inner span { font-size: 0.6rem; color: #fff; text-shadow: 1px 1px 0 #000; max-width: 62px; text-align: center; }
 .wheel-center-dot {
     position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px;
