@@ -269,7 +269,7 @@
       ]
     },
     {
-      id: 'grenadier', name: 'Grenadier', img: 'GrenadeLauncher', maxHp: 70, role: 'damage',
+      id: 'grenadier', name: 'Grenadier', img: 'GrenadeLauncher', maxHp: 70, role: 'support',
       moves: [
         {
           atkName: 'Frag Out', targetType: 'auto',
@@ -302,7 +302,7 @@
       ]
     },
     {
-      id: 'rpg', name: 'RPG', img: 'RPGV2', maxHp: 68, role: 'damage',
+      id: 'rpg', name: 'RPG', img: 'RPGV2', maxHp: 68, role: 'suppressor',
       moves: [
         {
           atkName: 'Rocket Barrage', targetType: 'enemy',
@@ -672,7 +672,7 @@
       ]
     },
     {
-      id: 'fistfighter', name: 'Fistfighter', img: 'Fistfighter', maxHp: 90, role: 'damage',
+      id: 'fistfighter', name: 'Fistfighter', img: 'Fistfighter', maxHp: 90, role: 'tank',
       moves: [
         {
           atkName: 'Haymaker', targetType: 'enemy',
@@ -703,7 +703,7 @@
       ]
     },
     {
-      id: 'bow', name: 'Bow', img: 'bowV2', maxHp: 58, role: 'damage',
+      id: 'bow', name: 'Bow', img: 'bowV2', maxHp: 58, role: 'healer',
       moves: [
         {
           atkName: 'Piercing Shot', targetType: 'enemy',
@@ -721,15 +721,15 @@
           }
         },
         {
-          atkName: 'Multi-Shot', targetType: 'auto',
-          desc: 'Fires 3 arrows at random enemies (6-10 each).',
+          atkName: 'Medic Arrow', targetType: 'auto',
+          desc: 'Fires a stimulant-tipped arrow at the lowest-HP ally, healing 12-18 (scales with level).',
           run(ctx) {
-            for (let i = 0; i < 3; i++) {
-              const alive = ctx.enemies.filter(e => e.hp > 0);
-              if (!alive.length) break;
-              ctx.damageEnemy(pick(alive), rand(6, 10));
-            }
-            ctx.log(`${ctx.self.name} looses a volley of arrows.`);
+            const alive = ctx.squad.filter(u => u && u.hp > 0);
+            if (!alive.length) return;
+            const t = alive.reduce((a, b) => (a.hp / a.maxHp <= b.hp / b.maxHp ? a : b));
+            const heal = Math.round(rand(12, 18) * (ctx.self.atkMult || 1));
+            healUnit(t, heal);
+            ctx.log(`${ctx.self.name} fires a medic arrow into ${t.name} for ${heal} HP.`, 'heal');
           }
         },
         {
@@ -782,7 +782,7 @@
       ]
     },
     {
-      id: 'cannon', name: 'Cannon', img: 'CanonV@', maxHp: 80, role: 'damage',
+      id: 'cannon', name: 'Cannon', img: 'CanonV@', maxHp: 80, role: 'debuffer',
       moves: [
         {
           atkName: 'Cannonball', targetType: 'enemy',
@@ -812,7 +812,7 @@
       ]
     },
     {
-      id: 'rifle', name: 'Rifle', img: 'Riflev2', maxHp: 68, role: 'damage',
+      id: 'rifle', name: 'Rifle', img: 'Riflev2', maxHp: 68, role: 'finisher',
       moves: [
         {
           atkName: 'Focused Fire', targetType: 'enemy',
@@ -824,11 +824,13 @@
           }
         },
         {
-          atkName: 'Rapid Reload', targetType: 'enemy',
-          desc: 'Two quick follow-up shots (12-16 each).',
+          atkName: 'Kill Shot', targetType: 'enemy',
+          desc: 'A precision shot (10-14 dmg), nearly tripled to 28-38 if the target is below 30% HP.',
           run(ctx) {
-            for (let i = 0; i < 2; i++) ctx.damageEnemy(ctx.target, rand(12, 16));
-            ctx.log(`${ctx.self.name} reloads fast and fires again at ${ctx.target.name}.`);
+            const execute = ctx.target.hp / ctx.target.maxHp < 0.3;
+            const dmg = execute ? rand(28, 38) : rand(10, 14);
+            ctx.damageEnemy(ctx.target, dmg, execute);
+            ctx.log(`${ctx.self.name} lines up a kill shot on ${ctx.target.name} for ${dmg}${execute ? ' — finished off!' : '.'}`, execute ? 'crit' : '');
           }
         },
         {
