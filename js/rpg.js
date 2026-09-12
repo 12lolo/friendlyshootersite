@@ -29,6 +29,9 @@
   const BUFF_LABELS = { atkUp: 'ATK Up', defUp: 'DEF Up', atkDown: 'ATK Down', defDown: 'DEF Down', speedUp: 'Haste', stunned: 'Stunned', taunt: 'Taunting' };
   const BUFF_DEBUFF_KEYS = new Set(['atkDown', 'defDown', 'stunned']);
   const BUFF_PERMANENT = Infinity;
+  // Permanent Haste: not a turns-based buff (that would let a unit act forever),
+  // just a flat per-turn chance to act again, checked once per completed action.
+  const PERMA_HASTE_CHANCE = 0.25;
 
   function addBuff(unit, key, turns) {
     if (!unit) return;
@@ -116,7 +119,7 @@
   // ---------------------------------------------------------------
   const ROSTER = [
     {
-      id: 'pistol', name: 'Pistol', img: 'Pistol2', maxHp: 60, starter: true,
+      id: 'pistol', name: 'Pistol', img: 'Pistol2', maxHp: 60, starter: true, role: 'suppressor',
       moves: [
         {
           atkName: 'Pocket Grenade', targetType: 'auto',
@@ -153,7 +156,7 @@
       ]
     },
     {
-      id: 'melee', name: 'Melee', img: 'MeleeV2', maxHp: 82, starter: true,
+      id: 'melee', name: 'Melee', img: 'MeleeV2', maxHp: 82, starter: true, role: 'damage',
       moves: [
         {
           atkName: 'Cleave', targetType: 'auto',
@@ -184,7 +187,7 @@
       ]
     },
     {
-      id: 'gambler', name: 'Gambler', img: 'GamblerV2', maxHp: 55,
+      id: 'gambler', name: 'Gambler', img: 'GamblerV2', maxHp: 55, role: 'finisher',
       moves: [
         {
           atkName: 'Dice Toss', targetType: 'enemy',
@@ -223,7 +226,7 @@
       ]
     },
     {
-      id: 'revolver', name: 'Revolver', img: 'RevolverV2', maxHp: 65,
+      id: 'revolver', name: 'Revolver', img: 'RevolverV2', maxHp: 65, role: 'finisher',
       moves: [
         {
           atkName: 'Verdict', targetType: 'enemy',
@@ -263,7 +266,7 @@
       ]
     },
     {
-      id: 'grenadier', name: 'Grenadier', img: 'GrenadeLauncher', maxHp: 70,
+      id: 'grenadier', name: 'Grenadier', img: 'GrenadeLauncher', maxHp: 70, role: 'damage',
       moves: [
         {
           atkName: 'Frag Out', targetType: 'auto',
@@ -296,7 +299,7 @@
       ]
     },
     {
-      id: 'rpg', name: 'RPG', img: 'RPGV2', maxHp: 68,
+      id: 'rpg', name: 'RPG', img: 'RPGV2', maxHp: 68, role: 'damage',
       moves: [
         {
           atkName: 'Rocket Barrage', targetType: 'enemy',
@@ -328,7 +331,7 @@
       ]
     },
     {
-      id: 'sniper', name: 'Sniper', img: 'SniperV2', maxHp: 58,
+      id: 'sniper', name: 'Sniper', img: 'SniperV2', maxHp: 58, role: 'damage',
       moves: [
         {
           atkName: 'Headshot', targetType: 'enemy',
@@ -363,7 +366,7 @@
       ]
     },
     {
-      id: 'shotgun', name: 'Shotgun', img: 'Shotgunv2', maxHp: 72,
+      id: 'shotgun', name: 'Shotgun', img: 'Shotgunv2', maxHp: 72, role: 'damage',
       moves: [
         {
           atkName: 'Buckshot Spray', targetType: 'auto',
@@ -399,7 +402,7 @@
       ]
     },
     {
-      id: 'medic', name: 'Medic', img: 'MedicV2', maxHp: 60,
+      id: 'medic', name: 'Medic', img: 'MedicV2', maxHp: 60, role: 'healer',
       moves: [
         {
           atkName: 'Field Aid', targetType: 'auto',
@@ -447,7 +450,7 @@
       ]
     },
     {
-      id: 'wizard', name: 'Wizard', img: 'WizardV2', maxHp: 64,
+      id: 'wizard', name: 'Wizard', img: 'WizardV2', maxHp: 64, role: 'debuffer',
       moves: [
         {
           atkName: 'Arcane Bolt', targetType: 'enemy',
@@ -481,19 +484,22 @@
       ]
     },
     {
-      id: 'engineer', name: 'Engineer', img: 'ENgineerV2', maxHp: 65,
+      id: 'engineer', name: 'Engineer', img: 'ENgineerV2', maxHp: 65, role: 'support',
       moves: [
         {
           atkName: 'Place Turret', targetType: 'auto',
-          desc: 'Deploys a turret ally to an empty squad slot and suppresses all enemies (6-10 dmg).',
+          desc: 'Deploys a turret into its own reserved party slot (auto-fires after every move) and suppresses all enemies (6-10 dmg).',
           run(ctx) {
             const turretDef = ROSTER.find(c => c.id === 'turret');
-            const emptySpot = ctx.squad.findIndex(u => !u);
-            if (turretDef && emptySpot >= 0) {
-              ctx.squad[emptySpot] = makeUnit(turretDef, 1);
-              ctx.log(`${ctx.self.name} places a turret in the squad!`, 'heal');
-            } else {
-              ctx.log(`${ctx.self.name} has no room to place a turret right now.`);
+            const slot = turretIdx();
+            const existing = ctx.squad[slot];
+            if (turretDef && (!existing || existing.hp <= 0)) {
+              ctx.squad[slot] = makeUnit(turretDef, 1);
+              ctx.log(`${ctx.self.name} deploys a turret into the squad!`, 'heal');
+            } else if (existing) {
+              const heal = Math.round(existing.maxHp * 0.3);
+              healUnit(existing, heal);
+              ctx.log(`${ctx.self.name} repairs the deployed turret for ${heal} HP.`, 'heal');
             }
             ctx.enemies.filter(e => e.hp > 0).forEach(e => {
               ctx.damageEnemy(e, rand(6, 10));
@@ -524,7 +530,7 @@
       ]
     },
     {
-      id: 'turret', name: 'Turret', img: 'Flying', maxHp: 45,
+      id: 'turret', name: 'Turret', img: 'Flying', maxHp: 45, role: 'damage',
       moves: [
         {
           atkName: 'Auto Fire', targetType: 'auto',
@@ -556,7 +562,7 @@
       ]
     },
     {
-      id: 'shield', name: 'Shield', img: 'ShieldV2', maxHp: 85,
+      id: 'shield', name: 'Shield', img: 'ShieldV2', maxHp: 85, role: 'tank',
       moves: [
         {
           atkName: 'Cover Team', targetType: 'auto',
@@ -589,7 +595,7 @@
       ]
     },
     {
-      id: 'flamethrower', name: 'Flamethrower', img: 'Flamethrower', maxHp: 70,
+      id: 'flamethrower', name: 'Flamethrower', img: 'Flamethrower', maxHp: 70, role: 'debuffer',
       moves: [
         {
           atkName: 'Scorch', targetType: 'auto',
@@ -624,7 +630,7 @@
       ]
     },
     {
-      id: 'minigunner', name: 'Minigunner', img: 'MiniGunnerV2', maxHp: 78,
+      id: 'minigunner', name: 'Minigunner', img: 'MiniGunnerV2', maxHp: 78, role: 'damage',
       moves: [
         {
           atkName: 'Spin Up', targetType: 'auto',
@@ -663,7 +669,7 @@
       ]
     },
     {
-      id: 'fistfighter', name: 'Fistfighter', img: 'Fistfighter', maxHp: 90,
+      id: 'fistfighter', name: 'Fistfighter', img: 'Fistfighter', maxHp: 90, role: 'damage',
       moves: [
         {
           atkName: 'Haymaker', targetType: 'enemy',
@@ -694,7 +700,7 @@
       ]
     },
     {
-      id: 'bow', name: 'Bow', img: 'bowV2', maxHp: 58,
+      id: 'bow', name: 'Bow', img: 'bowV2', maxHp: 58, role: 'damage',
       moves: [
         {
           atkName: 'Piercing Shot', targetType: 'enemy',
@@ -736,7 +742,7 @@
       ]
     },
     {
-      id: 'justice', name: 'Justice', img: 'PhoenixV2', maxHp: 60,
+      id: 'justice', name: 'Justice', img: 'PhoenixV2', maxHp: 60, role: 'support',
       moves: [
         {
           atkName: 'Objection!', targetType: 'enemy',
@@ -773,7 +779,7 @@
       ]
     },
     {
-      id: 'cannon', name: 'Cannon', img: 'CanonV@', maxHp: 80,
+      id: 'cannon', name: 'Cannon', img: 'CanonV@', maxHp: 80, role: 'damage',
       moves: [
         {
           atkName: 'Cannonball', targetType: 'enemy',
@@ -803,7 +809,7 @@
       ]
     },
     {
-      id: 'rifle', name: 'Rifle', img: 'Riflev2', maxHp: 68,
+      id: 'rifle', name: 'Rifle', img: 'Riflev2', maxHp: 68, role: 'damage',
       moves: [
         {
           atkName: 'Focused Fire', targetType: 'enemy',
@@ -834,7 +840,7 @@
       ]
     },
     {
-      id: 'smg', name: 'SMG', img: 'SMGv2', maxHp: 58,
+      id: 'smg', name: 'SMG', img: 'SMGv2', maxHp: 58, role: 'damage',
       moves: [
         {
           atkName: 'Spray', targetType: 'auto',
@@ -869,7 +875,7 @@
       ]
     },
     {
-      id: 'dualsmg', name: 'Dual SMG', img: 'DualSMG', maxHp: 62,
+      id: 'dualsmg', name: 'Dual SMG', img: 'DualSMG', maxHp: 62, role: 'damage',
       moves: [
         {
           atkName: 'Twin Spray', targetType: 'auto',
@@ -908,7 +914,7 @@
       ]
     },
     {
-      id: 'dualshotgun', name: 'Dual Shotgun', img: 'DualShotgunv2', maxHp: 76,
+      id: 'dualshotgun', name: 'Dual Shotgun', img: 'DualShotgunv2', maxHp: 76, role: 'damage',
       moves: [
         {
           atkName: 'Double Blast', targetType: 'enemy',
@@ -941,7 +947,7 @@
       ]
     },
     {
-      id: 'duallaser', name: 'Dual Laser', img: 'DualLAzer', maxHp: 64,
+      id: 'duallaser', name: 'Dual Laser', img: 'DualLAzer', maxHp: 64, role: 'damage',
       moves: [
         {
           atkName: 'Laser Storm', targetType: 'auto',
@@ -974,7 +980,7 @@
       ]
     },
     {
-      id: 'lmg', name: 'LMG', img: 'LMGV2', maxHp: 82,
+      id: 'lmg', name: 'LMG', img: 'LMGV2', maxHp: 82, role: 'suppressor',
       moves: [
         {
           atkName: 'Suppressing Fire', targetType: 'auto',
@@ -1008,7 +1014,7 @@
       ]
     },
     {
-      id: 'ar', name: 'AR', img: 'ARv2', maxHp: 72,
+      id: 'ar', name: 'AR', img: 'ARv2', maxHp: 72, role: 'damage',
       moves: [
         {
           atkName: 'Suppressing Burst', targetType: 'enemy',
@@ -1042,6 +1048,25 @@
   ];
 
   const CHAR_BY_ID = Object.fromEntries(ROSTER.map(c => [c.id, c]));
+
+  // Playstyle tags shown on unit cards so players can build a squad around
+  // roles rather than just raw stats. 'tank' is the catch-all for kits
+  // (like Shield's taunt/cover-team) that don't fit the other six.
+  const ROLE_META = {
+    damage: { label: 'Damage Dealer', color: '#ff6e6e' },
+    healer: { label: 'Healer', color: '#6ecbff' },
+    support: { label: 'Support', color: '#6effa0' },
+    suppressor: { label: 'Suppressor', color: '#ffd166' },
+    finisher: { label: 'Finisher', color: '#d47bff' },
+    debuffer: { label: 'Debuffer', color: '#ff8a4a' },
+    tank: { label: 'Tank', color: '#9fb3c8' }
+  };
+  function roleBadge(id) {
+    const def = CHAR_BY_ID[id];
+    const meta = def && ROLE_META[def.role];
+    if (!meta) return '';
+    return `<div class="u-role" style="color:${meta.color};border-color:${meta.color}">${meta.label}</div>`;
+  }
 
   // ---------------------------------------------------------------
   // Enemy types. Each may define `abilities`: a list of
@@ -1295,10 +1320,14 @@
   // boss (wave 3) enemy type ever appears in that arena's earlier waves.
   const STAGE_POOLS = {
     forest: ['weak', 'burst', 'spawner'],
-    desert: ['boomshooter', 'grenande', 'rocketeer', 'tank'],
+    desert: ['boomshooter', 'grenande', 'rocketeer', 'tank', 'dosserttower'],
     city: ['machinegunner', 'spreadshooter', 'homing', 'burst', 'sniper'],
     quick: ['weak', 'burst']
   };
+
+  // Bosses that are shielded by their own guards: the boss takes no damage
+  // while any of its guardId minions are still alive.
+  const BOSS_GUARDS = { frobble: { guardId: 'boomshooter', count: 2 } };
 
   // Every stage is 3 waves; wave 3 is always the boss wave. A wheel spin
   // follows every wave, win or boss alike.
@@ -1317,7 +1346,7 @@
 
     { stageNumber: 4, arena: 'quick', type: 'fight', count: 1, waveLabel: 'Wave 1/3', label: 'Quick Level 5 — Wave 1/3' },
     { stageNumber: 4, arena: 'quick', type: 'fight', count: 2, waveLabel: 'Wave 2/3', label: 'Quick Level 5 — Wave 2/3' },
-    { stageNumber: 4, arena: 'quick', type: 'boss', bossIds: ['frobble'], waveLabel: 'Boss Wave 3/3', label: 'Quick Level 5 Boss: Frobble', bossScale: 1.8 },
+    { stageNumber: 4, arena: 'quick', type: 'boss', bossIds: ['frobble'], waveLabel: 'Boss Wave 3/3', label: 'Quick Level 5 Boss: Frobble (guarded by Boom Shooters)', bossScale: 1.8 },
 
     { stageNumber: 5, arena: 'doors', type: 'doors', label: 'The Final Corridor' },
     { stageNumber: 6, arena: 'final', type: 'boss', bossIds: ['gable', 'goble'], waveLabel: 'Final Boss', label: 'Final Showdown: Gable & Goble', bossScale: 2 }
@@ -1391,6 +1420,14 @@
     anim: null,
     animTimer: null
   };
+  // TURRET_SLOT: state.squad always has one extra slot beyond squadSize,
+  // reserved for the Engineer's deployed turret. It's part of the squad
+  // array (so enemies can target it, and squad-wide heals/buffs reach it
+  // for free) but excluded from recruiting/swapping and from turn/defeat
+  // checks, since it never takes a manual turn.
+  function turretIdx() { return state.squadSize; }
+  function realSquad() { return state.squad.slice(0, state.squadSize); }
+
   let doorsResolved = false;
   let musicOn = false;
 
@@ -1479,7 +1516,21 @@
       return list;
     }
     if (stage.type === 'boss') {
-      return stage.bossIds.map(id => makeEnemy(ENEMY_TYPE_BY_ID[id], stageIndex, stage.bossScale || 1.3));
+      const list = [];
+      stage.bossIds.forEach(id => {
+        const guard = BOSS_GUARDS[id];
+        if (guard) {
+          for (let i = 0; i < guard.count; i++) {
+            const g = makeEnemy(ENEMY_TYPE_BY_ID[guard.guardId], stageIndex, stage.bossScale || 1.3);
+            g.isGuard = true;
+            list.push(g);
+          }
+        }
+        const boss = makeEnemy(ENEMY_TYPE_BY_ID[id], stageIndex, stage.bossScale || 1.3);
+        if (guard) boss.guarded = true;
+        list.push(boss);
+      });
+      return list;
     }
     return [];
   }
@@ -1554,6 +1605,7 @@
     state.startingAllyId = allyDef.id;
     const squad = [makeUnit(pistol), makeUnit(allyDef)];
     while (squad.length < state.squadSize) squad.push(null);
+    squad.push(null); // reserved turret slot, always the last index — see TURRET_SLOT
     return squad;
   }
 
@@ -1572,7 +1624,7 @@
       const div = document.createElement('div');
       div.className = 'unit-card';
       if (u) {
-        div.innerHTML = `<img src="${imgSrc(CHAR_DIR, u.img)}" alt="${u.name}"><div class="u-name">${u.name}</div>`;
+        div.innerHTML = `<img src="${imgSrc(CHAR_DIR, u.img)}" alt="${u.name}"><div class="u-name">${u.name}</div>${roleBadge(u.id)}`;
         imgFallback(div.querySelector('img'), CHAR_DIR, u.img);
         div.title = u.moves.map(m => `${m.atkName}: ${m.desc}`).join('\n');
       } else {
@@ -1657,15 +1709,25 @@
     const squadRow = q('#squad-row');
     squadRow.innerHTML = '';
     state.squad.forEach((u, idx) => {
+      const isTurretSlot = idx === turretIdx();
       const card = document.createElement('div');
       card.className = 'unit-card';
-      if (!u) { card.classList.add('empty-slot'); card.textContent = 'Empty'; squadRow.appendChild(card); return; }
+      if (!u) {
+        card.classList.add('empty-slot');
+        if (isTurretSlot) { card.classList.add('turret-slot'); card.textContent = 'Turret Slot'; }
+        else { card.textContent = 'Empty'; }
+        squadRow.appendChild(card);
+        return;
+      }
       const dead = u.hp <= 0;
       const stunned = hasBuff(u, 'stunned');
-      const canAct = !dead && !u.acted && !stunned;
+      // The deployed turret auto-fires on its own (see resolveAttack) and is
+      // never clickable — it has no manual turn to take.
+      const canAct = !isTurretSlot && !dead && !u.acted && !stunned;
+      if (isTurretSlot) card.classList.add('turret-unit');
       if (dead) card.classList.add('dead');
       if (u.shield > 0) card.classList.add('shielded');
-      if ((u.acted || stunned) && !dead) card.classList.add('acted');
+      if ((u.acted || stunned) && !dead && !isTurretSlot) card.classList.add('acted');
       if (state.pendingAttacker === idx) card.classList.add('active-turn');
       if (canAct && state.pendingAttacker === null) card.classList.add('selectable');
       if (anim && anim.attackerIdx === idx) card.classList.add('anim-attack');
@@ -1675,14 +1737,16 @@
       const squadFloats = anim && anim.floats ? anim.floats.filter(f => f.side === 'squad' && f.idx === idx) : [];
       const pct = clamp(u.hp / u.maxHp * 100, 0, 100);
       card.innerHTML = `
-        <div class="u-tag">Lv.${u.level || 1}</div>
+        <div class="u-tag">${isTurretSlot ? 'Auto' : `Lv.${u.level || 1}`}</div>
         <img src="${imgSrc(CHAR_DIR, u.img)}" alt="${u.name}">
         <div class="u-name">${u.name}</div>
+        ${roleBadge(u.id)}
         <div class="u-hpbar"><div class="u-hpfill ${pct <= 30 ? 'low' : ''}" style="width:${pct}%"></div></div>
         <div class="u-hptext">${Math.max(0, u.hp)}/${u.maxHp}</div>
         ${bonusHpOf(u) > 0 ? `<div class="u-shield">+${bonusHpOf(u)} HP</div>` : ''}
         ${u.shield > 0 ? `<div class="u-shield">Shield ${u.shield}</div>` : ''}
         ${u.atkMult > 1 ? `<div class="u-burn">ATK x${u.atkMult.toFixed(2)}</div>` : ''}
+        ${u.permaHaste ? `<div class="u-buff">Haste (Perm)</div>` : ''}
         ${buffBadges(u)}
       `;
       imgFallback(card.querySelector('img'), CHAR_DIR, u.img);
@@ -1700,8 +1764,9 @@
     state.enemies.forEach((e, idx) => {
       const card = document.createElement('div');
       card.className = 'unit-card';
+      const isProtected = e.guarded && state.enemies.some(g => g.isGuard && g.hp > 0);
       if (e.hp <= 0) card.classList.add('dead');
-      if (state.pendingAttacker !== null && e.hp > 0) card.classList.add('targetable');
+      if (state.pendingAttacker !== null && e.hp > 0 && !isProtected) card.classList.add('targetable');
       if (idx === nextIdx) card.classList.add('next-turn');
       if (anim && anim.enemyAttackerIdx === idx) card.classList.add('anim-attack');
       if (anim && anim.hitEnemyIdxs && anim.hitEnemyIdxs.includes(idx)) card.classList.add('anim-hit');
@@ -1714,13 +1779,14 @@
         <div class="u-name">${e.name}</div>
         <div class="u-hpbar"><div class="u-hpfill ${pct <= 30 ? 'low' : ''}" style="width:${pct}%"></div></div>
         <div class="u-hptext">${Math.max(0, e.hp)}/${e.maxHp}</div>
+        ${isProtected ? `<div class="u-shield">🛡 Protected — defeat the Boom Shooters first</div>` : ''}
         ${e.burn ? `<div class="u-burn">Burning (${e.burn.turns})</div>` : ''}
         ${e.suppressed ? `<div class="u-shield">Suppressed</div>` : ''}
         ${buffBadges(e)}
       `;
       imgFallback(card.querySelector('img'), ENEMY_DIR, e.img);
       renderFloats(card, enemyFloats);
-      if (state.pendingAttacker !== null && e.hp > 0) {
+      if (state.pendingAttacker !== null && e.hp > 0 && !isProtected) {
         card.addEventListener('click', () => resolveAttack(idx));
       }
       enemyRow.appendChild(card);
@@ -1835,6 +1901,10 @@
   }
 
   function damageEnemy(enemy, amount, crit, ignoreShield, attacker) {
+    if (enemy.guarded && state.enemies.some(e => e.isGuard && e.hp > 0)) {
+      pushFloat(enemy, 'Guarded!', 'float-block');
+      return;
+    }
     let amt = amount;
     if (attacker) amt = Math.round(amt * outgoingDamageMult(attacker));
     if (!ignoreShield) {
@@ -1887,6 +1957,21 @@
     };
     move.run(ctx);
 
+    // The deployed turret isn't selectable — instead it auto-fires a small
+    // shot at a random enemy after every squad member's move, like a FNaF
+    // World "Byte". Folded into the same before/after diff so it shares the
+    // move's hit animation.
+    const turret = state.squad[turretIdx()];
+    if (turret && turret.hp > 0 && turret !== unit) {
+      const liveEnemies = state.enemies.filter(e => e.hp > 0);
+      if (liveEnemies.length) {
+        const t = pick(liveEnemies);
+        const dmg = Math.round(rand(3, 6) * (turret.atkMult || 1));
+        damageEnemy(t, dmg, false, false, turret);
+        log(`${turret.name} auto-fires at ${t.name} for ${dmg}.`);
+      }
+    }
+
     const hitEnemyIdxs = state.enemies.map((e, i) => (e.hp < beforeEnemyHp[i] ? i : -1)).filter(i => i >= 0);
     const critEnemyIdxs = state.enemies.map((e, i) => (e.lastCrit && e.hp < beforeEnemyHp[i] ? i : -1)).filter(i => i >= 0);
     const healSquadIdxs = state.squad.map((u, i) => (u && beforeSquadHp[i] != null && u.hp > beforeSquadHp[i] ? i : -1)).filter(i => i >= 0);
@@ -1898,6 +1983,9 @@
     if (hasBuff(unit, 'speedUp')) {
       unit.buffs.speedUp--;
       unit.acted = false;
+    } else if (unit.permaHaste && Math.random() < PERMA_HASTE_CHANCE) {
+      unit.acted = false;
+      log(`${unit.name}'s permanent Haste lets it act again!`, 'heal');
     } else {
       unit.acted = true;
     }
@@ -2010,14 +2098,14 @@
       setTimeout(onVictory, 500);
       return;
     }
-    if (state.squad.every(u => !u || u.hp <= 0)) {
+    if (realSquad().every(u => !u || u.hp <= 0)) {
       state.battleOver = true;
       renderBattle();
       setTimeout(onGameOver, 500);
       return;
     }
 
-    const allActed = state.squad.every(u => !u || u.hp <= 0 || u.acted || hasBuff(u, 'stunned'));
+    const allActed = realSquad().every(u => !u || u.hp <= 0 || u.acted || hasBuff(u, 'stunned'));
     if (allActed) {
       state.round++;
       state.squad.forEach(u => {
@@ -2076,9 +2164,12 @@
   // Carries the current squad and unlocked roster over into an Infinite run
   // instead of starting fresh, picking up right where Story Mode left off.
   function continueAsInfinite() {
+    const deployedTurret = state.squad[turretIdx()];
+    const real = realSquad();
     state.mode = 'infinite';
     state.squadSize = INFINITE_SQUAD_SIZE;
-    while (state.squad.length < state.squadSize) state.squad.push(null);
+    while (real.length < state.squadSize) real.push(null);
+    state.squad = [...real, deployedTurret || null];
     state.stageIndex = 0;
     beginStage();
   }
@@ -2088,11 +2179,15 @@
     beginStage();
   }
 
+  // Turret isn't recruited like a normal character — it's deployed into its
+  // own reserved slot via the Engineer's move or the upgrade wheel instead.
+  const RECRUITABLE_IDS = ROSTER.map(c => c.id).filter(id => id !== 'turret');
+
   function buildCharSegments() {
-    const lockedIds = ROSTER.map(c => c.id).filter(id => !state.unlocked.has(id));
+    const lockedIds = RECRUITABLE_IDS.filter(id => !state.unlocked.has(id));
     const segs = [];
     shuffle(lockedIds).slice(0, 8).forEach(id => segs.push({ type: 'char', id }));
-    const fillPool = ROSTER.map(c => c.id);
+    const fillPool = RECRUITABLE_IDS;
     while (segs.length < 8) segs.push({ type: 'char', id: pick(fillPool) });
     return shuffle(segs);
   }
@@ -2108,7 +2203,9 @@
       { type: 'upgrade', kind: 'hpcap' },
       { type: 'upgrade', kind: 'revive' },
       { type: 'upgrade', kind: 'permaAtkUp' },
-      { type: 'upgrade', kind: 'permaDefUp' }
+      { type: 'upgrade', kind: 'permaDefUp' },
+      { type: 'upgrade', kind: 'permaSpeedUp' },
+      { type: 'upgrade', kind: 'deployTurret' }
     ];
     const segs = [];
     while (segs.length < 8) segs.push(pick(upgrades));
@@ -2138,9 +2235,11 @@
     const wheelLabels = {
       heal: 'Full Heal', maxhp: 'Max HP +20%', powerup: 'Power Boost', levelup: 'Level Up',
       lvlup2: 'Upgrade +2', lvlup3: 'Upgrade +3', hpcap: 'Higher HP Cap', revive: 'Revive Ally',
-      permaAtkUp: 'Perm. ATK Up', permaDefUp: 'Perm. DEF Up'
+      permaAtkUp: 'Perm. ATK Up', permaDefUp: 'Perm. DEF Up', permaSpeedUp: 'Perm. Haste', deployTurret: 'Deploy Turret'
     };
-    const radius = 118;
+    // Derived from the wheel's actual rendered size (not a fixed constant) so
+    // segment labels still land inside the ring at every responsive breakpoint.
+    const radius = (wheel.clientWidth || 300) / 2 - 32;
     wheelSegments.forEach((s, i) => {
       const segAngle = 360 / n;
       const angle = (i * segAngle) + segAngle / 2;
@@ -2193,9 +2292,11 @@
       const def = CHAR_BY_ID[reward.id];
       const alreadyOwned = state.unlocked.has(def.id);
       const level = rollRecruitLevel();
+      reward.level = level;
       box.innerHTML = `
         <img src="${imgSrc(CHAR_DIR, def.img)}" alt="${def.name}">
         <h3>${alreadyOwned ? 'Duplicate: ' : ''}${def.name}${level > 1 ? ` (Lv.${level}!)` : ''}</h3>
+        ${roleBadge(def.id)}
         <p><strong>${def.moves[0].atkName}:</strong> ${def.moves[0].desc}</p>
         <p><strong>${def.moves[1].atkName}:</strong> ${def.moves[1].desc}</p>
         <div class="reward-actions">
@@ -2218,7 +2319,9 @@
       hpcap: ['Higher HP Cap', 'Permanently boosts a random squad member\'s max HP cap by 35%.'],
       revive: ['Revive Ally', 'Brings a fallen squad member back at 50% HP (or heals your squad if no one has fallen).'],
       permaAtkUp: ['Permanent Attack Up', 'Grants a random squad member Attack Up forever: +25% damage dealt.'],
-      permaDefUp: ['Permanent Defense Up', 'Grants a random squad member Defense Up forever: 20% less damage taken.']
+      permaDefUp: ['Permanent Defense Up', 'Grants a random squad member Defense Up forever: 20% less damage taken.'],
+      permaSpeedUp: ['Permanent Haste', `Grants a random squad member Haste forever: ${Math.round(PERMA_HASTE_CHANCE * 100)}% chance to act again right after any action.`],
+      deployTurret: ['Deploy Turret', 'Deploys a turret into its own reserved party slot, or repairs it if already deployed. The turret auto-fires after every move and can still be attacked.']
     };
     const [title, desc] = labels[reward.kind];
     box.innerHTML = `
@@ -2231,6 +2334,15 @@
     `;
     q('#btn-keep').addEventListener('click', () => applyUpgrade(reward.kind));
     q('#btn-discard').addEventListener('click', () => discardReward());
+  }
+
+  // Prefers a squad member who doesn't already have the permanent perk so it
+  // isn't wasted; only falls back to a redundant pick if everyone has it,
+  // in which case the caller should grant a level instead.
+  function pickForPermaBuff(alive, alreadyHasIt) {
+    const eligible = alive.filter(u => !alreadyHasIt(u));
+    if (eligible.length) return { u: pick(eligible), redundant: false };
+    return { u: pick(alive), redundant: true };
   }
 
   function applyUpgrade(kind) {
@@ -2302,15 +2414,48 @@
       }
     } else if (kind === 'permaAtkUp') {
       if (alive.length) {
-        const u = pick(alive);
-        addBuff(u, 'atkUp', BUFF_PERMANENT);
-        log(`${u.name} permanently gains Attack Up!`, 'heal');
+        const { u, redundant } = pickForPermaBuff(alive, x => hasBuff(x, 'atkUp') && x.buffs.atkUp === BUFF_PERMANENT);
+        if (redundant) {
+          levelUpUnit(u);
+          log(`${u.name} already has permanent Attack Up — trains instead and levels up to Lv.${u.level}!`, 'heal');
+        } else {
+          addBuff(u, 'atkUp', BUFF_PERMANENT);
+          log(`${u.name} permanently gains Attack Up!`, 'heal');
+        }
       }
     } else if (kind === 'permaDefUp') {
       if (alive.length) {
-        const u = pick(alive);
-        addBuff(u, 'defUp', BUFF_PERMANENT);
-        log(`${u.name} permanently gains Defense Up!`, 'heal');
+        const { u, redundant } = pickForPermaBuff(alive, x => hasBuff(x, 'defUp') && x.buffs.defUp === BUFF_PERMANENT);
+        if (redundant) {
+          levelUpUnit(u);
+          log(`${u.name} already has permanent Defense Up — trains instead and levels up to Lv.${u.level}!`, 'heal');
+        } else {
+          addBuff(u, 'defUp', BUFF_PERMANENT);
+          log(`${u.name} permanently gains Defense Up!`, 'heal');
+        }
+      }
+    } else if (kind === 'permaSpeedUp') {
+      if (alive.length) {
+        const { u, redundant } = pickForPermaBuff(alive, x => x.permaHaste);
+        if (redundant) {
+          levelUpUnit(u);
+          log(`${u.name} already has permanent Haste — trains instead and levels up to Lv.${u.level}!`, 'heal');
+        } else {
+          u.permaHaste = true;
+          log(`${u.name} permanently gains Haste (${Math.round(PERMA_HASTE_CHANCE * 100)}% chance to act again each turn)!`, 'heal');
+        }
+      }
+    } else if (kind === 'deployTurret') {
+      const turretDef = ROSTER.find(c => c.id === 'turret');
+      const slot = turretIdx();
+      const existing = state.squad[slot];
+      if (turretDef && (!existing || existing.hp <= 0)) {
+        state.squad[slot] = makeUnit(turretDef, 1);
+        log('A turret is deployed into the squad!', 'heal');
+      } else if (existing) {
+        const heal = Math.round(existing.maxHp * 0.3);
+        healUnit(existing, heal);
+        log(`The deployed turret is repaired for ${heal} HP.`, 'heal');
       }
     }
     finishReward();
@@ -2318,8 +2463,16 @@
 
   function discardReward() {
     if (currentReward && currentReward.type === 'char') {
-      state.squad.forEach(u => { if (u) levelUpUnit(u); });
-      log('Recruit discarded — the whole squad trains hard and gains a level!', 'heal');
+      // Levels granted scale with how strong the discarded recruit rolled —
+      // a lucky high-level pull is worth training the squad harder for.
+      const lvl = currentReward.level || 1;
+      const gain = lvl >= 7 ? 4 : lvl >= 5 ? 3 : lvl >= 3 ? 2 : 1;
+      for (let i = 0; i < gain; i++) {
+        state.squad.forEach(u => { if (u) levelUpUnit(u); });
+      }
+      log(gain > 1
+        ? `Recruit (Lv.${lvl}) discarded — the whole squad trains hard and gains ${gain} levels!`
+        : 'Recruit discarded — the whole squad trains hard and gains a level!', 'heal');
     } else {
       log('Reward discarded.', 'sys');
     }
@@ -2328,7 +2481,7 @@
 
   function keepCharacter(def, level) {
     state.unlocked.add(def.id);
-    const emptyIdx = state.squad.findIndex(u => !u);
+    const emptyIdx = realSquad().findIndex(u => !u);
     if (emptyIdx !== -1) {
       state.squad[emptyIdx] = makeUnit(def, level);
       log(`${def.name} (Lv.${level || 1}) joins your squad!`, 'sys');
@@ -2347,10 +2500,10 @@
       <div class="reward-actions"><button class="button secondary" id="btn-discard-new">Discard ${def.name}</button></div>
     `;
     const grid = q('#swap-grid');
-    state.squad.forEach((u, idx) => {
+    realSquad().forEach((u, idx) => {
       const card = document.createElement('div');
       card.className = 'unit-card selectable';
-      card.innerHTML = `<img src="${imgSrc(CHAR_DIR, u.img)}" alt="${u.name}"><div class="u-name">${u.name}</div>`;
+      card.innerHTML = `<img src="${imgSrc(CHAR_DIR, u.img)}" alt="${u.name}"><div class="u-name">${u.name}</div>${roleBadge(u.id)}`;
       imgFallback(card.querySelector('img'), CHAR_DIR, u.img);
       card.addEventListener('click', () => {
         log(`${u.name} was replaced by ${def.name}.`, 'sys');

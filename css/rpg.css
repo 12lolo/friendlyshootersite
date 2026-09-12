@@ -191,6 +191,17 @@ body {
 .unit-card .u-buff { font-size: 0.65rem; color: #6effa0; }
 .unit-card .u-debuff { font-size: 0.65rem; color: #ff6e6e; }
 .unit-card .u-tag { position: absolute; top: 2px; right: 2px; font-size: 0.6rem; background: var(--rpg-accent); color: #fff; padding: 1px 4px; }
+.unit-card .u-role {
+    display: inline-block;
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    padding: 1px 4px;
+    margin-top: 3px;
+}
+.reward-result .u-role { margin: 2px 0 6px; }
 
 .unit-card.selectable { cursor: pointer; }
 .unit-card.selectable:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 rgba(212,0,177,0.34); }
@@ -200,6 +211,9 @@ body {
 .unit-card.targetable { cursor: crosshair; border-color: #ffd166; }
 .unit-card.targetable:hover { box-shadow: 3px 3px 0 rgba(255,209,102,0.5); }
 .unit-card.empty-slot { opacity: 0.3; border-style: dashed; display: flex; align-items: center; justify-content: center; }
+.unit-card.empty-slot.turret-slot { opacity: 0.45; border-color: #ffb347; color: #ffb347; font-size: 0.75rem; }
+.unit-card.turret-unit { border-color: #ffb347; box-shadow: 0 0 0 1px rgba(255, 179, 71, 0.35); cursor: default; }
+.unit-card.turret-unit .u-tag { background: #ffb347; color: #1a0f00; }
 
 .unit-card.anim-attack { animation: anim-lunge 450ms ease; }
 .unit-card.anim-hit { animation: anim-shake 450ms ease; }
@@ -497,8 +511,45 @@ body {
 .overlay-box h2 { color: var(--rpg-title); margin-top: 0; }
 .overlay-box p { color: var(--rpg-text); }
 
+html, body { overflow-x: hidden; }
+
 @media (max-width: 800px) {
     .center { padding: 14px; margin: 12px auto 18px; }
     .battlefield { gap: 12px; }
     .wheel, .wheel-outer { width: 240px; height: 240px; }
+}
+
+/* ----- Phones ----- */
+@media (max-width: 480px) {
+    .center { padding: 10px; margin: 8px auto 14px; }
+    .rpg-head h1 { font-size: 1.3rem; }
+    .help-btn { top: 6px; right: 6px; padding: 8px 10px; font-size: 0.8rem; }
+
+    /* Bigger, easier-to-tap buttons everywhere. */
+    .inner_column .button { padding: 12px 14px; font-size: 0.9rem; min-height: 44px; }
+
+    /* Smaller unit cards so squad + enemy rows fit more per line without
+       forcing lots of vertical scrolling on a narrow screen. */
+    .unit-card { width: 88px; padding: 6px; }
+    .unit-card img { width: 46px; height: 46px; }
+    .unit-card .u-name { font-size: 0.68rem; min-height: 1.2em; }
+    .unit-card .u-hptext { font-size: 0.6rem; }
+    .unit-card .u-shield, .unit-card .u-burn, .unit-card .u-buff, .unit-card .u-debuff { font-size: 0.58rem; }
+    .rpg-row { gap: 6px; }
+
+    /* Ability panel: stack move choices instead of squeezing them sideways. */
+    .ability-panel .move-option { flex-direction: column; align-items: stretch; gap: 4px; }
+    .ability-panel .move-option .button { width: 100%; }
+    .ability-panel .move-option .a-desc { flex: 1 1 auto; text-align: center; }
+
+    .wheel, .wheel-outer { width: 210px; height: 210px; }
+    .wheel-seg-inner { width: 52px; height: 52px; }
+    .wheel-seg-inner img { width: 24px; height: 24px; }
+    .wheel-seg-inner span { font-size: 0.52rem; max-width: 50px; }
+
+    .door { width: 88px; height: 130px; }
+    .doors-wrap { gap: 10px; }
+
+    .reward-result, .overlay-box { padding: 14px; }
+    .reward-actions .button, .page-actions .button { flex: 1 1 auto; }
 }
