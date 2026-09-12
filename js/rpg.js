@@ -102,7 +102,10 @@
   function addShield(target, amount, scale) {
     if (!target) return;
     const amt = Math.round(amount * (scale || 1));
-    target.shield = (target.shield || 0) + amt;
+    // Refreshes to the stronger value instead of stacking additively (same
+    // rule as buffs/addBuff) — recasting a shield move every round used to
+    // let shield grow without bound over a long fight.
+    target.shield = Math.max(target.shield || 0, amt);
     pushFloat(target, '+' + amt + ' SH', 'float-shield');
   }
   function nextEnemyIdx() {
@@ -406,34 +409,34 @@
       moves: [
         {
           atkName: 'Field Aid', targetType: 'auto',
-          desc: 'Heals the lowest-HP ally for 20-30 (scales with level).',
+          desc: 'Heals the lowest-HP ally for 13-19 (scales with level).',
           run(ctx) {
             const alive = ctx.squad.filter(u => u && u.hp > 0);
             if (!alive.length) return;
             const t = alive.reduce((a, b) => (a.hp / a.maxHp <= b.hp / b.maxHp ? a : b));
-            const heal = Math.round(rand(20, 30) * (ctx.self.atkMult || 1));
+            const heal = Math.round(rand(13, 19) * (ctx.self.atkMult || 1));
             healUnit(t, heal);
             ctx.log(`${ctx.self.name} patches up ${t.name} for ${heal} HP.`, 'heal');
           }
         },
         {
           atkName: 'Group Bandage', targetType: 'auto',
-          desc: 'Heals the whole squad a little (8-12 each, scales with level).',
+          desc: 'Heals the whole squad a little (5-8 each, scales with level).',
           run(ctx) {
             ctx.squad.filter(u => u && u.hp > 0).forEach(u => {
-              healUnit(u, Math.round(rand(8, 12) * (ctx.self.atkMult || 1)));
+              healUnit(u, Math.round(rand(5, 8) * (ctx.self.atkMult || 1)));
             });
             ctx.log(`${ctx.self.name} hands out bandages to the whole squad.`, 'heal');
           }
         },
         {
           atkName: 'Rebirth', targetType: 'auto',
-          desc: 'Revives a fallen ally at 40% HP, or heals the weakest ally if no one has fallen.',
+          desc: 'Revives a fallen ally at 28% HP, or heals the weakest ally if no one has fallen.',
           run(ctx) {
             const fallen = ctx.squad.filter(u => u && u.hp <= 0);
             if (fallen.length) {
               const t = pick(fallen);
-              t.hp = Math.round(t.maxHp * 0.4);
+              t.hp = Math.round(t.maxHp * 0.28);
               t.shield = 0;
               t.acted = true;
               ctx.log(`${ctx.self.name} brings ${t.name} back from the brink!`, 'heal');
@@ -442,7 +445,7 @@
             const alive = ctx.squad.filter(u => u && u.hp > 0);
             if (!alive.length) return;
             const t = alive.reduce((a, b) => (a.hp / a.maxHp <= b.hp / b.maxHp ? a : b));
-            const heal = Math.round(rand(15, 20) * (ctx.self.atkMult || 1));
+            const heal = Math.round(rand(10, 14) * (ctx.self.atkMult || 1));
             t.hp = clamp(t.hp + heal, 0, t.maxHp);
             ctx.log(`${ctx.self.name} channels rebirth energy into ${t.name} for ${heal} HP.`, 'heal');
           }
@@ -1495,8 +1498,11 @@
 
   function makeEnemy(type, stageIndex, scaleMult) {
     scaleMult = scaleMult || 1;
-    const hpMul = (1 + (stageIndex || 0) * 0.15) * scaleMult;
-    const atkMul = (1 + (stageIndex || 0) * 0.12) * scaleMult;
+    // Baseline +15%/+12% (HP/ATK) on top of steeper per-stage growth than
+    // before (0.15->0.20, 0.12->0.16), so every enemy hits harder from the
+    // start and runs keep getting tougher rather than plateauing.
+    const hpMul = (1.15 + (stageIndex || 0) * 0.20) * scaleMult;
+    const atkMul = (1.12 + (stageIndex || 0) * 0.16) * scaleMult;
     return {
       id: type.id + '_' + Math.random().toString(36).slice(2, 7),
       typeId: type.id, name: type.name, img: type.img,
