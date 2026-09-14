@@ -306,12 +306,15 @@
       moves: [
         {
           atkName: 'Rocket Barrage', targetType: 'enemy',
-          desc: 'Heavy rocket hit (28-38) with splash to others (6).',
+          desc: 'Heavy rocket hit (28-38) with splash to others (6) that leaves them suppressed.',
           run(ctx) {
             const dmg = rand(28, 38);
             ctx.damageEnemy(ctx.target, dmg);
             ctx.log(`${ctx.self.name} launches a rocket at ${ctx.target.name} for ${dmg}!`, 'crit');
-            ctx.enemies.filter(e => e.hp > 0 && e !== ctx.target).forEach(e => ctx.damageEnemy(e, 6));
+            ctx.enemies.filter(e => e.hp > 0 && e !== ctx.target).forEach(e => {
+              ctx.damageEnemy(e, 6);
+              e.suppressed = true;
+            });
           }
         },
         {
@@ -685,10 +688,11 @@
         },
         {
           atkName: 'Combo Punch', targetType: 'enemy',
-          desc: 'Two quick punches (10-15 each).',
+          desc: 'Two quick punches (10-15 each), then covers up for 12 shield.',
           run(ctx) {
             for (let i = 0; i < 2; i++) ctx.damageEnemy(ctx.target, rand(10, 15));
-            ctx.log(`${ctx.self.name} throws a flurry of punches at ${ctx.target.name}.`);
+            addShield(ctx.self, 12, ctx.self.atkMult);
+            ctx.log(`${ctx.self.name} throws a flurry of punches at ${ctx.target.name} and covers up.`);
           }
         },
         {
@@ -703,7 +707,7 @@
       ]
     },
     {
-      id: 'bow', name: 'Bow', img: 'bowV2', maxHp: 58, role: 'healer',
+      id: 'bow', name: 'Bow', img: 'bowV2', maxHp: 58, role: 'finisher',
       moves: [
         {
           atkName: 'Piercing Shot', targetType: 'enemy',
@@ -721,15 +725,13 @@
           }
         },
         {
-          atkName: 'Medic Arrow', targetType: 'auto',
-          desc: 'Fires a stimulant-tipped arrow at the lowest-HP ally, healing 12-18 (scales with level).',
+          atkName: 'Finishing Shot', targetType: 'enemy',
+          desc: 'A precise arrow aimed at a wounded foe (14-18 dmg), nearly tripled to 40-50 if the target is below 25% HP.',
           run(ctx) {
-            const alive = ctx.squad.filter(u => u && u.hp > 0);
-            if (!alive.length) return;
-            const t = alive.reduce((a, b) => (a.hp / a.maxHp <= b.hp / b.maxHp ? a : b));
-            const heal = Math.round(rand(12, 18) * (ctx.self.atkMult || 1));
-            healUnit(t, heal);
-            ctx.log(`${ctx.self.name} fires a medic arrow into ${t.name} for ${heal} HP.`, 'heal');
+            const execute = ctx.target.hp / ctx.target.maxHp < 0.25;
+            const dmg = execute ? rand(40, 50) : rand(14, 18);
+            ctx.damageEnemy(ctx.target, dmg, execute);
+            ctx.log(`${ctx.self.name} lines up a finishing shot on ${ctx.target.name} for ${dmg}${execute ? ' — down it goes!' : '.'}`, execute ? 'crit' : '');
           }
         },
         {
@@ -807,6 +809,15 @@
           run(ctx) {
             ctx.enemies.filter(e => e.hp > 0).forEach(e => { ctx.damageEnemy(e, rand(4, 8)); addBuff(e, 'atkDown', 2); });
             ctx.log(`${ctx.self.name} unleashes an overpressure blast.`);
+          }
+        },
+        {
+          atkName: 'Food', targetType: 'auto',
+          desc: 'Grabs a quick bite while the barrel cools, healing self for 16-22 HP (scales with level).',
+          run(ctx) {
+            const heal = Math.round(rand(16, 22) * (ctx.self.atkMult || 1));
+            healUnit(ctx.self, heal);
+            ctx.log(`${ctx.self.name} grabs a quick bite while the barrel cools, healing ${heal} HP.`, 'heal');
           }
         }
       ]
@@ -1014,6 +1025,15 @@
           run(ctx) {
             for (let i = 0; i < 3; i++) ctx.damageEnemy(ctx.target, rand(6, 9));
             ctx.log(`${ctx.self.name} unloads a barrage on ${ctx.target.name}.`);
+          }
+        },
+        {
+          atkName: 'Food', targetType: 'auto',
+          desc: 'Wolfs down a ration between belts of ammo, healing self for 16-22 HP (scales with level).',
+          run(ctx) {
+            const heal = Math.round(rand(16, 22) * (ctx.self.atkMult || 1));
+            healUnit(ctx.self, heal);
+            ctx.log(`${ctx.self.name} chows down on some field rations for ${heal} HP.`, 'heal');
           }
         }
       ]
