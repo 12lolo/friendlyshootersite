@@ -7,14 +7,14 @@
         <meta name="description" content="FriendlyShooter World RPG: build a squad of 4 characters, fight through roguelike levels, and spin the wheel for new abilities after every win."/>
         <link type="image/png" href="https://img.itch.zone/aW1nLzI1ODYyMDI3LnBuZw==/32x32%23/D5oY%2By.png" rel="icon" />
         <link rel="stylesheet" href="css/site.css?v=20260911f">
-        <link rel="stylesheet" href="css/rpg.css?v=20260911f">
+        <link rel="stylesheet" href="css/rpg.css?v=20260912c">
     </head>
     <body class="locale_en game_layout_widget layout_widget no_theme_toggle responsive" data-host="itch.io" data-page_name="view_game">
         <button type="button" class="button secondary help-btn" id="btn-help">? How to Play</button>
         <div class="help-modal-overlay" id="help-modal-overlay">
             <div class="help-modal">
                 <h3>Squad &amp; Roster</h3>
-                <p>You always start with <strong>Pistol</strong> and one random ally. Win the reward wheel or hidden doors to recruit more characters, level them up, and boost their stats.</p>
+                <p>You always start with <strong>Pistol</strong> and one random ally. Win the reward wheel or hidden doors to recruit more characters, level them up, and boost their stats. Every character has a role badge — Damage Dealer, Healer, Support, Suppressor, Finisher, Debuffer, or Tank — so you can see at a glance what it brings to the squad.</p>
                 <h3>Battle Turns</h3>
                 <ul>
                     <li>Click a squad member, then pick one of its moves.</li>
@@ -25,7 +25,9 @@
                     <li>Shield absorbs damage before HP; Burn and Suppressed are status effects shown under a unit's HP bar.</li>
                 </ul>
                 <h3>Wheel &amp; Doors</h3>
-                <p>After every wave you spin two reward wheels: one for a new recruit, one for a permanent upgrade (Max HP, Level Up, Revive, Attack/Defense Up, and more). Discarding a recruit levels up your whole squad instead. Before the final boss you can also open one of three doors for a bonus.</p>
+                <p>After every wave you spin two reward wheels: one for a new recruit, one for a permanent upgrade (Max HP, Level Up, Revive, Attack/Defense/Haste Up, Deploy Turret, and more). Discarding a recruit trains your whole squad instead — a higher-level recruit is worth more levels. A permanent Attack/Defense/Haste Up reward goes to a squad member who doesn't have it yet; only if everyone already has it does it convert into a level-up instead. Before the final boss you can also open one of three doors for a bonus.</p>
+                <h3>Turret</h3>
+                <p>The Engineer's <strong>Place Turret</strong> move (or the Deploy Turret upgrade) puts a turret into its own reserved party slot alongside your regular squad — it doesn't take one of their spots. The turret can't be selected or given orders; instead it automatically fires a shot at a random enemy right after every squad member's move, like a helper drone. It still has HP and can be attacked and destroyed by enemies.</p>
                 <h3>Game Modes</h3>
                 <ul>
                     <li><strong>Story Mode</strong> — 6 hand-crafted stages with a proper ending.</li>
@@ -141,6 +143,6 @@
                 </div>
             </div>
         </div>
-        <script src="js/rpg.js?v=20260911f"></script>
+        <script src="js/rpg.js?v=20260912c"></script>
     </body>
 </html>
