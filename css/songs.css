@@ -74,7 +74,51 @@
     text-align: center;
 }
 
+.new-releases {
+    margin: 0 0 22px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(150, 255, 196, 0.34);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 46%, rgba(255, 255, 255, 0) 50%),
+        radial-gradient(ellipse 60% 100% at 100% 0%, rgba(2, 255, 119, 0.2), transparent 70%),
+        rgba(8, 46, 22, 0.7);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 10px 26px rgba(0, 0, 0, 0.4), 0 0 22px rgba(2, 255, 119, 0.12);
+}
+
+.new-releases h2,
+.albums-title { margin: 0 0 4px; }
+.albums-title { margin: 0 0 12px; }
+.new-releases > p { margin: 0 0 14px; color: #cfeedd; }
+
+.release-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 14px;
+}
+
+.release-list { display: grid; gap: 10px; align-content: start; }
+
+.release-card iframe { display: block; border: 0; border-radius: 12px; }
+
+.release-feature a {
+    display: block;
+    margin-top: 8px;
+    color: var(--songs-green);
+    text-align: center;
+}
+
+.album-card {
+    border-radius: 14px;
+    border-color: rgba(150, 255, 196, 0.3);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.album-card iframe { border-radius: 12px; }
+
 @media (max-width: 900px) {
+    .release-grid { grid-template-columns: 1fr; }
+
     .album-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
