@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8"/>
-        <meta name="theme-color" content="#09280f"/>
+        <meta name="theme-color" content="#0a3a1a"/>
         <meta property="og:image" content="https://img.itch.zone/aW1nLzI2NTc5NTczLmpwZw==/original/dvtKIR.jpg"/>
         <link type="image/png" href="https://img.itch.zone/aW1nLzI1ODYyMDI3LnBuZw==/32x32%23/D5oY%2By.png" rel="icon"/>
         <meta property="og:site_name" content="FriendlyShooter"/>
@@ -61,7 +61,8 @@
                 "@context": "https:\/\/schema.org\/",
                 "@type": "VideoGame",
                 "name": "FriendlyShooter",
-                "alternateName": "FriendlyShooter-V0.9.2",
+                "alternateName": "FriendlyShooter-V0.9.45",
+                "softwareVersion": "0.9.45",
                 "description": "Friendly shooter is a game where you beat Worlds and bosses by selecting your character and collecting all flags but something is quite off. Disclaimer: the game contains some horror themes and flashing lights.",
                 "url": "https:\/\/friendlyshooter.com\/",
                 "image": "https:\/\/img.itch.zone\/aW1nLzI1ODYyMDI3LnBuZw==/original/GxZ43V.png",
@@ -124,7 +125,7 @@
                 )(document, "script");
             }
         </script>
-        <link rel="stylesheet" href="css/site.css?v=20260908a">
+        <link rel="stylesheet" href="css/site.css?v=20261116a">
     </head>
     <body class=" locale_en game_layout_widget layout_widget no_theme_toggle responsive" data-host="itch.io" data-page_name="view_game">
         <ul id="user_tools" class="user_tools hidden">
@@ -188,18 +189,224 @@
         <div id="wrapper" class="main wrapper">
             <div class="inner_column size_large family_pixel" id="inner_column">
                 <div class="header align_center has_image" id="header">
-                    <img alt="FriendlyShooter-V0.9.2" src="https://img.itch.zone/aW1nLzI2NTc5NTczLmpwZw==/original/dvtKIR.jpg"/>
-                    <h1 itemprop="name" class="game_title">FriendlyShooter-V0.9.2</h1>
+                    <img alt="FriendlyShooter-V0.9.45" src="https://img.itch.zone/aW1nLzI2NTc5NTczLmpwZw==/original/dvtKIR.jpg"/>
+                    <h1 itemprop="name" class="game_title">FriendlyShooter<span class="title-version">V0.9.45</span></h1>
+                    <p class="header-tagline"><span class="aero-chip">NEW</span> Update 0.945 &middot; The Glow-Up Update is out now</p>
                 </div>
-                <div style="text-align:center;margin:12px 0">
+                <nav class="aero-nav" aria-label="Site">
                     <a href="mods.html" class="button">Mods and tools for FS</a>
-                    <a href="rpg.html" class="button" style="margin-left:8px">World RPG Minigame</a>
-                    <a href="soundtrack.html" class="button" style="margin-left:8px">Soundtrack</a>
-                    <a href="songs.html" class="button" style="margin-left:8px">Songs by TJWGames</a>
-                    <a href="donate.html" class="button" style="margin-left:8px">Donate</a>
-                    <a href="https://tjwgames.itch.io" class="button" style="margin-left:8px">other games by TJWGames</a>
-                </div>
-                <section class="world-briefing" aria-labelledby="world-briefing-title">
+                    <a href="rpg.html" class="button">World RPG Minigame</a>
+                    <a href="soundtrack.html" class="button">Soundtrack</a>
+                    <a href="songs.html" class="button">Songs by TJWGames</a>
+                    <a href="donate.html" class="button">Donate</a>
+                    <a href="https://tjwgames.itch.io" class="button">other games by TJWGames</a>
+                </nav>
+                <section class="aero-window glowup" aria-labelledby="glowup-title">
+                    <div class="aero-titlebar" aria-hidden="true"><span>FriendlyOS &mdash; patchnotes.exe</span><i></i><i></i><i></i></div>
+                    <div class="glowup-hero">
+                        <div class="glowup-copy">
+                            <p class="hud-label">Update 0.945 &middot; out now on itch.io</p>
+                            <h2 id="glowup-title">The Glow-Up Update</h2>
+                            <p>0.9.4 rebuilt how the game plays. This one is about how it looks and feels: nearly every menu was redone, everything got a bit of glass and glow, and the ending finally runs on the music it was written for. A few new faces moved in too, and some of them are hiding.</p>
+                            <div class="glowup-actions">
+                                <a href="https://tjwgames.itch.io/friendlyshooter/purchase" class="button button-big">Download V0.9.45</a>
+                                <span class="glowup-meta">FS-v9.45.zip &middot; 548 MB &middot; Windows &middot; Name your own price</span>
+                            </div>
+                        </div>
+                        <ul class="glowup-stats">
+                            <li><strong>5</strong><span>new characters</span></li>
+                            <li><strong>6</strong><span>secret characters</span></li>
+                            <li><strong>12</strong><span>new relics</span></li>
+                            <li><strong>Aero</strong><span>glass menus</span></li>
+                        </ul>
+                    </div>
+                    <div class="patch-tabs" data-tabs>
+                        <div class="patch-tablist" role="tablist" aria-label="Patch notes">
+                            <button type="button" role="tab" aria-selected="true" aria-controls="pn-highlights" id="pt-highlights">Highlights</button>
+                            <button type="button" role="tab" aria-selected="false" aria-controls="pn-characters" id="pt-characters" tabindex="-1">Characters</button>
+                            <button type="button" role="tab" aria-selected="false" aria-controls="pn-gauntlet" id="pt-gauntlet" tabindex="-1">Gauntlet</button>
+                            <button type="button" role="tab" aria-selected="false" aria-controls="pn-menus" id="pt-menus" tabindex="-1">Menus</button>
+                            <button type="button" role="tab" aria-selected="false" aria-controls="pn-aero" id="pt-aero" tabindex="-1">Aero style</button>
+                            <button type="button" role="tab" aria-selected="false" aria-controls="pn-levels" id="pt-levels" tabindex="-1">Levels</button>
+                            <button type="button" role="tab" aria-selected="false" aria-controls="pn-fixes" id="pt-fixes" tabindex="-1">Fixes</button>
+                        </div>
+                        <div class="patch-panel" role="tabpanel" id="pn-highlights" aria-labelledby="pt-highlights">
+                            <ul>
+                                <li>Almost every screen is new: the main menu, world select, character select, leaderboards, achievements and the loading screen.</li>
+                                <li>Five new characters, one for every rarity, each with their own weapon, abilities and prestige perk.</li>
+                                <li>Six secret characters are hidden in the game. You can't spin for them, you have to earn them.</li>
+                                <li>Duel opponents learn how you fight and change their plan to beat you.</li>
+                                <li>The tutorial is a real boot camp now, with clear steps and markers.</li>
+                                <li>A new Aero style: glossy glass menus with a soft green glow, and an old-computer startup screen. Both can be turned off in Options.</li>
+                                <li>The Gauntlet got a lot more fun: combos, room ranks, finishing-blow slow-mo, 12 new relics and the new God rarity.</li>
+                                <li>Flags have a new look, a proper pickup and on-screen markers that show you where the rest are.</li>
+                                <li>The ending has new voiced dialogue set to a new soundtrack piece, and the climax got a calmer new first act.</li>
+                            </ul>
+                        </div>
+                        <div class="patch-panel" role="tabpanel" id="pn-characters" aria-labelledby="pt-characters" hidden>
+                            <h3>New characters</h3>
+                            <ul>
+                                <li><b class="r-common">Lumberjack</b> (Common): throws his axe like a boomerang and stuns whatever it hits. Right click chops. Abilities: Timber and Axe Storm.</li>
+                                <li><b class="r-uncommon">Harpooner</b> (Uncommon): a pump shotgun, plus a grappling hook on right click that pulls you to walls and ledges. Abilities: Anchor Drop and Kraken Lines.</li>
+                                <li><b class="r-rare">Slugger</b> (Rare): hold to charge a swing, land a HOME RUN, and swat enemy bullets and rockets out of the air. Right click pitches a bouncing baseball. Abilities: Batting Practice and Walk-Off.</li>
+                                <li><b class="r-epic">Singularity</b> (Epic): plasma bolts charge up a black hole that pins enemies in place and crushes them. Abilities: Phase Step and Event Horizon.</li>
+                                <li><b class="r-legendary">Titan</b> (Legendary): a hammer that sends out a stunning shockwave, and a leap that slams down harder the higher you jump from. Abilities: War Cry and Meteor.</li>
+                                <li>Each one has its own prestige perk: Timber, Deep Sea, Grand Slam, Event Horizon and Earthshaker.</li>
+                            </ul>
+                            <h3>Secret characters</h3>
+                            <ul>
+                                <li>Six characters are not in any spin. They show up as ??? in character select under the new SECRET filter, with a hint about how to get them.</li>
+                                <li>Each one plays completely differently, with their own weapon, abilities and prestige perk.</li>
+                                <li>If you already did what it takes, some of them unlock as soon as you open the menu.</li>
+                                <li>One for free: beat every opponent in the Duel at least once.</li>
+                            </ul>
+                        </div>
+                        <div class="patch-panel" role="tabpanel" id="pn-gauntlet" aria-labelledby="pt-gauntlet" hidden>
+                            <h3>Combos and ranks</h3>
+                            <ul>
+                                <li>Kills chain into a combo. From x3 every kill pays extra scrap, every 5th gets a callout and every 10th heals you.</li>
+                                <li>Every fight room gets a rank from S to C, based on damage taken, speed and your best combo. An S rank gives a token.</li>
+                                <li>The last kill in a room slows time down for a moment.</li>
+                                <li>Health packs fly to you when you're hurt, from much further away once the fight is over.</li>
+                            </ul>
+                            <h3>New relics</h3>
+                            <ul>
+                                <li>Common: First Strike, Adrenaline and Steady Rhythm.</li>
+                                <li>Rare: Vampiric, Frenzy, Big Game Hunter and Shrapnel.</li>
+                                <li>Legendary: Berserker and Dragon's Hoard.</li>
+                                <li>Power shrines are stronger, offer three abilities to pick from, and have three new ones: Meteor Shower, Soul Reaper and Aegis.</li>
+                            </ul>
+                            <h3>God relics</h3>
+                            <ul>
+                                <li>A new rarity above Legendary with two relics: Divine Judgement and Avatar of War.</li>
+                                <li>Look for the rare God shrine from floor 2 on. Bosses can drop one from floor 3, and a Chance shrine might, if you're very lucky.</li>
+                            </ul>
+                            <h3>New HUD</h3>
+                            <ul>
+                                <li>A run plate at the top shows the floor, theme, objective and the rooms left.</li>
+                                <li>Scrap, tokens, the map, your relics, the combo meter and room ranks all use the new HUD style.</li>
+                            </ul>
+                        </div>
+                        <div class="patch-panel" role="tabpanel" id="pn-menus" aria-labelledby="pt-menus" hidden>
+                            <h3>Main menu</h3>
+                            <ul>
+                                <li>Cleaner layout: two tidy columns, a bigger START and the Challenges card on the right.</li>
+                                <li>"Playing as" with your name, coins and characters unlocked at the bottom.</li>
+                                <li>The whole menu works with the arrow keys or WASD.</li>
+                            </ul>
+                            <h3>World select</h3>
+                            <ul>
+                                <li>A list of every world, grouped into Training, Story, Modes and Extras, with LOCKED and CLEARED tags.</li>
+                                <li>An info card with a description, what unlocks the world and your best for that mode: Gauntlet floor, Escape time, duel wins or Quick Levels beaten.</li>
+                                <li>The 3D preview sits next to the list now. Click a world to pick it, double-click to play, or use <kbd>W</kbd>/<kbd>S</kbd>, <kbd>A</kbd>/<kbd>D</kbd> and the number keys.</li>
+                            </ul>
+                            <h3>Character select</h3>
+                            <ul>
+                                <li>Every character in one grid with rarity filters, showing what you own, what's prestiged and what's equipped.</li>
+                                <li>A detail panel with a live 3D model, abilities with icons, the signature perk and legendary powers.</li>
+                                <li>Clicking a character equips it straight away. Double-click or <kbd>Enter</kbd> to play.</li>
+                            </ul>
+                            <h3>Leaderboards</h3>
+                            <ul>
+                                <li>New look with a podium for the top 3 and a bar that shows your own rank and how far you are from the next player.</li>
+                                <li>New boards: Gauntlet (deepest floor) and Escape (fastest time).</li>
+                                <li>Boards load faster and can be refreshed with <kbd>R</kbd>.</li>
+                            </ul>
+                            <h3>Loading screen</h3>
+                            <ul><li>Glass look with a spinning loader and a light running along the progress bar.</li></ul>
+                            <h3>Achievements</h3>
+                            <ul>
+                                <li>Every achievement has a new badge: the colour shows its category and the rim shows its tier, from steel up to prismatic. Locked ones show a padlock version.</li>
+                                <li>New achievements for 20 characters, prestiging 10 characters, 2,500 and 5,000 kills, 50 kills with each new character, and one hidden one for the secret characters.</li>
+                                <li>"Collect all characters" now means all 30 spin characters, and "Unlock 10 Abilities" really needs 10.</li>
+                            </ul>
+                        </div>
+                        <div class="patch-panel" role="tabpanel" id="pn-aero" aria-labelledby="pt-aero" hidden>
+                            <h3>Frutiger Aero</h3>
+                            <ul>
+                                <li>Menus, buttons and HUD panels are glossy glass now, still in FriendlyShooter green.</li>
+                                <li>Glass pixels, light ribbons and soft glints drift behind the menus.</li>
+                                <li>Turn it off under Options &gt; Video &gt; Style &gt; Aero theme.</li>
+                            </ul>
+                            <h3>Startup screen</h3>
+                            <ul>
+                                <li>The game boots up like an old computer: a BIOS screen, then the FriendlyOS splash with its own startup sound.</li>
+                                <li>Quitting shuts it down the same way.</li>
+                                <li>Any key skips it, or turn it off under Options &gt; Video &gt; Style &gt; Startup screen.</li>
+                            </ul>
+                            <h3>Kill callouts</h3>
+                            <ul>
+                                <li>DOUBLE KILL and the rest are a glass pill with an orb counter, glints and a bar that runs down while you can still chain the next kill.</li>
+                                <li>The text that pops up over enemies has a cleaner outline and a soft glow.</li>
+                            </ul>
+                            <h3>Gallery</h3>
+                            <ul>
+                                <li>Glass panels, orb buttons and a glowing stage with floating glass cubes under the model. Same layout as before.</li>
+                                <li>A now-playing bar with a visualizer, a seek bar and play/pause. The music plays through the game's own soundtrack player.</li>
+                            </ul>
+                            <h3>Duel select</h3>
+                            <ul><li>The duel select screen is glass and green too.</li></ul>
+                            <p class="patch-note">Everything above goes back to the classic look when the Aero theme is off.</p>
+                            <h3>Somewhere in the terminal</h3>
+                            <ul><li>Someone left something behind. Make yourself at home.</li></ul>
+                        </div>
+                        <div class="patch-panel" role="tabpanel" id="pn-levels" aria-labelledby="pt-levels" hidden>
+                            <h3>Tutorial</h3>
+                            <ul>
+                                <li>A 12-step boot camp: look, walk, sprint, jump, talk, shoot, dash and wall jump, all the way to the flag.</li>
+                                <li>A card at the top right tells you what to do next. Arrows on the floor, beacons and signs with your own keys show you where.</li>
+                                <li>Falling off doesn't kill you anymore. You go back to the last checkpoint.</li>
+                            </ul>
+                            <h3>Duels</h3>
+                            <ul>
+                                <li>Opponents learn: they remember how you move, which range you like, where you peek from and how you play each character.</li>
+                                <li>Every fight they pick a plan (push, kite, flank, hold an angle...), dodge your shots, aim ahead of you and throw grenades.</li>
+                                <li>The HUD shows how well they READ YOU, they call out what they've picked up, and the select screen shows what they already know about you.</li>
+                                <li>Your opponent's health is a plate at the top in the new HUD style, with damage numbers and a timer and streak (or the score online).</li>
+                                <li>Reset Progress &gt; Modes makes them forget everything.</li>
+                            </ul>
+                            <h3>Final boss</h3>
+                            <ul>
+                                <li>Close-range characters get help in the final boss fight: the hands stay down longer after a slam, your hits on them count more and you take less damage.</li>
+                                <li>Every character gets a minimum amount of health for that fight.</li>
+                            </ul>
+                            <h3>Flags</h3>
+                            <ul>
+                                <li>New look: a waving flag on a pole with a glowing gem, a ring on the ground and a beam of light you can see from far away.</li>
+                                <li>Picking one up plays a chime that climbs with every flag, with sparks, a flash and a FLAG CAPTURED banner.</li>
+                                <li>On-screen markers show how far away each flag is, with an arrow to the nearest. Turn them off under Options &gt; Flag markers.</li>
+                                <li>The last flag in a level slows time down for a moment.</li>
+                            </ul>
+                            <h3>Quick Levels</h3>
+                            <ul><li>New loading and title pictures for all five Quick Levels.</li></ul>
+                            <h3>The ending</h3>
+                            <ul>
+                                <li>New voiced dialogue, timed to the new soundtrack piece Out of this space.</li>
+                                <li>The music dips under the voice so you can hear every line.</li>
+                            </ul>
+                            <h3>The climax</h3>
+                            <ul>
+                                <li>A new, calmer first act. No spoilers.</li>
+                                <li>The camera moves more naturally, with breathing, head movement and footsteps.</li>
+                                <li>Typing on the phone uses an on-screen keyboard now, and the ending is quieter.</li>
+                            </ul>
+                        </div>
+                        <div class="patch-panel" role="tabpanel" id="pn-fixes" aria-labelledby="pt-fixes" hidden>
+                            <ul>
+                                <li><b>Gauntlet:</b> health packs, floating cubes and leftover effects stayed behind when you went to the next floor.</li>
+                                <li><b>Enemies:</b> some enemies left empty objects and death effects behind in every level after they died.</li>
+                                <li><b>Flags:</b> one flag could count twice.</li>
+                                <li><b>Leaderboards:</b> boards sometimes failed to load right after starting the game.</li>
+                                <li><b>Airstrikes:</b> airstrike and nuke planes flew straight through tall buildings and hills. They climb over them now.</li>
+                                <li><b>Gallery:</b> the first song you played froze the game for a few seconds, the song description could spill out of its card, and the Gallery music could stay silent.</li>
+                                <li><b>Achievements:</b> character and ability milestones showed outdated numbers.</li>
+                                <li><b>Other:</b> "Quick lev" is called "Quick Levels" in world select, plus lots of smaller fixes.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                <section class="world-briefing aero-window" aria-labelledby="world-briefing-title">
+                    <div class="aero-titlebar" aria-hidden="true"><span>FriendlyOS &mdash; worldselect.exe</span><i></i><i></i><i></i></div>
                     <div class="world-briefing-copy">
                         <p class="hud-label">World select</p>
                         <h2 id="world-briefing-title">Worlds Under Fire</h2>
@@ -239,40 +446,48 @@
                         </div>
                     </div>
                 </section>
-                <section class="character-wheel" aria-labelledby="character-wheel-title" data-carousel>
+                <section class="character-wheel aero-window" aria-labelledby="character-wheel-title" data-carousel>
+                    <div class="aero-titlebar" aria-hidden="true"><span>FriendlyOS &mdash; characters.exe</span><i></i><i></i><i></i></div>
                     <div class="character-wheel-head">
                         <div><p class="hud-label">Character wheel</p><h2 id="character-wheel-title">Choose Your Class</h2></div>
-                        <div class="carousel-controls"><button class="carousel-button" type="button" data-direction="previous" aria-label="Previous character">&lt;</button><span class="carousel-count" aria-live="polite">01 / 25</span><button class="carousel-button" type="button" data-direction="next" aria-label="Next character">&gt;</button></div>
+                        <div class="carousel-controls"><button class="carousel-button" type="button" data-direction="previous" aria-label="Previous character">&lt;</button><span class="carousel-count" aria-live="polite">01 / 31</span><button class="carousel-button" type="button" data-direction="next" aria-label="Next character">&gt;</button></div>
                     </div>
                     <div class="character-track" data-carousel-track>
                         <article class="character-card common active"><img src="Charachters/ARv2.webp" alt="AR character" decoding="async"/><strong>AR</strong><span>Common</span></article>
                         <article class="character-card common"><img src="Charachters/Pistol2.webp" alt="Pistol character" loading="lazy" decoding="async"/><strong>Pistol</strong><span>Common</span></article>
                         <article class="character-card common"><img src="Charachters/SMGv2.webp" alt="SMG character" loading="lazy" decoding="async"/><strong>SMG</strong><span>Common</span></article>
                         <article class="character-card common"><img src="Charachters/Shotgunv2.webp" alt="Shotgun character" loading="lazy" decoding="async"/><strong>Shotgun</strong><span>Common</span></article>
+                        <article class="character-card common is-new"><img src="Charachters/LumberjackV3.jpg" alt="Lumberjack character" loading="lazy" decoding="async"/><strong>Lumberjack</strong><span>Common</span><em class="new-tag">NEW</em></article>
                         <article class="character-card uncommon"><img src="Charachters/DualSMG.webp" alt="Dual SMG character" loading="lazy" decoding="async"/><strong>Dual SMG</strong><span>Uncommon</span></article>
                         <article class="character-card uncommon"><img src="Charachters/DualShotgunv2.webp" alt="Dual Shotgun character" loading="lazy" decoding="async"/><strong>Dual Shotgun</strong><span>Uncommon</span></article>
                         <article class="character-card uncommon"><img src="Charachters/Fistfighter.webp" alt="Fistfighter character" loading="lazy" decoding="async"/><strong>Fistfighter</strong><span>Uncommon</span></article>
                         <article class="character-card uncommon"><img src="Charachters/bowV2.webp" alt="Bow character" loading="lazy" decoding="async"/><strong>Bow</strong><span>Uncommon</span></article>
                         <article class="character-card uncommon"><img src="Charachters/Riflev2.webp" alt="Rifle character" loading="lazy" decoding="async"/><strong>Rifle</strong><span>Uncommon</span></article>
+                        <article class="character-card uncommon is-new"><img src="Charachters/HarpoonerV3.jpg" alt="Harpooner character" loading="lazy" decoding="async"/><strong>Harpooner</strong><span>Uncommon</span><em class="new-tag">NEW</em></article>
                         <article class="character-card rare"><img src="Charachters/RevolverV2.webp" alt="Revolver character" loading="lazy" decoding="async"/><strong>Revolver</strong><span>Rare</span></article>
                         <article class="character-card rare"><img src="Charachters/SniperV2.webp" alt="Sniper character" loading="lazy" decoding="async"/><strong>Sniper</strong><span>Rare</span></article>
                         <article class="character-card rare"><img src="Charachters/LMGV2.webp" alt="LMG character" loading="lazy" decoding="async"/><strong>LMG</strong><span>Rare</span></article>
                         <article class="character-card rare"><img src="Charachters/Shieldv3.webp" alt="Shield character" loading="lazy" decoding="async"/><strong>Shield</strong><span>Rare</span></article>
                         <article class="character-card rare"><img src="Charachters/RPGV2.webp" alt="RPG character" loading="lazy" decoding="async"/><strong>RPG</strong><span>Rare</span></article>
+                        <article class="character-card rare is-new"><img src="Charachters/SluggerV3.jpg" alt="Slugger character" loading="lazy" decoding="async"/><strong>Slugger</strong><span>Rare</span><em class="new-tag">NEW</em></article>
                         <article class="character-card epic"><img src="Charachters/MedicV2.webp" alt="Medic character" loading="lazy" decoding="async"/><strong>Medic</strong><span>Epic</span></article>
                         <article class="character-card epic"><img src="Charachters/MeleeV2.webp" alt="Melee character" loading="lazy" decoding="async"/><strong>Melee</strong><span>Epic</span></article>
                         <article class="character-card epic"><img src="Charachters/MiniGunnerV2.webp" alt="Mini Gunner character" loading="lazy" decoding="async"/><strong>Mini Gunner</strong><span>Epic</span></article>
                         <article class="character-card epic"><img src="Charachters/GrenadeLauncher.webp" alt="Grenade Launcher character" loading="lazy" decoding="async"/><strong>Grenade Launcher</strong><span>Epic</span></article>
                         <article class="character-card epic"><img src="Charachters/Flamethrower.webp" alt="Flamethrower character" loading="lazy" decoding="async"/><strong>Flamethrower</strong><span>Epic</span></article>
+                        <article class="character-card epic is-new"><img src="Charachters/SingularityV3.jpg" alt="Singularity character" loading="lazy" decoding="async"/><strong>Singularity</strong><span>Epic</span><em class="new-tag">NEW</em></article>
                         <article class="character-card legendary"><img src="Charachters/CanonV@.webp" alt="Canon character" loading="lazy" decoding="async"/><strong>Canon</strong><span>Legendary</span></article>
                         <article class="character-card legendary"><img src="Charachters/ENgineerV2.webp" alt="Engineer character" loading="lazy" decoding="async"/><strong>Engineer</strong><span>Legendary</span></article>
                         <article class="character-card legendary"><img src="Charachters/PhoenixV2.webp" alt="Phoenix character" loading="lazy" decoding="async"/><strong>Phoenix</strong><span>Legendary</span></article>
                         <article class="character-card legendary"><img src="Charachters/WizardV2.webp" alt="Wizard character" loading="lazy" decoding="async"/><strong>Wizard</strong><span>Legendary</span></article>
                         <article class="character-card legendary"><img src="Charachters/DualLAzer.webp" alt="Dual Lazer character" loading="lazy" decoding="async"/><strong>Dual Lazer</strong><span>Legendary</span></article>
                         <article class="character-card legendary"><img src="Charachters/GamblerV2.webp" alt="Gambler character" loading="lazy" decoding="async"/><strong>Gambler</strong><span>Legendary</span></article>
+                        <article class="character-card legendary is-new"><img src="Charachters/TitanV3.jpg" alt="Titan character" loading="lazy" decoding="async"/><strong>Titan</strong><span>Legendary</span><em class="new-tag">NEW</em></article>
+                        <article class="character-card secret"><div class="secret-slot" aria-hidden="true">???</div><strong>6 Secret characters</strong><span>Secret</span><em class="secret-hint">Not in any spin. You have to earn them.</em></article>
                     </div>
                 </section>
-                <section class="spotify-section" aria-labelledby="spotify-title">
+                <section class="spotify-section aero-window" aria-labelledby="spotify-title">
+                    <div class="aero-titlebar" aria-hidden="true"><span>FriendlyOS &mdash; music.exe</span><i></i><i></i><i></i></div>
                     <div class="spotify-header-row">
                         <h2 id="spotify-title">New Soundtracks On Spotify</h2>
                     </div>
@@ -298,29 +513,18 @@
                     <div class="columns">
                         <div class="left_col column">
                             <div class="formatted_description user_formatted">
-                                <p>
-                                        <strong>FriendlyShooter-V0.9.2</strong>
-                                        <br>
-                                        <br>Friendly shooter is a game where you beat Worlds and bosses by selecting your character and collecting all flags but something is quite off.
-                                    </p>
-                                    <p>
-                                        <br>
-                                    </p>
-                                    <p>
-                                        <br>
-                                    </p>
-                                    <p>
-                                        <br>
-                                    </p>
-                                <p>
-                                    <br>
-                                </p>
-                                <p>Top donators :</p>
-                                <p>
-                                    1. 12lolo € 20,- <br>
-                                    <br>
-                                </p>
-                                <p>Disclaimer does have some horror themes and flashing lights</p>
+                                <p><strong>FriendlyShooter-V0.9.45</strong></p>
+                                <p>Friendly shooter is a game where you beat Worlds and bosses by selecting your character and collecting all flags but something is quite off.</p>
+                                <div class="donor-card">
+                                    <p class="hud-label">Top donators</p>
+                                    <p>1. Judge &euro; 30,-</p>
+                                    <p>2. 12lolo &euro; 20,-</p>
+                                </div>
+                                <p class="disclaimer">Disclaimer: does have some horror themes and flashing lights</p>
+                                <details class="update-notes" open>
+                                    <summary>V0.945 update notes &middot; The Glow-Up Update</summary>
+                                    <p>New menus everywhere, 5 new characters, 6 secret ones, learning duel AI, a real tutorial, a much better Gauntlet and a glossy new Aero style. <a href="#glowup-title">Read the full patch notes</a>.</p>
+                                </details>
                                 <details class="update-notes">
                                     <summary>V0.92 update notes</summary>
                                     <p><strong>Giant graphic overhaul.</strong></p>
@@ -343,9 +547,9 @@
                                                 <tr>
                                                     <td>Updated</td>
                                                     <td>
-                                                        <abbr title="11 October 2026 @ 19:59 UTC">
+                                                        <abbr title="16 November 2026">
                                                             <span aria-hidden="true" class="icon icon-stopwatch"></span>
-                                                            11 October 2026
+                                                            16 November 2026
                                                         </abbr>
                                                     </td>
                                                 </tr>
@@ -413,9 +617,9 @@
                                     <div class="upload">
                                         <div class="info_column">
                                             <div class="upload_name">
-                                                <strong title="FS-v9.2.zip" class="name">FS-v9.2.zip</strong>
+                                                <strong title="FS-v9.45.zip" class="name">FS-v9.45.zip</strong>
                                                 <span class="file_size">
-                                                    <span>598 MB</span>
+                                                    <span>548 MB</span>
                                                 </span>
                                                 <span class="download_platforms">
                                                     <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
@@ -426,74 +630,9 @@
                                     <div class="upload">
                                         <div class="info_column">
                                             <div class="upload_name">
-                                                <strong title="FriendlyShooter 0.1" class="name">FriendlyShooter 0.1</strong>
+                                                <strong title="FS-V0.84.zip" class="name">FS-V0.84.zip</strong>
                                                 <span class="file_size">
-                                                    <span>161 MB</span>
-                                                </span>
-                                                <span class="download_platforms">
-                                                    <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="upload">
-                                        <div class="info_column">
-                                            <div class="upload_name">
-                                                <strong title="FriendlyShooterV0.15.zip" class="name">FriendlyShooterV0.15.zip</strong>
-                                                <span class="file_size">
-                                                    <span>162 MB</span>
-                                                </span>
-                                                <span class="download_platforms">
-                                                    <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="upload">
-                                        <div class="info_column">
-                                            <div class="upload_name">
-                                                <strong title="FriendlyShooterV0.2.zip" class="name">FriendlyShooterV0.2.zip</strong>
-                                                <span class="file_size">
-                                                    <span>212 MB</span>
-                                                </span>
-                                                <span class="download_platforms">
-                                                    <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="upload">
-                                        <div class="info_column">
-                                            <div class="upload_name">
-                                                <strong title="PreReleaseFS V0.5" class="name">PreReleaseFS V0.5</strong>
-                                                <span class="file_size">
-                                                    <span>309 MB</span>
-                                                </span>
-                                                <span class="download_platforms">
-                                                    <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="upload">
-                                        <div class="info_column">
-                                            <div class="upload_name">
-                                                <strong title="FS-Test0.6Build.zip" class="name">FS-Test0.6Build.zip</strong>
-                                                <span class="file_size">
-                                                    <span>322 MB</span>
-                                                </span>
-                                                <span class="download_platforms">
-                                                    <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="upload">
-                                        <div class="info_column">
-                                            <div class="upload_name">
-                                                <strong title="FS-TestBuildV0.7.zip" class="name">FS-TestBuildV0.7.zip</strong>
-                                                <span class="file_size">
-                                                    <span>324 MB</span>
+                                                    <span>376 MB</span>
                                                 </span>
                                                 <span class="download_platforms">
                                                     <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
@@ -517,9 +656,74 @@
                                     <div class="upload">
                                         <div class="info_column">
                                             <div class="upload_name">
-                                                <strong title="FS-V0.84.zip" class="name">FS-V0.84.zip</strong>
+                                                <strong title="FS-TestBuildV0.7.zip" class="name">FS-TestBuildV0.7.zip</strong>
                                                 <span class="file_size">
-                                                    <span>376 MB</span>
+                                                    <span>324 MB</span>
+                                                </span>
+                                                <span class="download_platforms">
+                                                    <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="upload">
+                                        <div class="info_column">
+                                            <div class="upload_name">
+                                                <strong title="FS-Test0.6Build.zip" class="name">FS-Test0.6Build.zip</strong>
+                                                <span class="file_size">
+                                                    <span>322 MB</span>
+                                                </span>
+                                                <span class="download_platforms">
+                                                    <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="upload">
+                                        <div class="info_column">
+                                            <div class="upload_name">
+                                                <strong title="PreReleaseFS V0.5" class="name">PreReleaseFS V0.5</strong>
+                                                <span class="file_size">
+                                                    <span>309 MB</span>
+                                                </span>
+                                                <span class="download_platforms">
+                                                    <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="upload">
+                                        <div class="info_column">
+                                            <div class="upload_name">
+                                                <strong title="FriendlyShooterV0.2.zip" class="name">FriendlyShooterV0.2.zip</strong>
+                                                <span class="file_size">
+                                                    <span>212 MB</span>
+                                                </span>
+                                                <span class="download_platforms">
+                                                    <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="upload">
+                                        <div class="info_column">
+                                            <div class="upload_name">
+                                                <strong title="FriendlyShooterV0.15.zip" class="name">FriendlyShooterV0.15.zip</strong>
+                                                <span class="file_size">
+                                                    <span>162 MB</span>
+                                                </span>
+                                                <span class="download_platforms">
+                                                    <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="upload">
+                                        <div class="info_column">
+                                            <div class="upload_name">
+                                                <strong title="FriendlyShooter 0.1" class="name">FriendlyShooter 0.1</strong>
+                                                <span class="file_size">
+                                                    <span>161 MB</span>
                                                 </span>
                                                 <span class="download_platforms">
                                                     <span title="Download for Windows" aria-hidden="true" class="icon icon-windows8"></span>
@@ -626,7 +830,7 @@
                     <a href="javascript:void(0);" class="embed_game_btn" data-lightbox_url="https://tjwgames.itch.io/friendlyshooter/embed">Embed</a>
                     <span class="dot last_dot">·</span>
                     <div class="update_timestamp">
-                        Updated <abbr title="11 October 2026 @ 19:59 UTC">11 October 2026</abbr>
+                        Updated <abbr title="16 November 2026">16 November 2026</abbr>
                     </div>
                     <div class="breadcrumbs">
                         <a href="https://itch.io/games">Games</a>
@@ -665,6 +869,7 @@
             document.querySelectorAll('[data-carousel]').forEach(function(carousel) {
                 var track = carousel.querySelector('[data-carousel-track]');
                 var cards = track.children;
+                var step = function() { return cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : cards[0].getBoundingClientRect().width; };
                 var count = carousel.querySelector('.carousel-count');
                 var currentIndex = 0;
                 var isCharacterWheel = carousel.classList.contains('character-wheel');
@@ -679,7 +884,7 @@
                     });
                 };
                 var updateCount = function() {
-                    var rawIndex = Math.round(track.scrollLeft / cards[0].getBoundingClientRect().width);
+                    var rawIndex = Math.round(track.scrollLeft / step());
                     var pageSize = getPageSize();
                     currentIndex = isWorldCarousel ? Math.round(rawIndex / pageSize) * pageSize : rawIndex;
                     var endIndex = Math.min(cards.length, currentIndex + pageSize);
@@ -691,7 +896,7 @@
                         var pageSize = getPageSize();
                         currentIndex += button.dataset.direction === 'next' ? pageSize : -pageSize;
                         currentIndex = Math.max(0, Math.min(cards.length - pageSize, currentIndex));
-                        track.scrollTo({ left: currentIndex * cards[0].getBoundingClientRect().width, behavior: 'smooth' });
+                        track.scrollTo({ left: currentIndex * step(), behavior: 'smooth' });
                         var endIndex = Math.min(cards.length, currentIndex + pageSize);
                         count.textContent = String(currentIndex + 1).padStart(2, '0') + (isWorldCarousel ? '-' + String(endIndex).padStart(2, '0') : '') + ' / ' + String(cards.length).padStart(2, '0');
                         updateActiveCard();
@@ -702,5 +907,6 @@
                 updateCount();
             });
         </script>
+        <script src="js/aero.js?v=20261116a" defer></script>
     </body>
 </html>
